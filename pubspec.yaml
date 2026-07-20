@@ -1,8 +1,8 @@
 name: ej_geek
-description: "A new Flutter project."
+description: "E&J Geek Invoice — invoicing and accounting app."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -46,12 +46,15 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+  # Generates the native (pre-Flutter-engine) launch screen so it matches
+  # the custom black splash screen instead of showing a default white flash.
+  flutter_native_splash: ^2.4.3
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -87,3 +90,17 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Config for the flutter_native_splash package (native pre-engine splash).
+# Run `dart run flutter_native_splash:create` after editing this section.
+flutter_native_splash:
+  color: "#000000"
+  color_dark: "#000000"
+  # image: assets/icon/logo.png   # add once a real logo asset exists
+
+  # Android 12+ uses a different native SplashScreen API and needs its own
+  # block, otherwise it falls back to a plain white background.
+  android_12:
+    color: "#000000"
+    color_dark: "#000000"
+    # image: assets/icon/logo.png

@@ -1,4 +1,4 @@
-import 'package:ej_geek/features/auth/presentation/pages/splash_screen.dart';
+import 'package:ej_geek/core/presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -11,6 +11,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Flutter Demo', home: const SplashScreen());
+    return MaterialApp(
+      title: 'E&J Geek Invoice',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        scaffoldBackgroundColor: Colors.black,
+        brightness: Brightness.dark,
+      ),
+      home: const SplashScreen(),
+    );
   }
 }
