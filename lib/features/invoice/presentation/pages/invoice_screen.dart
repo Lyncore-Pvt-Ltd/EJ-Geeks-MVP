@@ -13,7 +13,7 @@ class _InvoiceScreenState extends State<InvoiceScreen> {
   @override
   Widget build(BuildContext context) {
     return const Center(
-      child: Text('this is from features/invoice — coming soon'),
+      child: Text('this is from features/invoice — coming soon Hello'),
     );
   }
 }
