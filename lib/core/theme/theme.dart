@@ -12,6 +12,12 @@ class AppTheme {
     drawerTheme: const DrawerThemeData(
       backgroundColor: AppPallete.backgroundColorLight,
     ),
+    listTileTheme: const ListTileThemeData(
+      textColor: Colors.black,
+      iconColor: Colors.black,
+      selectedColor: AppPallete.nebulousWhite,
+    ),
+    iconTheme: const IconThemeData(color: Colors.black),
   );
   static final darkTheme = ThemeData.dark().copyWith(
     brightness: Brightness.dark,
@@ -21,7 +27,7 @@ class AppTheme {
       foregroundColor: AppPallete.cascadingWhite,
     ),
     textTheme: const TextTheme(
-      bodyMedium: TextStyle(color: AppPallete.warmOnyx),
+      bodyMedium: TextStyle(color: AppPallete.greyColor),
     ),
     drawerTheme: const DrawerThemeData(
       backgroundColor: AppPallete.tricornBlack,
@@ -31,5 +37,6 @@ class AppTheme {
       iconColor: AppPallete.cascadingWhite,
       selectedColor: AppPallete.warmOnyx,
     ),
+    iconTheme: const IconThemeData(color: AppPallete.cascadingWhite),
   );
 }

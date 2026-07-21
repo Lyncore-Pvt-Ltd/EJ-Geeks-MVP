@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppPallete {
-  static const Color backgroundColorLight = Color(0xFFDDDFDD);
+  static const Color backgroundColorLight = Color(0xFFE0E0E0);
   static const Color backgroundColorDark = Color(0xFF0000000);
   static const Color gradient1 = Color.fromRGBO(187, 63, 221, 1);
   static const Color gradient2 = Color.fromRGBO(251, 109, 169, 1);
@@ -17,6 +17,7 @@ class AppPallete {
   static const Color warmOnyx = Color(0xFF4d4847);
   static const Color forgedSteel = Color(0xFF5c5a59);
   static const Color boatAnchor = Color(0xFF6d6a6b);
+  static const Color dynamicBlack = Color(0xFF1d1c1d);
   //light theme colors
   static const Color tricornBlack = Color(0xFF2f2f2f);
   static const Color hypnotic = Color(0xFF677782);

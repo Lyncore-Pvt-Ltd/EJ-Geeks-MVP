@@ -1,3 +1,4 @@
+import 'package:ej_geek/core/presentation/pages/settings_screen.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -48,7 +49,7 @@ class CustomDrawer extends StatelessWidget {
                   leading: const Icon(Icons.settings),
                   title: const Text('Settings'),
                   onTap: () {
-                    //Navigator.push(context, SettingScreen.route());
+                    Navigator.push(context, SettingScreen.route());
                   },
                 ),
                 // ExpansionTile(
@@ -132,7 +133,7 @@ class CustomDrawer extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              '© All Rights Reserved. Lyncore Pvt. Ltd 2026',
+              '© All Rights Reserved. LYNCORE Pvt. Ltd 2026',
               style: TextStyle(color: Colors.grey, fontSize: 12),
               textAlign: TextAlign.center,
             ),
