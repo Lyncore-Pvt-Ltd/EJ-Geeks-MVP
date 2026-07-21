@@ -1,4 +1,5 @@
 import 'package:ej_geek/core/presentation/pages/splash_screen.dart';
+import 'package:ej_geek/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -14,10 +15,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'E&J Geek Invoice',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        scaffoldBackgroundColor: Colors.black,
-        brightness: Brightness.dark,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       home: const SplashScreen(),
     );
   }

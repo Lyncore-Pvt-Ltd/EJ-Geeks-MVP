@@ -3,7 +3,7 @@ import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_subtitl
 import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_title.dart';
 import 'package:ej_geek/core/presentation/widgets/splash/splash_dots_indicator.dart';
 import 'package:ej_geek/core/presentation/widgets/splash/splash_progress_bar.dart';
-import 'package:ej_geek/features/invoice/presentation/pages/invoice_screen.dart';
+import 'package:ej_geek/features/dashboard/presentation/pages/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -127,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
   void _navigateToHome() {
     if (!_hasNavigated && mounted) {
       _hasNavigated = true;
-      Navigator.of(context).pushReplacement(InvoiceScreen.route());
+      Navigator.of(context).pushReplacement(DashboardScreen.route());
     }
   }
 
