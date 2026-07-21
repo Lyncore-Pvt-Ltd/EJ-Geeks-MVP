@@ -12,11 +12,8 @@ class InvoiceScreen extends StatefulWidget {
 class _InvoiceScreenState extends State<InvoiceScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('E&J Geek Invoice')),
-      body: const Center(
-        child: Text('this is from features/invoice — coming soon'),
-      ),
+    return const Center(
+      child: Text('this is from features/invoice — coming soon'),
     );
   }
 }
