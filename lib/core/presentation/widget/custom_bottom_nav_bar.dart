@@ -29,45 +29,90 @@ class CustomBottomNavBar extends StatelessWidget {
       minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Align(
         alignment: Alignment.bottomCenter,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          decoration: BoxDecoration(
-            color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: IntrinsicWidth(
-            child: GNav(
-              selectedIndex: selectedIndex,
-              onTabChange: onTabChange,
-              gap: 8,
-              activeColor: AppPallete.dynamicBlack,
-              color: isDark
-                  ? AppPallete.cascadingWhite
-                  : AppPallete.tricornBlack,
-              tabBackgroundGradient: const LinearGradient(
-                colors: [
-                  Color(0xFFFF3D3D),
-                  Color(0xFFFF6060),
-                  Color(0xFFFF8A80),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isDark ? AppPallete.whiteout : AppPallete.dynamicBlack,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
                 ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
               ),
-              tabBorderRadius: 20,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              duration: const Duration(milliseconds: 300),
-              tabs: tabs
-                  .map((tab) => GButton(icon: tab.icon, text: tab.text))
-                  .toList(),
+              child: IntrinsicWidth(
+                child: GNav(
+                  selectedIndex: selectedIndex,
+                  onTabChange: onTabChange,
+                  gap: 8,
+                  activeColor: isDark
+                      ? AppPallete.cascadingWhite
+                      : AppPallete.tricornBlack,
+                  color: isDark
+                      ? AppPallete.tricornBlack
+                      : AppPallete.cascadingWhite,
+                  tabBackgroundGradient: LinearGradient(
+                    colors: isDark
+                        ? [AppPallete.dynamicBlack, AppPallete.dynamicBlack]
+                        : [
+                            AppPallete.cascadingWhite,
+                            AppPallete.cascadingWhite,
+                          ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  tabBorderRadius: 20,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
+                  duration: const Duration(milliseconds: 300),
+                  tabs: tabs
+                      .map((tab) => GButton(icon: tab.icon, text: tab.text))
+                      .toList(),
+                ),
+              ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFFF3D3D),
+                    Color(0xFFFF6060),
+                    Color(0xFFFF8A80),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () {},
+                  child: const Icon(Icons.add, color: Colors.black),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
