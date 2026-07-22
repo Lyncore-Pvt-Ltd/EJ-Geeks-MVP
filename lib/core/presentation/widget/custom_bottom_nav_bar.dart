@@ -1,4 +1,5 @@
 import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
@@ -78,7 +79,7 @@ class CustomBottomNavBar extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 10),
             Container(
               width: 56,
               height: 56,
@@ -107,7 +108,7 @@ class CustomBottomNavBar extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  onTap: () {},
+                  onTap: () => InvoiceBottomSheet.show(context),
                   child: const Icon(Icons.add, color: Colors.black),
                 ),
               ),
