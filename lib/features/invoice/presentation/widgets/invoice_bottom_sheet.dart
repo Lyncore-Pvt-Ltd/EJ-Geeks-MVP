@@ -3,9 +3,14 @@ import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/inspection_tab.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_tab.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class InvoiceBottomSheet extends StatelessWidget {
-  const InvoiceBottomSheet({super.key});
+  InvoiceBottomSheet({super.key});
+
+  /// Ties this invoice-creation session's inspection, images and (later) PDF
+  /// together under one id, until a real invoice-id system exists.
+  final String invoiceId = const Uuid().v4();
 
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
@@ -15,7 +20,7 @@ class InvoiceBottomSheet extends StatelessWidget {
       barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.9,
-        child: const InvoiceBottomSheet(),
+        child: InvoiceBottomSheet(),
       ),
     );
   }
@@ -103,8 +108,13 @@ class InvoiceBottomSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              const Expanded(
-                child: TabBarView(children: [InspectionTab(), InvoiceTab()]),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    InspectionTab(invoiceId: invoiceId),
+                    const InvoiceTab(),
+                  ],
+                ),
               ),
             ],
           ),

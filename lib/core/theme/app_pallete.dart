@@ -11,6 +11,11 @@ class AppPallete {
   static const Color greyColor = Colors.grey;
   static const Color errorColor = Colors.redAccent;
   static const Color transparentColor = Colors.transparent;
+  static const List<Color> selectionGradient = [
+    Color(0xFFFF3D3D),
+    Color(0xFFFF6060),
+    Color(0xFFFF8A80),
+  ];
   //dark theme colors
   static const Color backgroundColor = Color.fromRGBO(24, 24, 32, 1);
   static const Color cascadingWhite = Color(0xFFf6f6f6);
