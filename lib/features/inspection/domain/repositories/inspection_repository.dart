@@ -7,4 +7,8 @@ abstract class InspectionRepository {
   Future<Either<Failure, void>> saveInspection(InspectionRecord record);
 
   Future<Either<Failure, InspectionRecord?>> getInspection(String id);
+
+  Future<Either<Failure, InspectionRecord?>> getInspectionByInvoiceId(
+    String invoiceId,
+  );
 }

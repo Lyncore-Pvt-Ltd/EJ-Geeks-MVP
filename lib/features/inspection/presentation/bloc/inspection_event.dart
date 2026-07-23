@@ -57,6 +57,10 @@ class ImageRemoved extends InspectionEvent {
   List<Object?> get props => [path];
 }
 
+class InspectionLoadRequested extends InspectionEvent {
+  const InspectionLoadRequested();
+}
+
 class InspectionSaved extends InspectionEvent {
   final VehicleDetails vehicleDetails;
 

@@ -31,4 +31,18 @@ class InspectionRepositoryImpl implements InspectionRepository {
       return Left(CacheFailure(message: e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, InspectionRecord?>> getInspectionByInvoiceId(
+    String invoiceId,
+  ) async {
+    try {
+      final record = await _localDataSource.getInspectionByInvoiceId(
+        invoiceId,
+      );
+      return Right(record);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    }
+  }
 }

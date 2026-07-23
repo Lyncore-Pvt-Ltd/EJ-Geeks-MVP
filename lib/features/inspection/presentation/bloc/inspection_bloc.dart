@@ -1,38 +1,47 @@
-import 'dart:io';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../../../core/error/exceptions.dart';
-import '../../../../core/storage/app_storage_paths.dart';
 import '../../data/constants/inspection_checklist_data.dart';
 import '../../domain/entities/inspection_checklist_item.dart';
 import '../../domain/entities/inspection_record.dart';
 import '../../domain/entities/inspection_section.dart';
-import '../../domain/repositories/inspection_repository.dart';
+import '../../domain/usecases/get_inspection_by_invoice_id.dart';
+import '../../domain/usecases/pick_inspection_image.dart';
+import '../../domain/usecases/save_inspection.dart';
 import 'inspection_event.dart';
 import 'inspection_state.dart';
 
 class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
   final String invoiceId;
-  final InspectionRepository _repository;
-  final ImagePicker _imagePicker;
-  final String id;
+  final SaveInspection _saveInspection;
+  final GetInspectionByInvoiceId _getInspectionByInvoiceId;
+  final PickInspectionImage _pickInspectionImage;
+
+  // Id of the persisted `inspections` row for this invoice. Starts as a
+  // freshly generated id (new inspection); if `InspectionLoadRequested`
+  // finds an existing row for this invoiceId, it's overwritten with that
+  // row's id so subsequent saves overwrite it instead of inserting a
+  // duplicate. It's a persistence-layer detail with no UI purpose, so it
+  // lives on the bloc rather than in `InspectionState`.
+  String _recordId;
 
   InspectionBloc({
     required this.invoiceId,
-    required InspectionRepository repository,
-    ImagePicker? imagePicker,
-  }) : _repository = repository,
-       _imagePicker = imagePicker ?? ImagePicker(),
-       id = const Uuid().v4(),
+    required SaveInspection saveInspection,
+    required GetInspectionByInvoiceId getInspectionByInvoiceId,
+    required PickInspectionImage pickInspectionImage,
+  }) : _saveInspection = saveInspection,
+       _getInspectionByInvoiceId = getInspectionByInvoiceId,
+       _pickInspectionImage = pickInspectionImage,
+       _recordId = const Uuid().v4(),
        super(InspectionState(sections: _buildInitialSections())) {
     on<RatingChanged>(_onRatingChanged);
     on<SectionCommentChanged>(_onSectionCommentChanged);
     on<ImagePicked>(_onImagePicked);
     on<ImageRemoved>(_onImageRemoved);
     on<InspectionSaved>(_onInspectionSaved);
+    on<InspectionLoadRequested>(_onInspectionLoadRequested);
+    add(const InspectionLoadRequested());
   }
 
   static List<InspectionSection> _buildInitialSections() {
@@ -78,37 +87,28 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
     Emitter<InspectionState> emit,
   ) async {
     emit(state.copyWith(isPickingImage: true, errorMessage: null));
-    try {
-      final picked = await _imagePicker.pickImage(
-        source: event.source,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 70,
-      );
-      if (picked == null) {
-        emit(state.copyWith(isPickingImage: false));
-        return;
-      }
 
-      final destinationPath = await AppStoragePaths.newImagePath(invoiceId);
-      await File(picked.path).copy(destinationPath);
+    final result = await _pickInspectionImage(
+      PickInspectionImageParams(source: event.source, invoiceId: invoiceId),
+    );
 
-      emit(
-        state.copyWith(
-          imagePaths: [...state.imagePaths, destinationPath],
-          isPickingImage: false,
-        ),
-      );
-    } on StorageException catch (e) {
-      emit(state.copyWith(isPickingImage: false, errorMessage: e.message));
-    } catch (e) {
-      emit(
-        state.copyWith(
-          isPickingImage: false,
-          errorMessage: 'Failed to add photo: $e',
-        ),
-      );
-    }
+    result.fold(
+      (failure) => emit(
+        state.copyWith(isPickingImage: false, errorMessage: failure.message),
+      ),
+      (path) {
+        if (path == null) {
+          emit(state.copyWith(isPickingImage: false));
+          return;
+        }
+        emit(
+          state.copyWith(
+            imagePaths: [...state.imagePaths, path],
+            isPickingImage: false,
+          ),
+        );
+      },
+    );
   }
 
   void _onImageRemoved(ImageRemoved event, Emitter<InspectionState> emit) {
@@ -126,7 +126,7 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
     emit(state.copyWith(isSaving: true, errorMessage: null));
 
     final record = InspectionRecord(
-      id: id,
+      id: _recordId,
       invoiceId: invoiceId,
       vehicleDetails: event.vehicleDetails,
       sections: state.sections,
@@ -134,15 +134,72 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
       createdAt: DateTime.now(),
     );
 
-    final result = await _repository.saveInspection(record);
+    final result = await _saveInspection(record);
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(isSaving: false, errorMessage: failure.message),
-      ),
+      (failure) =>
+          emit(state.copyWith(isSaving: false, errorMessage: failure.message)),
       (_) => emit(
         state.copyWith(isSaving: false, saveSuccess: true, errorMessage: null),
       ),
     );
+  }
+
+  Future<void> _onInspectionLoadRequested(
+    InspectionLoadRequested event,
+    Emitter<InspectionState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+
+    final result = await _getInspectionByInvoiceId(invoiceId);
+
+    result.fold(
+      (failure) =>
+          emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
+      (record) {
+        if (record == null) {
+          emit(state.copyWith(isLoading: false));
+          return;
+        }
+        _recordId = record.id;
+        emit(
+          state.copyWith(
+            isLoading: false,
+            vehicleDetails: record.vehicleDetails,
+            imagePaths: record.imagePaths,
+            sections: _mergeLoadedSections(state.sections, record.sections),
+          ),
+        );
+      },
+    );
+  }
+
+  static List<InspectionSection> _mergeLoadedSections(
+    List<InspectionSection> canonical,
+    List<InspectionSection> loaded,
+  ) {
+    final loadedByName = {for (final s in loaded) s.name: s};
+    return canonical.map((canonicalSection) {
+      final loadedSection = loadedByName[canonicalSection.name];
+      if (loadedSection == null) return canonicalSection;
+
+      final loadedItemsByLabel = {
+        for (final i in loadedSection.items) i.label: i,
+      };
+      final mergedItems = canonicalSection.items.map((canonicalItem) {
+        final loadedItem = loadedItemsByLabel[canonicalItem.label];
+        if (loadedItem == null) return canonicalItem;
+        return InspectionChecklistItem(
+          label: canonicalItem.label,
+          rating: loadedItem.rating,
+        );
+      }).toList();
+
+      return InspectionSection(
+        name: canonicalSection.name,
+        items: mergedItems,
+        comment: loadedSection.comment,
+      );
+    }).toList();
   }
 }

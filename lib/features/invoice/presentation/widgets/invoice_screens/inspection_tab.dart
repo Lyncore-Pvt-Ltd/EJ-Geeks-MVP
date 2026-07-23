@@ -58,21 +58,40 @@ class _InspectionTabState extends State<InspectionTab> {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<InspectionBloc>(param1: widget.invoiceId),
-      child: BlocListener<InspectionBloc, InspectionState>(
-        listenWhen: (previous, current) =>
-            previous.errorMessage != current.errorMessage ||
-            previous.saveSuccess != current.saveSuccess,
-        listener: (context, state) {
-          if (state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!)),
-            );
-          } else if (state.saveSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Inspection saved')),
-            );
-          }
-        },
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<InspectionBloc, InspectionState>(
+            listenWhen: (previous, current) =>
+                previous.errorMessage != current.errorMessage ||
+                previous.saveSuccess != current.saveSuccess,
+            listener: (context, state) {
+              if (state.errorMessage != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.errorMessage!)),
+                );
+              } else if (state.saveSuccess) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Inspection saved')),
+                );
+              }
+            },
+          ),
+          BlocListener<InspectionBloc, InspectionState>(
+            listenWhen: (previous, current) =>
+                previous.vehicleDetails == null &&
+                current.vehicleDetails != null,
+            listener: (context, state) {
+              final vehicleDetails = state.vehicleDetails!;
+              _makeController.text = vehicleDetails.make;
+              _modelController.text = vehicleDetails.model;
+              _regoController.text = vehicleDetails.rego;
+              _yearController.text = vehicleDetails.year;
+              _odometerController.text = vehicleDetails.odometer;
+              _vinController.text = vehicleDetails.vin;
+              _engineNoController.text = vehicleDetails.engineNo;
+            },
+          ),
+        ],
         child: Builder(
           builder: (context) {
             final sectionCount = context.select<InspectionBloc, int>(
@@ -128,11 +147,12 @@ class _InspectionTabState extends State<InspectionTab> {
                   sliver: SliverToBoxAdapter(
                     child: BlocBuilder<InspectionBloc, InspectionState>(
                       buildWhen: (previous, current) =>
-                          previous.isSaving != current.isSaving,
+                          previous.isSaving != current.isSaving ||
+                          previous.isLoading != current.isLoading,
                       builder: (context, state) {
                         return InspectionGradientButton(
                           label: 'Save Inspection',
-                          isLoading: state.isSaving,
+                          isLoading: state.isSaving || state.isLoading,
                           onTap: () => _save(context),
                         );
                       },

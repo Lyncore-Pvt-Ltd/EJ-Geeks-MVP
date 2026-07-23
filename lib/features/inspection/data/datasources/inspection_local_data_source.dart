@@ -154,4 +154,21 @@ class InspectionLocalDataSource {
       throw CacheException(message: 'Failed to load inspection: $e');
     }
   }
+
+  Future<InspectionRecord?> getInspectionByInvoiceId(String invoiceId) async {
+    try {
+      final db = await _appDatabase.database;
+      final inspectionRows = await db.query(
+        'inspections',
+        where: 'invoice_id = ?',
+        whereArgs: [invoiceId],
+        orderBy: 'created_at DESC',
+        limit: 1,
+      );
+      if (inspectionRows.isEmpty) return null;
+      return getInspection(inspectionRows.first['id'] as String);
+    } catch (e) {
+      throw CacheException(message: 'Failed to load inspection: $e');
+    }
+  }
 }
