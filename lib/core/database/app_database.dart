@@ -6,7 +6,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'ej_geek.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   Database? _database;
 
@@ -16,7 +16,27 @@ class AppDatabase {
 
   Future<Database> _open() async {
     final dbPath = p.join(await getDatabasesPath(), _dbName);
-    return openDatabase(dbPath, version: _dbVersion, onCreate: _onCreate);
+    return openDatabase(
+      dbPath,
+      version: _dbVersion,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE inspections ADD COLUMN owner_name TEXT');
+      await db.execute('''
+        CREATE TABLE invoices (
+          id TEXT PRIMARY KEY,
+          service_status TEXT NOT NULL,
+          payment_status TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL
+        )
+      ''');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -31,7 +51,18 @@ class AppDatabase {
         odometer TEXT,
         vin TEXT,
         engine_no TEXT,
+        owner_name TEXT,
         created_at TEXT NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE invoices (
+        id TEXT PRIMARY KEY,
+        service_status TEXT NOT NULL,
+        payment_status TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
       )
     ''');
 

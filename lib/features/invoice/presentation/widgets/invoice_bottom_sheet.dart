@@ -6,13 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 class InvoiceBottomSheet extends StatelessWidget {
-  InvoiceBottomSheet({super.key});
+  InvoiceBottomSheet({super.key, String? invoiceId})
+    : invoiceId = invoiceId ?? const Uuid().v4();
 
-  /// Ties this invoice-creation session's inspection, images and (later) PDF
-  /// together under one id, until a real invoice-id system exists.
-  final String invoiceId = const Uuid().v4();
+  /// Ties this invoice's inspection, images and (later) PDF together under
+  /// one id. Reused when reopening an existing invoice's card; otherwise a
+  /// fresh id is minted for a brand new invoice.
+  final String invoiceId;
 
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {String? invoiceId}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -20,7 +22,7 @@ class InvoiceBottomSheet extends StatelessWidget {
       barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.9,
-        child: InvoiceBottomSheet(),
+        child: InvoiceBottomSheet(invoiceId: invoiceId),
       ),
     );
   }

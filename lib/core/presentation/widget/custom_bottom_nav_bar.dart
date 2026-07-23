@@ -1,6 +1,9 @@
 import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
+import 'package:ej_geek/features/invoice/presentation/bloc/invoice_event.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_bottom_sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 
 class NavBarTab {
@@ -108,7 +111,11 @@ class CustomBottomNavBar extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   customBorder: const CircleBorder(),
-                  onTap: () => InvoiceBottomSheet.show(context),
+                  onTap: () async {
+                    final invoiceBloc = context.read<InvoiceBloc>();
+                    await InvoiceBottomSheet.show(context);
+                    invoiceBloc.add(const InvoiceListRequested());
+                  },
                   child: const Icon(Icons.add, color: Colors.black),
                 ),
               ),

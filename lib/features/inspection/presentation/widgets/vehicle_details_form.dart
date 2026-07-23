@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 class VehicleDetailsForm extends StatelessWidget {
   const VehicleDetailsForm({
     super.key,
+    required this.ownerNameController,
     required this.makeController,
     required this.modelController,
     required this.regoController,
@@ -15,6 +16,7 @@ class VehicleDetailsForm extends StatelessWidget {
     required this.engineNoController,
   });
 
+  final TextEditingController ownerNameController;
   final TextEditingController makeController;
   final TextEditingController modelController;
   final TextEditingController regoController;
@@ -50,6 +52,8 @@ class VehicleDetailsForm extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
+          _field('Owner Name', ownerNameController),
+          const SizedBox(height: 10),
           _field('Make', makeController),
           const SizedBox(height: 10),
           _field('Model', modelController),

@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../invoice/domain/usecases/upsert_invoice_draft.dart';
 import '../../data/constants/inspection_checklist_data.dart';
 import '../../domain/entities/inspection_checklist_item.dart';
 import '../../domain/entities/inspection_record.dart';
@@ -16,6 +17,7 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
   final SaveInspection _saveInspection;
   final GetInspectionByInvoiceId _getInspectionByInvoiceId;
   final PickInspectionImage _pickInspectionImage;
+  final UpsertInvoiceDraft _upsertInvoiceDraft;
 
   // Id of the persisted `inspections` row for this invoice. Starts as a
   // freshly generated id (new inspection); if `InspectionLoadRequested`
@@ -30,9 +32,11 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
     required SaveInspection saveInspection,
     required GetInspectionByInvoiceId getInspectionByInvoiceId,
     required PickInspectionImage pickInspectionImage,
+    required UpsertInvoiceDraft upsertInvoiceDraft,
   }) : _saveInspection = saveInspection,
        _getInspectionByInvoiceId = getInspectionByInvoiceId,
        _pickInspectionImage = pickInspectionImage,
+       _upsertInvoiceDraft = upsertInvoiceDraft,
        _recordId = const Uuid().v4(),
        super(InspectionState(sections: _buildInitialSections())) {
     on<RatingChanged>(_onRatingChanged);
@@ -136,12 +140,21 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
 
     final result = await _saveInspection(record);
 
-    result.fold(
-      (failure) =>
-          emit(state.copyWith(isSaving: false, errorMessage: failure.message)),
-      (_) => emit(
-        state.copyWith(isSaving: false, saveSuccess: true, errorMessage: null),
+    await result.fold(
+      (failure) async => emit(
+        state.copyWith(isSaving: false, errorMessage: failure.message),
       ),
+      (_) async {
+        final draftResult = await _upsertInvoiceDraft(invoiceId);
+        final draftError = draftResult.fold((f) => f.message, (_) => null);
+        emit(
+          state.copyWith(
+            isSaving: false,
+            saveSuccess: true,
+            errorMessage: draftError,
+          ),
+        );
+      },
     );
   }
 

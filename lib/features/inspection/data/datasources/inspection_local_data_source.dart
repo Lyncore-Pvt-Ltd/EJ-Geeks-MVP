@@ -28,6 +28,7 @@ class InspectionLocalDataSource {
           'odometer': record.vehicleDetails.odometer,
           'vin': record.vehicleDetails.vin,
           'engine_no': record.vehicleDetails.engineNo,
+          'owner_name': record.vehicleDetails.ownerName,
           'created_at': record.createdAt.toIso8601String(),
         }, conflictAlgorithm: ConflictAlgorithm.replace);
 
@@ -145,6 +146,7 @@ class InspectionLocalDataSource {
           odometer: row['odometer'] as String? ?? '',
           vin: row['vin'] as String? ?? '',
           engineNo: row['engine_no'] as String? ?? '',
+          ownerName: row['owner_name'] as String? ?? '',
         ),
         sections: sections,
         imagePaths: imageRows.map((r) => r['file_path'] as String).toList(),
