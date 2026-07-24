@@ -114,7 +114,7 @@ class InvoiceBottomSheet extends StatelessWidget {
                 child: TabBarView(
                   children: [
                     InspectionTab(invoiceId: invoiceId),
-                    const InvoiceTab(),
+                    InvoiceTab(invoiceId: invoiceId),
                   ],
                 ),
               ),

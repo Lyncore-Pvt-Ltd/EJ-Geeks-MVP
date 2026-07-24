@@ -22,3 +22,10 @@ String formatInvoiceDateTime(DateTime dateTime) {
   final minute = dateTime.minute.toString().padLeft(2, '0');
   return '$day $month ${dateTime.year}, $hour:$minute';
 }
+
+/// Formats a [DateTime] as e.g. `23 Jul 2026` (date only, no time).
+String formatInvoiceDate(DateTime dateTime) {
+  final day = dateTime.day.toString().padLeft(2, '0');
+  final month = _kMonthNames[dateTime.month - 1];
+  return '$day $month ${dateTime.year}';
+}

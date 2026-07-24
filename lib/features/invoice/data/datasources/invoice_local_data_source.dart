@@ -5,6 +5,9 @@ import 'package:path/path.dart' as p;
 import '../../../../core/database/app_database.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/storage/app_storage_paths.dart';
+import '../../domain/entities/invoice_details.dart';
+import '../../domain/entities/invoice_details_bundle.dart';
+import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_summary.dart';
 import '../../domain/entities/payment_status.dart';
 import '../../domain/entities/service_status.dart';
@@ -100,6 +103,95 @@ class InvoiceLocalDataSource {
     }
   }
 
+  Future<void> saveInvoiceDetails(
+    InvoiceDetails details,
+    List<InvoiceLineItem> items,
+  ) async {
+    try {
+      final db = await _appDatabase.database;
+      await db.transaction((txn) async {
+        await txn.update(
+          'invoices',
+          {
+            'issue_date': details.issueDate?.toIso8601String(),
+            'due_date': details.dueDate?.toIso8601String(),
+            'payment_terms': details.paymentTerms,
+            'notes': details.notes,
+            'vat_percent': details.vatPercent,
+            'discount_percent': details.discountPercent,
+            'updated_at': DateTime.now().toIso8601String(),
+          },
+          where: 'id = ?',
+          whereArgs: [details.invoiceId],
+        );
+
+        await txn.delete(
+          'invoice_items',
+          where: 'invoice_id = ?',
+          whereArgs: [details.invoiceId],
+        );
+        for (final item in items) {
+          await txn.insert('invoice_items', {
+            'id': item.id,
+            'invoice_id': details.invoiceId,
+            'name': item.name,
+            'quantity': item.quantity,
+            'unit_price': item.unitPrice,
+          });
+        }
+      });
+    } catch (e) {
+      throw CacheException(message: 'Failed to save invoice details: $e');
+    }
+  }
+
+  Future<InvoiceDetailsBundle> getInvoiceDetailsByInvoiceId(
+    String invoiceId,
+  ) async {
+    try {
+      final db = await _appDatabase.database;
+      final rows = await db.query(
+        'invoices',
+        where: 'id = ?',
+        whereArgs: [invoiceId],
+      );
+      final itemRows = await db.query(
+        'invoice_items',
+        where: 'invoice_id = ?',
+        whereArgs: [invoiceId],
+      );
+      final row = rows.isEmpty ? null : rows.first;
+
+      final issueDateRaw = row?['issue_date'] as String?;
+      final dueDateRaw = row?['due_date'] as String?;
+
+      final details = InvoiceDetails(
+        invoiceId: invoiceId,
+        issueDate: issueDateRaw != null ? DateTime.parse(issueDateRaw) : null,
+        dueDate: dueDateRaw != null ? DateTime.parse(dueDateRaw) : null,
+        paymentTerms: row?['payment_terms'] as String? ?? '',
+        notes: row?['notes'] as String? ?? '',
+        vatPercent: (row?['vat_percent'] as num?)?.toDouble() ?? 0,
+        discountPercent: (row?['discount_percent'] as num?)?.toDouble() ?? 0,
+      );
+
+      final items = itemRows
+          .map(
+            (r) => InvoiceLineItem(
+              id: r['id'] as String,
+              name: r['name'] as String,
+              quantity: (r['quantity'] as num).toDouble(),
+              unitPrice: (r['unit_price'] as num).toDouble(),
+            ),
+          )
+          .toList();
+
+      return InvoiceDetailsBundle(details: details, items: items);
+    } catch (e) {
+      throw CacheException(message: 'Failed to load invoice details: $e');
+    }
+  }
+
   Future<void> deleteInvoice(String invoiceId) async {
     try {
       final db = await _appDatabase.database;
@@ -131,6 +223,11 @@ class InvoiceLocalDataSource {
 
         await txn.delete(
           'inspections',
+          where: 'invoice_id = ?',
+          whereArgs: [invoiceId],
+        );
+        await txn.delete(
+          'invoice_items',
           where: 'invoice_id = ?',
           whereArgs: [invoiceId],
         );
