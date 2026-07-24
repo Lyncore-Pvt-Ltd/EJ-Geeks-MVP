@@ -23,7 +23,7 @@ class RevenueChartCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 20, 12),
       decoration: BoxDecoration(
         color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),

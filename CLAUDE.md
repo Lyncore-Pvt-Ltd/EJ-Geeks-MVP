@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-"E&J Geek Invoice" — a Flutter invoicing/accounting app (`name: ej_geek` in `pubspec.yaml`). Very early stage: currently only a splash screen and a placeholder home screen exist; no auth, no data layer, no state management library is wired up yet.
+"E&J Geek Invoice" — a Flutter invoicing/accounting app (`name: ej_geek` in `pubspec.yaml`). Early stage: splash screen, a dashboard home screen, and an invoice-creation bottom sheet (Inspection / Invoice tabs) exist. The Inspection tab is the first fully data-backed feature — vehicle details + a category checklist, persisted locally via SQLite — and is the reference implementation for how new features should be built (see "Inspection feature" below). No auth or remote backend exists yet.
 
 ## Commands
 
@@ -19,10 +19,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 The codebase follows a clean-architecture, feature-first layout under `lib/`:
 
 - `lib/core/` — app-shell / cross-cutting UI that isn't tied to one feature (splash screen, placeholder home screen). Structured as `core/presentation/pages/` for screens and `core/presentation/widgets/<group>/` for the small stateless widgets that compose them (e.g. `core/presentation/widgets/splash/` holds the individual animated pieces — icon, title, subtitle, dots, progress bar — that `core/presentation/pages/splash_screen.dart` assembles).
-- `lib/features/<feature>/` — feature-specific code, intended to split into `data/`, `domain/`, `presentation/` layers per feature as they're built out (e.g. an eventual `features/auth/` for login). Nothing beyond the folder convention exists here yet.
+- `lib/features/<feature>/` — feature-specific code, split into `data/`, `domain/`, `presentation/` layers (see `features/inspection/` for the reference layout: `domain/entities`, `domain/repositories`, `domain/usecases`, `data/datasources`, `data/repositories`, `data/constants`, `presentation/bloc`, `presentation/widgets`).
+- `lib/core/database/`, `lib/core/storage/`, `lib/core/error/`, `lib/core/di/` — cross-cutting infrastructure shared across features (SQLite access, on-device file paths, the exceptions/failures convention, and the `get_it` service locator — all detailed below).
 
 Splash screen animation pattern (`lib/core/presentation/pages/splash_screen.dart`): one `StatefulWidget` with `TickerProviderStateMixin` owns a separate `AnimationController` per animated element (icon, title, subtitle, dots, progress bar) and staggers them via sequential `await Future.delayed(...)` calls before each `.forward()`. Each visual piece is a `StatelessWidget` that only receives `Animation` objects as constructor params (no controller ownership), so they stay independently reusable/testable. Follow this split — controller/timing logic in the page, presentation-only logic in the widget — when adding new animated screens.
 
 ### Native splash screen
 
 `flutter_native_splash` is configured via the `flutter_native_splash:` block at the bottom of `pubspec.yaml` (currently solid black, no image). This generates the native Android/iOS/web launch-screen files (`android/app/src/main/res/**/launch_background.xml`, `**/styles.xml`, `ios/Runner/Base.lproj/LaunchScreen.storyboard`, `ios/Runner/Assets.xcassets/LaunchImage.imageset/*`, `web/index.html`, etc.) — these are generated output, not hand-maintained. Change the `pubspec.yaml` config and re-run `dart run flutter_native_splash:create` instead of editing them directly.
+
+### State management
+
+Two approaches coexist by design, scoped to where they were introduced:
+- `provider` / `ChangeNotifier` — the original, app-wide default (`core/theme/theme_controller.dart`, `features/dashboard/presentation/providers/dashboard_provider.dart`). Use this for simple, single-owner UI state.
+- `flutter_bloc` (full `Bloc<Event, State>`, not `Cubit`) — used in `features/inspection/presentation/bloc/` (`InspectionBloc`, `InspectionEvent`, `InspectionState`). Prefer this pattern for new features with multiple distinct user actions (ticking a rating, changing a comment, picking an image, saving) that benefit from being named events rather than ad-hoc method calls.
+
+### Dependency injection
+
+`lib/core/di/service_locator.dart` uses `get_it`. `setupServiceLocator()` is called once in `main.dart` before `runApp` and registers each feature's data sources/repositories as lazy singletons, plus feature Blocs as parameterized factories (e.g. `sl.registerFactoryParam<InspectionBloc, String, void>(...)` keyed by `invoiceId`). Widgets pull dependencies via `sl<T>()` (or `sl<T>(param1: ...)`) instead of constructing repositories/data sources directly — follow this pattern when wiring up a new feature's Bloc.
+
+### Domain usecases
+
+`lib/core/usecases/usecase.dart` defines a shared `abstract class UseCase<Output, Params> { Future<Either<Failure, Output>> call(Params params); }` — cross-cutting infra, same tier as `core/error`/`core/database`/`core/storage`. Each feature's `domain/usecases/` holds small callable classes (a single public `call(params)` method) that wrap exactly one repository method — e.g. `features/inspection/domain/usecases/save_inspection.dart`'s `SaveInspection`, `get_inspection_by_invoice_id.dart`'s `GetInspectionByInvoiceId`, `pick_inspection_image.dart`'s `PickInspectionImage`. A usecase needing more than one argument takes a dedicated `Params` class (`Equatable`, see `PickInspectionImageParams`) rather than positional/named params on `call`. Blocs depend on usecases, not repositories directly, and usecases are registered in `service_locator.dart` as `registerLazySingleton` (stateless wrappers around a singleton repository). Only add a usecase for a repository method that's actually called — don't wrap unused repository surface just to have a wrapper.
+
+### Error handling convention
+
+`lib/core/error/exceptions.dart` and `lib/core/error/failures.dart` define the app-wide contract: data sources catch low-level errors and throw a typed `Exception` (`CacheException`, `StorageException`, plus `ServerException`/`NetworkException`/`AuthException`/`UnauthorizedException` reserved for future networked features); repositories catch those and return `Either<Failure, T>` (via `dartz`) with the matching typed `Failure`. Usecases pass the repository's `Either` straight through. Presentation code (a Bloc) folds the `Either` and surfaces `failure.message` to the UI — never let a raw `Exception` reach a widget.
+
+### Local persistence (SQLite + on-device files)
+
+- `lib/core/database/app_database.dart` — a singleton (`AppDatabase.instance`) wrapping `sqflite`. Add new tables in its `_onCreate`; bump `_dbVersion` and add an `onUpgrade` migration if the schema changes after release.
+- `lib/core/storage/app_storage_paths.dart` — builds on-device file paths for images/PDFs under a shared `EJ Geek Invoice` app folder (`images/<invoiceId>/...`, `pdf/<invoiceId>/...`), keyed by invoice id and named with a date-time stamp. Uses `path_provider`'s external storage directory on Android (no `MANAGE_EXTERNAL_STORAGE` needed) and the documents directory on iOS. Use this helper rather than constructing file paths inline.
+- Every invoice has an id (currently generated client-side via `uuid` in `InvoiceBottomSheet` until a real invoice/backend id system exists) — it's the join key between an invoice's DB rows and its on-disk images/PDFs. Pass it down explicitly rather than re-generating a new id per feature.
+
+### Inspection feature (`lib/features/inspection/`)
+
+Reference implementation for the patterns above: vehicle details + a 5-section pass/fail checklist (Interior, Exterior, Engine Bay, Tyres/Wheels & Brakes, Road Test — labels sourced from `data/constants/inspection_checklist_data.dart`), each item rated Good/Fair/Repair/N/A/N/C, plus a photo picker (camera or gallery, downscaled via `image_picker`'s `imageQuality`/`maxWidth`/`maxHeight` rather than a separate compression package) and a per-section comment.
+
+`InspectionBloc` talks only to usecases, never to a repository directly (see "Domain usecases" above): `SaveInspection` → `InspectionRepository` → `InspectionLocalDataSource` → `sqflite` for persisting a record; `GetInspectionByInvoiceId` → the same repository/data source for loading one back; `PickInspectionImage` → `InspectionImageRepository` → `InspectionImageDataSource` → `image_picker` + `AppStoragePaths` for capturing and storing a photo. The bloc auto-dispatches an `InspectionLoadRequested` event at construction so reopening the Inspection tab for an invoice that already has a saved record restores its vehicle details, checklist ratings/comments, and photos instead of starting blank; loaded checklist sections are merged onto the canonical section/item order from `data/constants/inspection_checklist_data.dart` (matched by name/label) rather than trusted as-is, since the UI indexes `InspectionState.sections` positionally. The bloc keeps the persisted record's id in a private mutable field (not part of `InspectionState`, since it's a persistence detail with no UI purpose) so a save after a successful load overwrites the existing row instead of inserting a duplicate. PDF generation from a saved inspection is not implemented yet (`AppStoragePaths.newPdfPath` exists in preparation for it).
+
+When wiring a feature's widget tree into a scrollable container, prefer lazy building (`ListView.builder`/`CustomScrollView` + `SliverList.builder`) over an eager `ListView(children: [...])` once the tree has more than a handful of non-trivial children — building everything up front inside a modal (e.g. `InvoiceBottomSheet`) causes visible jank on open. Scope `BlocBuilder`/`BlocSelector` rebuilds as narrowly as possible (e.g. per-list-item via `BlocSelector`) rather than rebuilding a whole section list on every keystroke.
