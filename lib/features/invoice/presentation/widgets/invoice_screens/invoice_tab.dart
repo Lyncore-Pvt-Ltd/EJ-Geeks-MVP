@@ -124,41 +124,43 @@ class _InvoiceTabState extends State<InvoiceTab> {
                         Row(
                           children: [
                             Expanded(
-                              child: BlocSelector<
-                                InvoiceDetailsBloc,
-                                InvoiceDetailsState,
-                                DateTime?
-                              >(
-                                selector: (state) => state.issueDate,
-                                builder: (context, issueDate) {
-                                  return InvoiceDatePickerField(
-                                    label: 'Issue Date',
-                                    date: issueDate,
-                                    onPicked: (date) => context
-                                        .read<InvoiceDetailsBloc>()
-                                        .add(IssueDateChanged(date)),
-                                  );
-                                },
-                              ),
+                              child:
+                                  BlocSelector<
+                                    InvoiceDetailsBloc,
+                                    InvoiceDetailsState,
+                                    DateTime?
+                                  >(
+                                    selector: (state) => state.issueDate,
+                                    builder: (context, issueDate) {
+                                      return InvoiceDatePickerField(
+                                        label: 'Issue Date',
+                                        date: issueDate,
+                                        onPicked: (date) => context
+                                            .read<InvoiceDetailsBloc>()
+                                            .add(IssueDateChanged(date)),
+                                      );
+                                    },
+                                  ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: BlocSelector<
-                                InvoiceDetailsBloc,
-                                InvoiceDetailsState,
-                                DateTime?
-                              >(
-                                selector: (state) => state.dueDate,
-                                builder: (context, dueDate) {
-                                  return InvoiceDatePickerField(
-                                    label: 'Due Date',
-                                    date: dueDate,
-                                    onPicked: (date) => context
-                                        .read<InvoiceDetailsBloc>()
-                                        .add(DueDateChanged(date)),
-                                  );
-                                },
-                              ),
+                              child:
+                                  BlocSelector<
+                                    InvoiceDetailsBloc,
+                                    InvoiceDetailsState,
+                                    DateTime?
+                                  >(
+                                    selector: (state) => state.dueDate,
+                                    builder: (context, dueDate) {
+                                      return InvoiceDatePickerField(
+                                        label: 'Due Date',
+                                        date: dueDate,
+                                        onPicked: (date) => context
+                                            .read<InvoiceDetailsBloc>()
+                                            .add(DueDateChanged(date)),
+                                      );
+                                    },
+                                  ),
                             ),
                           ],
                         ),
@@ -302,11 +304,13 @@ class _RecipientCard extends StatelessWidget {
         ? AppPallete.cascadingWhite
         : AppPallete.tricornBlack;
     final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final borderColor = isDark
-        ? AppPallete.warmOnyx
-        : AppPallete.nebulousWhite;
+    final borderColor = isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite;
 
-    return BlocSelector<InvoiceDetailsBloc, InvoiceDetailsState, (String, String)>(
+    return BlocSelector<
+      InvoiceDetailsBloc,
+      InvoiceDetailsState,
+      (String, String)
+    >(
       selector: (state) => (state.ownerName, state.address),
       builder: (context, recipient) {
         final (ownerName, address) = recipient;
@@ -335,7 +339,10 @@ class _RecipientCard extends StatelessWidget {
               ),
               if (address.isNotEmpty) ...[
                 const SizedBox(height: 4),
-                Text(address, style: TextStyle(fontSize: 13, color: labelColor)),
+                Text(
+                  address,
+                  style: TextStyle(fontSize: 13, color: labelColor),
+                ),
               ],
             ],
           ),
@@ -395,14 +402,56 @@ class _ItemAddForm extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 10),
-        OutlinedButton(
-          onPressed: onAdd,
-          style: OutlinedButton.styleFrom(
-            minimumSize: const Size(double.infinity, 48),
-          ),
-          child: const Text('Add more items'),
-        ),
+        _AddMoreItemsButton(onTap: onAdd),
       ],
+    );
+  }
+}
+
+class _AddMoreItemsButton extends StatelessWidget {
+  const _AddMoreItemsButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: AppPallete.selectionGradient,
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      padding: const EdgeInsets.all(1.5),
+      child: Material(
+        color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
+        borderRadius: BorderRadius.circular(10.5),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10.5),
+          child: Center(
+            child: ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: AppPallete.selectionGradient,
+                begin: Alignment.bottomLeft,
+                end: Alignment.topRight,
+              ).createShader(bounds),
+              child: const Text(
+                'Add more items',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppPallete.whiteColor,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -480,9 +529,7 @@ class _TotalsSummary extends StatelessWidget {
         ? AppPallete.cascadingWhite
         : AppPallete.tricornBlack;
     final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final borderColor = isDark
-        ? AppPallete.warmOnyx
-        : AppPallete.nebulousWhite;
+    final borderColor = isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite;
 
     return BlocSelector<InvoiceDetailsBloc, InvoiceDetailsState, InvoiceTotals>(
       selector: (state) => state.totals,
