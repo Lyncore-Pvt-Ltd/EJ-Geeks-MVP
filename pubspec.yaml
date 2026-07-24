@@ -67,6 +67,9 @@ dev_dependencies:
   # the custom black splash screen instead of showing a default white flash.
   flutter_native_splash: ^2.4.3
 
+  # Generates per-platform app launcher icons from a single source image.
+  flutter_launcher_icons: ^0.14.4
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -107,6 +110,22 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+# Config for the flutter_launcher_icons package (app launcher icon).
+# Run `dart run flutter_launcher_icons` after editing this section.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icon/EJG.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icon/EJG.png"
+  windows:
+    generate: true
+  macos:
+    generate: true
 
 # Config for the flutter_native_splash package (native pre-engine splash).
 # Run `dart run flutter_native_splash:create` after editing this section.
