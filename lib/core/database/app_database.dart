@@ -6,7 +6,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'ej_geek.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
 
   Database? _database;
 
@@ -37,6 +37,27 @@ class AppDatabase {
         )
       ''');
     }
+
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE inspections ADD COLUMN address TEXT');
+      await db.execute('ALTER TABLE invoices ADD COLUMN issue_date TEXT');
+      await db.execute('ALTER TABLE invoices ADD COLUMN due_date TEXT');
+      await db.execute('ALTER TABLE invoices ADD COLUMN payment_terms TEXT');
+      await db.execute('ALTER TABLE invoices ADD COLUMN notes TEXT');
+      await db.execute('ALTER TABLE invoices ADD COLUMN vat_percent REAL');
+      await db.execute(
+        'ALTER TABLE invoices ADD COLUMN discount_percent REAL',
+      );
+      await db.execute('''
+        CREATE TABLE invoice_items (
+          id TEXT PRIMARY KEY,
+          invoice_id TEXT NOT NULL,
+          name TEXT NOT NULL,
+          quantity REAL NOT NULL,
+          unit_price REAL NOT NULL
+        )
+      ''');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -52,6 +73,7 @@ class AppDatabase {
         vin TEXT,
         engine_no TEXT,
         owner_name TEXT,
+        address TEXT,
         created_at TEXT NOT NULL
       )
     ''');
@@ -62,7 +84,23 @@ class AppDatabase {
         service_status TEXT NOT NULL,
         payment_status TEXT NOT NULL,
         created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
+        updated_at TEXT NOT NULL,
+        issue_date TEXT,
+        due_date TEXT,
+        payment_terms TEXT,
+        notes TEXT,
+        vat_percent REAL,
+        discount_percent REAL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE invoice_items (
+        id TEXT PRIMARY KEY,
+        invoice_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        quantity REAL NOT NULL,
+        unit_price REAL NOT NULL
       )
     ''');
 

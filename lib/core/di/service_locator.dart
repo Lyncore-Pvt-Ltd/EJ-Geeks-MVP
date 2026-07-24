@@ -15,9 +15,12 @@ import '../../features/invoice/data/repositories/invoice_repository_impl.dart';
 import '../../features/invoice/domain/repositories/invoice_repository.dart';
 import '../../features/invoice/domain/usecases/delete_invoice.dart';
 import '../../features/invoice/domain/usecases/get_all_invoices.dart';
+import '../../features/invoice/domain/usecases/get_invoice_details_by_invoice_id.dart';
+import '../../features/invoice/domain/usecases/save_invoice_details.dart';
 import '../../features/invoice/domain/usecases/update_invoice_service_status.dart';
 import '../../features/invoice/domain/usecases/upsert_invoice_draft.dart';
 import '../../features/invoice/presentation/bloc/invoice_bloc.dart';
+import '../../features/invoice/presentation/bloc/invoice_details_bloc.dart';
 import '../database/app_database.dart';
 
 final GetIt sl = GetIt.instance;
@@ -64,6 +67,12 @@ void setupServiceLocator() {
     () => UpdateInvoiceServiceStatus(sl()),
   );
   sl.registerLazySingleton<DeleteInvoice>(() => DeleteInvoice(sl()));
+  sl.registerLazySingleton<SaveInvoiceDetails>(
+    () => SaveInvoiceDetails(sl()),
+  );
+  sl.registerLazySingleton<GetInvoiceDetailsByInvoiceId>(
+    () => GetInvoiceDetailsByInvoiceId(sl()),
+  );
 
   sl.registerFactoryParam<InspectionBloc, String, void>(
     (invoiceId, _) => InspectionBloc(
@@ -80,6 +89,16 @@ void setupServiceLocator() {
       getAllInvoices: sl(),
       updateInvoiceServiceStatus: sl(),
       deleteInvoice: sl(),
+    ),
+  );
+
+  sl.registerFactoryParam<InvoiceDetailsBloc, String, void>(
+    (invoiceId, _) => InvoiceDetailsBloc(
+      invoiceId: invoiceId,
+      saveInvoiceDetails: sl(),
+      getInvoiceDetailsByInvoiceId: sl(),
+      getInspectionByInvoiceId: sl(),
+      upsertInvoiceDraft: sl(),
     ),
   );
 }

@@ -7,6 +7,7 @@ class VehicleDetailsForm extends StatelessWidget {
   const VehicleDetailsForm({
     super.key,
     required this.ownerNameController,
+    required this.addressController,
     required this.makeController,
     required this.modelController,
     required this.regoController,
@@ -17,6 +18,7 @@ class VehicleDetailsForm extends StatelessWidget {
   });
 
   final TextEditingController ownerNameController;
+  final TextEditingController addressController;
   final TextEditingController makeController;
   final TextEditingController modelController;
   final TextEditingController regoController;
@@ -53,6 +55,13 @@ class VehicleDetailsForm extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _field('Owner Name', ownerNameController),
+          const SizedBox(height: 10),
+          _field(
+            'Address',
+            addressController,
+            growable: true,
+            collapsedLines: 2,
+          ),
           const SizedBox(height: 10),
           _field('Make', makeController),
           const SizedBox(height: 10),
@@ -92,6 +101,8 @@ class VehicleDetailsForm extends StatelessWidget {
     TextInputType? keyboardType,
     TextCapitalization textCapitalization = TextCapitalization.none,
     List<TextInputFormatter>? inputFormatters,
+    bool growable = false,
+    int collapsedLines = 3,
   }) {
     return InspectionTextField(
       controller: controller,
@@ -99,6 +110,8 @@ class VehicleDetailsForm extends StatelessWidget {
       keyboardType: keyboardType,
       textCapitalization: textCapitalization,
       inputFormatters: inputFormatters,
+      growable: growable,
+      collapsedLines: collapsedLines,
     );
   }
 }

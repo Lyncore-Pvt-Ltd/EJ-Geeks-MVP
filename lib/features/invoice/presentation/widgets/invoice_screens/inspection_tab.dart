@@ -22,6 +22,7 @@ class InspectionTab extends StatefulWidget {
 
 class _InspectionTabState extends State<InspectionTab> {
   final _ownerNameController = TextEditingController();
+  final _addressController = TextEditingController();
   final _makeController = TextEditingController();
   final _modelController = TextEditingController();
   final _regoController = TextEditingController();
@@ -33,6 +34,7 @@ class _InspectionTabState extends State<InspectionTab> {
   @override
   void dispose() {
     _ownerNameController.dispose();
+    _addressController.dispose();
     _makeController.dispose();
     _modelController.dispose();
     _regoController.dispose();
@@ -46,6 +48,7 @@ class _InspectionTabState extends State<InspectionTab> {
   void _save(BuildContext context) {
     final vehicleDetails = VehicleDetails(
       ownerName: _ownerNameController.text,
+      address: _addressController.text,
       make: _makeController.text,
       model: _modelController.text,
       rego: _regoController.text,
@@ -89,6 +92,7 @@ class _InspectionTabState extends State<InspectionTab> {
             listener: (context, state) {
               final vehicleDetails = state.vehicleDetails!;
               _ownerNameController.text = vehicleDetails.ownerName;
+              _addressController.text = vehicleDetails.address;
               _makeController.text = vehicleDetails.make;
               _modelController.text = vehicleDetails.model;
               _regoController.text = vehicleDetails.rego;
@@ -114,6 +118,7 @@ class _InspectionTabState extends State<InspectionTab> {
                       children: [
                         VehicleDetailsForm(
                           ownerNameController: _ownerNameController,
+                          addressController: _addressController,
                           makeController: _makeController,
                           modelController: _modelController,
                           regoController: _regoController,

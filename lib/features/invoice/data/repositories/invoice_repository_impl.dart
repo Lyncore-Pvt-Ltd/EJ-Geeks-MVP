@@ -2,6 +2,9 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/invoice_details.dart';
+import '../../domain/entities/invoice_details_bundle.dart';
+import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_summary.dart';
 import '../../domain/entities/service_status.dart';
 import '../../domain/repositories/invoice_repository.dart';
@@ -51,6 +54,33 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     try {
       await _localDataSource.deleteInvoice(invoiceId);
       return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> saveInvoiceDetails(
+    InvoiceDetails details,
+    List<InvoiceLineItem> items,
+  ) async {
+    try {
+      await _localDataSource.saveInvoiceDetails(details, items);
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, InvoiceDetailsBundle>> getInvoiceDetailsByInvoiceId(
+    String invoiceId,
+  ) async {
+    try {
+      final bundle = await _localDataSource.getInvoiceDetailsByInvoiceId(
+        invoiceId,
+      );
+      return Right(bundle);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));
     }

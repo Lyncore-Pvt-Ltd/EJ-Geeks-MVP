@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 class VehicleDetails extends Equatable {
   final String ownerName;
+  final String address;
   final String make;
   final String model;
   final String rego;
@@ -12,6 +13,7 @@ class VehicleDetails extends Equatable {
 
   const VehicleDetails({
     this.ownerName = '',
+    this.address = '',
     this.make = '',
     this.model = '',
     this.rego = '',
@@ -24,6 +26,7 @@ class VehicleDetails extends Equatable {
   @override
   List<Object?> get props => [
     ownerName,
+    address,
     make,
     model,
     rego,
