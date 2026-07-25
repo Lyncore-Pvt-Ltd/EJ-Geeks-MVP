@@ -20,13 +20,14 @@ class AnimatedSplashIcon extends StatelessWidget {
           width: 100,
           height: 100,
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Colors.black,
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.receipt_long,
-            color: Colors.black,
-            size: 54,
+          child: ClipOval(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Image.asset('assets/icon/EJG.png', fit: BoxFit.contain),
+            ),
           ),
         ),
       ),
