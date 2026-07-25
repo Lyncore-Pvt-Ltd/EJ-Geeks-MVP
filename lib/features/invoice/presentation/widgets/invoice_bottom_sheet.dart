@@ -113,8 +113,8 @@ class InvoiceBottomSheet extends StatelessWidget {
               Expanded(
                 child: TabBarView(
                   children: [
-                    InspectionTab(invoiceId: invoiceId),
                     InvoiceTab(invoiceId: invoiceId),
+                    InspectionTab(invoiceId: invoiceId),
                   ],
                 ),
               ),
