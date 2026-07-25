@@ -34,6 +34,7 @@ class InvoiceDetailsBloc
     on<IssueDateChanged>(_onIssueDateChanged);
     on<DueDateChanged>(_onDueDateChanged);
     on<LineItemAdded>(_onLineItemAdded);
+    on<LineItemEdited>(_onLineItemEdited);
     on<LineItemRemoved>(_onLineItemRemoved);
     on<VatPercentChanged>(_onVatPercentChanged);
     on<DiscountPercentChanged>(_onDiscountPercentChanged);
@@ -115,6 +116,40 @@ class InvoiceDetailsBloc
         quantity: quantity,
         unitPrice: unitPrice,
       ),
+    ];
+
+    emit(
+      state.copyWith(
+        items: updatedItems,
+        totals: computeInvoiceTotals(
+          updatedItems,
+          state.vatPercent,
+          state.discountPercent,
+        ),
+      ),
+    );
+  }
+
+  void _onLineItemEdited(
+    LineItemEdited event,
+    Emitter<InvoiceDetailsState> emit,
+  ) {
+    final quantity = _parseOrZero(event.quantityRaw);
+    final unitPrice = _parseOrZero(event.unitPriceRaw);
+    if (event.name.trim().isEmpty || quantity <= 0 || unitPrice <= 0) {
+      return;
+    }
+
+    final updatedItems = [
+      for (final item in state.items)
+        if (item.id == event.itemId)
+          item.copyWith(
+            name: event.name.trim(),
+            quantity: quantity,
+            unitPrice: unitPrice,
+          )
+        else
+          item,
     ];
 
     emit(

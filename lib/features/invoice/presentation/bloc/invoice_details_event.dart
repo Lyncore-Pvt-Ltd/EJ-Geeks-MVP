@@ -44,6 +44,23 @@ class LineItemAdded extends InvoiceDetailsEvent {
   List<Object?> get props => [name, quantityRaw, unitPriceRaw];
 }
 
+class LineItemEdited extends InvoiceDetailsEvent {
+  final String itemId;
+  final String name;
+  final String quantityRaw;
+  final String unitPriceRaw;
+
+  const LineItemEdited({
+    required this.itemId,
+    required this.name,
+    required this.quantityRaw,
+    required this.unitPriceRaw,
+  });
+
+  @override
+  List<Object?> get props => [itemId, name, quantityRaw, unitPriceRaw];
+}
+
 class LineItemRemoved extends InvoiceDetailsEvent {
   final String itemId;
 

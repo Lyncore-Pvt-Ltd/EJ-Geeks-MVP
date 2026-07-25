@@ -20,6 +20,7 @@ class InspectionTextField extends StatefulWidget {
     this.growable = false,
     this.collapsedLines = 3,
     this.expandedLines = 6,
+    this.prefixText,
   }) : assert(
          controller == null || initialValue == null,
          'Pass either controller or initialValue, not both.',
@@ -35,6 +36,7 @@ class InspectionTextField extends StatefulWidget {
   final bool growable;
   final int collapsedLines;
   final int expandedLines;
+  final String? prefixText;
 
   @override
   State<InspectionTextField> createState() => _InspectionTextFieldState();
@@ -96,6 +98,7 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
           ),
           decoration: InputDecoration(
             labelText: widget.label,
+            prefixText: widget.prefixText,
             isDense: true,
             labelStyle: TextStyle(
               color: _isFocused

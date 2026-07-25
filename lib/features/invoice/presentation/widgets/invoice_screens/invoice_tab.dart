@@ -1,4 +1,5 @@
 import 'package:ej_geek/core/di/service_locator.dart';
+import 'package:ej_geek/core/presentation/widget/gradient_outline_button.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_gradient_button.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_text_field.dart';
@@ -7,9 +8,12 @@ import 'package:ej_geek/features/invoice/domain/entities/invoice_totals.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_event.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_state.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/edit_line_item_dialog.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_date_picker_field.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_line_item_card.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_page_dots.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/line_item_form_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -187,6 +191,8 @@ class _InvoiceTabState extends State<InvoiceTab> {
                             return _LineItemsCarousel(
                               items: items,
                               pageController: _pageController,
+                              onEdit: (item) =>
+                                  EditLineItemDialog.show(context, item),
                               onRemove: (id) => context
                                   .read<InvoiceDetailsBloc>()
                                   .add(LineItemRemoved(id)),
@@ -370,88 +376,14 @@ class _ItemAddForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        InspectionTextField(controller: nameController, label: 'Items Name'),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(
-              child: InspectionTextField(
-                controller: qtyController,
-                label: 'Quantity',
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: InspectionTextField(
-                controller: priceController,
-                label: 'Unit per-price',
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                ],
-              ),
-            ),
-          ],
+        LineItemFormFields(
+          nameController: nameController,
+          qtyController: qtyController,
+          priceController: priceController,
         ),
         const SizedBox(height: 10),
-        _AddMoreItemsButton(onTap: onAdd),
+        GradientOutlineButton(label: 'Add more items', onTap: onAdd),
       ],
-    );
-  }
-}
-
-class _AddMoreItemsButton extends StatelessWidget {
-  const _AddMoreItemsButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: AppPallete.selectionGradient,
-          begin: Alignment.bottomLeft,
-          end: Alignment.topRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      padding: const EdgeInsets.all(1.5),
-      child: Material(
-        color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-        borderRadius: BorderRadius.circular(10.5),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(10.5),
-          child: Center(
-            child: ShaderMask(
-              shaderCallback: (bounds) => const LinearGradient(
-                colors: AppPallete.selectionGradient,
-                begin: Alignment.bottomLeft,
-                end: Alignment.topRight,
-              ).createShader(bounds),
-              child: const Text(
-                'Add more items',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: AppPallete.whiteColor,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -460,11 +392,13 @@ class _LineItemsCarousel extends StatelessWidget {
   const _LineItemsCarousel({
     required this.items,
     required this.pageController,
+    required this.onEdit,
     required this.onRemove,
   });
 
   final List<InvoiceLineItem> items;
   final PageController pageController;
+  final ValueChanged<InvoiceLineItem> onEdit;
   final ValueChanged<String> onRemove;
 
   @override
@@ -509,6 +443,7 @@ class _LineItemsCarousel extends StatelessWidget {
               final item = items[index];
               return InvoiceLineItemCard(
                 item: item,
+                onEdit: () => onEdit(item),
                 onRemove: () => onRemove(item.id),
               );
             },
@@ -589,7 +524,7 @@ class _TotalsSummary extends StatelessWidget {
           ),
         ),
         Text(
-          '\$${_trimmed(value)}',
+          formatAud(value),
           style: TextStyle(
             fontSize: bold ? 16 : 14,
             fontWeight: bold ? FontWeight.w700 : FontWeight.w500,

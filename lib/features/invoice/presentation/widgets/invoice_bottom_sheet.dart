@@ -59,7 +59,7 @@ class InvoiceBottomSheet extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Text(
-                    'Create Invoice',
+                    'Invoice',
                     style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.w600,
@@ -113,8 +113,8 @@ class InvoiceBottomSheet extends StatelessWidget {
               Expanded(
                 child: TabBarView(
                   children: [
-                    InvoiceTab(invoiceId: invoiceId),
                     InspectionTab(invoiceId: invoiceId),
+                    InvoiceTab(invoiceId: invoiceId),
                   ],
                 ),
               ),
