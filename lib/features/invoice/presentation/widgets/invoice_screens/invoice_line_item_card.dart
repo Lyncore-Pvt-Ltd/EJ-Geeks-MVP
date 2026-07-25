@@ -1,16 +1,28 @@
+import 'package:ej_geek/core/presentation/widget/show_delete_dialog.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/invoice/domain/entities/invoice_line_item.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:flutter/material.dart';
 
 class InvoiceLineItemCard extends StatelessWidget {
   const InvoiceLineItemCard({
     super.key,
     required this.item,
+    required this.onEdit,
     required this.onRemove,
   });
 
   final InvoiceLineItem item;
+  final VoidCallback onEdit;
   final VoidCallback onRemove;
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const ShowDeleteDialog(),
+    );
+    if (confirmed == true) onRemove();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,13 +53,26 @@ class InvoiceLineItemCard extends StatelessWidget {
                 'Description',
                 style: TextStyle(fontSize: 12, color: labelColor),
               ),
-              InkWell(
-                onTap: onRemove,
-                child: Icon(
-                  Icons.delete_outline,
-                  size: 18,
-                  color: AppPallete.errorColor,
-                ),
+              Row(
+                children: [
+                  InkWell(
+                    onTap: onEdit,
+                    child: Icon(
+                      Icons.edit_outlined,
+                      size: 18,
+                      color: AppPallete.selectionGradient[1],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  InkWell(
+                    onTap: () => _confirmDelete(context),
+                    child: Icon(
+                      Icons.delete_outline,
+                      size: 18,
+                      color: AppPallete.errorColor,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -91,7 +116,7 @@ class InvoiceLineItemCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '\$${_trimmed(item.unitPrice)}',
+                      formatAud(item.unitPrice),
                       style: TextStyle(fontSize: 14, color: textColor),
                     ),
                   ],
@@ -108,7 +133,7 @@ class InvoiceLineItemCard extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            '\$${_trimmed(item.totalPrice)}',
+            formatAud(item.totalPrice),
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
