@@ -17,7 +17,10 @@ abstract class InvoiceRepository {
     ServiceStatus status,
   );
 
-  Future<Either<Failure, void>> deleteInvoice(String invoiceId);
+  Future<Either<Failure, void>> deleteInvoice(
+    String invoiceId, {
+    bool deleteFiles = false,
+  });
 
   Future<Either<Failure, void>> saveInvoiceDetails(
     InvoiceDetails details,

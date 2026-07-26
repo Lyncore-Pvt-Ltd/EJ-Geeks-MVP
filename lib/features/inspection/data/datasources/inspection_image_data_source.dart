@@ -17,6 +17,7 @@ class InspectionImageDataSource {
   Future<String?> pickAndStoreImage({
     required ImageSource source,
     required String invoiceId,
+    required DateTime invoiceCreatedAt,
   }) async {
     try {
       final picked = await _imagePicker.pickImage(
@@ -27,7 +28,10 @@ class InspectionImageDataSource {
       );
       if (picked == null) return null;
 
-      final destinationPath = await AppStoragePaths.newImagePath(invoiceId);
+      final destinationPath = await AppStoragePaths.newImagePath(
+        invoiceId,
+        invoiceCreatedAt,
+      );
       await File(picked.path).copy(destinationPath);
       return destinationPath;
     } catch (e) {

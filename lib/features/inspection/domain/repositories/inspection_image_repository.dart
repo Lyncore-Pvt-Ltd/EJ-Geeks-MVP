@@ -7,5 +7,6 @@ abstract class InspectionImageRepository {
   Future<Either<Failure, String?>> pickAndStoreImage({
     required ImageSource source,
     required String invoiceId,
+    required DateTime invoiceCreatedAt,
   });
 }

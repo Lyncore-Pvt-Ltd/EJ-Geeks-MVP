@@ -6,6 +6,7 @@ import '../../data/constants/invoice_owner_defaults.dart';
 import '../../domain/entities/invoice_details.dart';
 import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_totals.dart';
+import '../../domain/usecases/generate_invoice_pdfs.dart';
 import '../../domain/usecases/get_invoice_details_by_invoice_id.dart';
 import '../../domain/usecases/save_invoice_details.dart';
 import '../../domain/usecases/upsert_invoice_draft.dart';
@@ -15,21 +16,29 @@ import 'invoice_details_state.dart';
 class InvoiceDetailsBloc
     extends Bloc<InvoiceDetailsEvent, InvoiceDetailsState> {
   final String invoiceId;
+
+  /// The invoice's creation date — used to key on-disk storage for the
+  /// generated PDFs (`AppStoragePaths`).
+  final DateTime invoiceCreatedAt;
   final SaveInvoiceDetails _saveInvoiceDetails;
   final GetInvoiceDetailsByInvoiceId _getInvoiceDetailsByInvoiceId;
   final GetInspectionByInvoiceId _getInspectionByInvoiceId;
   final UpsertInvoiceDraft _upsertInvoiceDraft;
+  final GenerateInvoicePdfs _generateInvoicePdfs;
 
   InvoiceDetailsBloc({
     required this.invoiceId,
+    required this.invoiceCreatedAt,
     required SaveInvoiceDetails saveInvoiceDetails,
     required GetInvoiceDetailsByInvoiceId getInvoiceDetailsByInvoiceId,
     required GetInspectionByInvoiceId getInspectionByInvoiceId,
     required UpsertInvoiceDraft upsertInvoiceDraft,
+    required GenerateInvoicePdfs generateInvoicePdfs,
   }) : _saveInvoiceDetails = saveInvoiceDetails,
        _getInvoiceDetailsByInvoiceId = getInvoiceDetailsByInvoiceId,
        _getInspectionByInvoiceId = getInspectionByInvoiceId,
        _upsertInvoiceDraft = upsertInvoiceDraft,
+       _generateInvoicePdfs = generateInvoicePdfs,
        super(const InvoiceDetailsState()) {
     on<InvoiceDetailsLoadRequested>(_onLoadRequested);
     on<IssueDateChanged>(_onIssueDateChanged);
@@ -41,6 +50,7 @@ class InvoiceDetailsBloc
     on<DiscountPercentChanged>(_onDiscountPercentChanged);
     on<AppOwnerAddressChanged>(_onAppOwnerAddressChanged);
     on<InvoiceDetailsSaved>(_onSaved);
+    on<InvoiceGenerateRequested>(_onGenerateRequested);
     add(const InvoiceDetailsLoadRequested());
   }
 
@@ -62,7 +72,6 @@ class InvoiceDetailsBloc
     );
 
     final bundle = detailsResult.fold((_) => null, (bundle) => bundle);
-    final inspection = inspectionResult.fold((_) => null, (record) => record);
 
     final items = bundle?.items ?? const <InvoiceLineItem>[];
     final vatPercent = bundle?.details.vatPercent ?? 0;
@@ -72,8 +81,6 @@ class InvoiceDetailsBloc
       state.copyWith(
         isLoading: false,
         errorMessage: detailsError ?? inspectionError,
-        ownerName: inspection?.vehicleDetails.ownerName ?? '',
-        address: inspection?.vehicleDetails.address ?? '',
         issueDate: bundle?.details.issueDate ?? DateTime.now(),
         dueDate: bundle?.details.dueDate,
         paymentTerms: bundle?.details.paymentTerms ?? '',
@@ -268,6 +275,81 @@ class InvoiceDetailsBloc
           saveSuccess: true,
           paymentTerms: event.paymentTerms,
           notes: event.notes,
+        ),
+      ),
+    );
+  }
+
+  /// Ensures the progress dialog stays visible for at least this long,
+  /// even if the save/PDF-build work underneath finishes almost instantly.
+  static const _minGenerateDuration = Duration(milliseconds: 700);
+
+  Future<void> _awaitMinDuration(DateTime start) async {
+    final elapsed = DateTime.now().difference(start);
+    if (elapsed < _minGenerateDuration) {
+      await Future.delayed(_minGenerateDuration - elapsed);
+    }
+  }
+
+  Future<void> _onGenerateRequested(
+    InvoiceGenerateRequested event,
+    Emitter<InvoiceDetailsState> emit,
+  ) async {
+    final start = DateTime.now();
+    emit(
+      state.copyWith(isSending: true, errorMessage: null, sendSuccess: false),
+    );
+
+    final draftResult = await _upsertInvoiceDraft(invoiceId);
+    final draftError = draftResult.fold((f) => f.message, (_) => null);
+    if (draftError != null) {
+      await _awaitMinDuration(start);
+      emit(state.copyWith(isSending: false, errorMessage: draftError));
+      return;
+    }
+
+    final details = InvoiceDetails(
+      invoiceId: invoiceId,
+      issueDate: state.issueDate,
+      dueDate: state.dueDate,
+      paymentTerms: event.paymentTerms,
+      notes: event.notes,
+      vatPercent: state.vatPercent,
+      discountPercent: state.discountPercent,
+      appOwnerAddress: state.appOwnerAddress,
+    );
+
+    final saveResult = await _saveInvoiceDetails(
+      SaveInvoiceDetailsParams(details: details, items: state.items),
+    );
+    final saveError = saveResult.fold((f) => f.message, (_) => null);
+    if (saveError != null) {
+      await _awaitMinDuration(start);
+      emit(state.copyWith(isSending: false, errorMessage: saveError));
+      return;
+    }
+
+    final generateResult = await _generateInvoicePdfs(
+      GenerateInvoicePdfsParams(
+        invoiceId: invoiceId,
+        invoiceCreatedAt: invoiceCreatedAt,
+      ),
+    );
+
+    await _awaitMinDuration(start);
+
+    generateResult.fold(
+      (failure) => emit(
+        state.copyWith(isSending: false, errorMessage: failure.message),
+      ),
+      (pdfs) => emit(
+        state.copyWith(
+          isSending: false,
+          sendSuccess: true,
+          paymentTerms: event.paymentTerms,
+          notes: event.notes,
+          invoicePdfPath: pdfs.invoicePdfPath,
+          inspectionPdfPath: pdfs.inspectionPdfPath,
         ),
       ),
     );

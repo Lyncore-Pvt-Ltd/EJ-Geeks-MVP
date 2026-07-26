@@ -1,3 +1,4 @@
+import 'package:ej_geek/core/presentation/widget/gradient_outline_button.dart';
 import 'package:ej_geek/features/inspection/domain/entities/inspection_section.dart';
 import 'package:ej_geek/features/inspection/domain/entities/vehicle_details.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
@@ -11,9 +12,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class InspectionTab extends StatefulWidget {
-  const InspectionTab({super.key, required this.invoiceId});
+  const InspectionTab({
+    super.key,
+    required this.invoiceId,
+    required this.onGenerateRequested,
+  });
 
   final String invoiceId;
+
+  /// Shared with the Invoice tab's "Generate Invoice" button — triggers the
+  /// bottom sheet's cross-tab save + both-PDF generation flow.
+  final VoidCallback onGenerateRequested;
 
   @override
   State<InspectionTab> createState() => InspectionTabState();
@@ -159,10 +168,20 @@ class InspectionTabState extends State<InspectionTab> {
                         previous.isSaving != current.isSaving ||
                         previous.isLoading != current.isLoading,
                     builder: (context, state) {
-                      return InspectionGradientButton(
-                        label: 'Draft',
-                        isLoading: state.isSaving || state.isLoading,
-                        onTap: save,
+                      final isBusy = state.isSaving || state.isLoading;
+                      return Column(
+                        children: [
+                          InspectionGradientButton(
+                            label: 'Generate PDF',
+                            isLoading: false,
+                            onTap: isBusy ? () {} : widget.onGenerateRequested,
+                          ),
+                          const SizedBox(height: 12),
+                          GradientOutlineButton(
+                            label: 'Draft',
+                            onTap: isBusy ? () {} : save,
+                          ),
+                        ],
                       );
                     },
                   ),

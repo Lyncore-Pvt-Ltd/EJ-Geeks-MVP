@@ -66,7 +66,12 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     InvoiceDeleted event,
     Emitter<InvoiceState> emit,
   ) async {
-    final result = await _deleteInvoice(event.invoiceId);
+    final result = await _deleteInvoice(
+      DeleteInvoiceParams(
+        invoiceId: event.invoiceId,
+        deleteFiles: event.deleteFiles,
+      ),
+    );
 
     final failure = result.fold((failure) => failure, (_) => null);
     if (failure != null) {

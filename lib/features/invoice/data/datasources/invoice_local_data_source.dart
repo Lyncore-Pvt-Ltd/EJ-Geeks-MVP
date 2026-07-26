@@ -1,7 +1,3 @@
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
-
 import '../../../../core/database/app_database.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/storage/app_storage_paths.dart';
@@ -194,9 +190,22 @@ class InvoiceLocalDataSource {
     }
   }
 
-  Future<void> deleteInvoice(String invoiceId) async {
+  Future<void> deleteInvoice(
+    String invoiceId, {
+    bool deleteFiles = false,
+  }) async {
     try {
       final db = await _appDatabase.database;
+      final invoiceRows = await db.query(
+        'invoices',
+        columns: ['created_at'],
+        where: 'id = ?',
+        whereArgs: [invoiceId],
+      );
+      final createdAt = invoiceRows.isEmpty
+          ? DateTime.now()
+          : DateTime.parse(invoiceRows.first['created_at'] as String);
+
       final inspectionRows = await db.query(
         'inspections',
         where: 'invoice_id = ?',
@@ -236,16 +245,14 @@ class InvoiceLocalDataSource {
         await txn.delete('invoices', where: 'id = ?', whereArgs: [invoiceId]);
       });
 
-      final imagesDir = await AppStoragePaths.imagesDir();
-      final invoiceImagesDir = Directory(p.join(imagesDir.path, invoiceId));
-      if (await invoiceImagesDir.exists()) {
-        await invoiceImagesDir.delete(recursive: true);
-      }
-
-      final pdfDir = await AppStoragePaths.pdfDir();
-      final invoicePdfDir = Directory(p.join(pdfDir.path, invoiceId));
-      if (await invoicePdfDir.exists()) {
-        await invoicePdfDir.delete(recursive: true);
+      if (deleteFiles) {
+        final invoiceFolder = await AppStoragePaths.invoiceFolder(
+          invoiceId,
+          createdAt,
+        );
+        if (await invoiceFolder.exists()) {
+          await invoiceFolder.delete(recursive: true);
+        }
       }
     } catch (e) {
       throw CacheException(message: 'Failed to delete invoice: $e');

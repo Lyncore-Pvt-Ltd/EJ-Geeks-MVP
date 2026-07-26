@@ -4,8 +4,6 @@ import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_totals.dart';
 
 class InvoiceDetailsState extends Equatable {
-  final String ownerName;
-  final String address;
   final DateTime? issueDate;
   final DateTime? dueDate;
   final String paymentTerms;
@@ -18,11 +16,13 @@ class InvoiceDetailsState extends Equatable {
   final bool isLoading;
   final bool isSaving;
   final bool saveSuccess;
+  final bool isSending;
+  final bool sendSuccess;
+  final String? invoicePdfPath;
+  final String? inspectionPdfPath;
   final String? errorMessage;
 
   const InvoiceDetailsState({
-    this.ownerName = '',
-    this.address = '',
     this.issueDate,
     this.dueDate,
     this.paymentTerms = '',
@@ -35,12 +35,14 @@ class InvoiceDetailsState extends Equatable {
     this.isLoading = false,
     this.isSaving = false,
     this.saveSuccess = false,
+    this.isSending = false,
+    this.sendSuccess = false,
+    this.invoicePdfPath,
+    this.inspectionPdfPath,
     this.errorMessage,
   });
 
   InvoiceDetailsState copyWith({
-    String? ownerName,
-    String? address,
     DateTime? issueDate,
     DateTime? dueDate,
     String? paymentTerms,
@@ -53,11 +55,13 @@ class InvoiceDetailsState extends Equatable {
     bool? isLoading,
     bool? isSaving,
     bool? saveSuccess,
+    bool? isSending,
+    bool? sendSuccess,
+    String? invoicePdfPath,
+    String? inspectionPdfPath,
     String? errorMessage,
   }) {
     return InvoiceDetailsState(
-      ownerName: ownerName ?? this.ownerName,
-      address: address ?? this.address,
       issueDate: issueDate ?? this.issueDate,
       dueDate: dueDate ?? this.dueDate,
       paymentTerms: paymentTerms ?? this.paymentTerms,
@@ -70,14 +74,16 @@ class InvoiceDetailsState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       isSaving: isSaving ?? this.isSaving,
       saveSuccess: saveSuccess ?? false,
+      isSending: isSending ?? this.isSending,
+      sendSuccess: sendSuccess ?? false,
+      invoicePdfPath: invoicePdfPath ?? this.invoicePdfPath,
+      inspectionPdfPath: inspectionPdfPath ?? this.inspectionPdfPath,
       errorMessage: errorMessage,
     );
   }
 
   @override
   List<Object?> get props => [
-    ownerName,
-    address,
     issueDate,
     dueDate,
     paymentTerms,
@@ -90,6 +96,10 @@ class InvoiceDetailsState extends Equatable {
     isLoading,
     isSaving,
     saveSuccess,
+    isSending,
+    sendSuccess,
+    invoicePdfPath,
+    inspectionPdfPath,
     errorMessage,
   ];
 }

@@ -16,24 +16,38 @@ class AppStoragePaths {
     return base.create(recursive: true);
   }
 
-  static Future<Directory> imagesDir() async {
+  static String _dateKey(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}'
+      '${d.month.toString().padLeft(2, '0')}'
+      '${d.day.toString().padLeft(2, '0')}';
+
+  /// The per-invoice folder: `<base>/<yyyyMMdd>/<invoiceId>/`, grouping the
+  /// invoice's images and generated PDFs together under the day it was
+  /// created.
+  static Future<Directory> invoiceFolder(
+    String invoiceId,
+    DateTime createdAt,
+  ) async {
     final base = await _baseDir();
-    final dir = Directory(p.join(base.path, 'images'));
+    final dir = Directory(
+      p.join(base.path, _dateKey(createdAt), invoiceId),
+    );
     return dir.create(recursive: true);
   }
 
-  static Future<Directory> pdfDir() async {
-    final base = await _baseDir();
-    final dir = Directory(p.join(base.path, 'pdf'));
+  static Future<Directory> imagesDir(String invoiceId, DateTime createdAt) async {
+    final folder = await invoiceFolder(invoiceId, createdAt);
+    final dir = Directory(p.join(folder.path, 'images'));
     return dir.create(recursive: true);
   }
 
   /// Builds a new, unique, date/time-based path for an image belonging to
-  /// [invoiceId], creating the per-invoice folder if needed.
-  static Future<String> newImagePath(String invoiceId) async {
-    final images = await imagesDir();
-    final invoiceDir = Directory(p.join(images.path, invoiceId));
-    await invoiceDir.create(recursive: true);
+  /// [invoiceId], creating the per-invoice images folder if needed.
+  static Future<String> newImagePath(
+    String invoiceId,
+    DateTime createdAt,
+  ) async {
+    final images = await imagesDir(invoiceId, createdAt);
 
     final now = DateTime.now();
     final timestamp =
@@ -45,14 +59,24 @@ class AppStoragePaths {
         '${now.second.toString().padLeft(2, '0')}';
     final shortId = now.microsecondsSinceEpoch.toRadixString(36);
 
-    return p.join(invoiceDir.path, '${timestamp}_$shortId.jpg');
+    return p.join(images.path, '${timestamp}_$shortId.jpg');
   }
 
-  /// Builds the path for a generated PDF belonging to [invoiceId].
-  static Future<String> newPdfPath(String invoiceId, String fileName) async {
-    final pdf = await pdfDir();
-    final invoiceDir = Directory(p.join(pdf.path, invoiceId));
-    await invoiceDir.create(recursive: true);
-    return p.join(invoiceDir.path, fileName);
+  /// Path for the invoice's generated invoice PDF.
+  static Future<String> invoicePdfPath(
+    String invoiceId,
+    DateTime createdAt,
+  ) async {
+    final folder = await invoiceFolder(invoiceId, createdAt);
+    return p.join(folder.path, 'invoice.pdf');
+  }
+
+  /// Path for the invoice's generated inspection report PDF.
+  static Future<String> inspectionPdfPath(
+    String invoiceId,
+    DateTime createdAt,
+  ) async {
+    final folder = await invoiceFolder(invoiceId, createdAt);
+    return p.join(folder.path, 'inspection.pdf');
   }
 }

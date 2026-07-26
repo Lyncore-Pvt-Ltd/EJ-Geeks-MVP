@@ -1,7 +1,11 @@
 import 'package:ej_geek/core/presentation/widget/gradient_outline_button.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:ej_geek/features/inspection/domain/entities/vehicle_details.dart';
+import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
+import 'package:ej_geek/features/inspection/presentation/bloc/inspection_state.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_gradient_button.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_text_field.dart';
+import 'package:ej_geek/features/invoice/data/constants/invoice_number_formatter.dart';
 import 'package:ej_geek/features/invoice/domain/entities/invoice_line_item.dart';
 import 'package:ej_geek/features/invoice/domain/entities/invoice_totals.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
@@ -18,9 +22,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class InvoiceTab extends StatefulWidget {
-  const InvoiceTab({super.key, required this.invoiceId});
+  const InvoiceTab({
+    super.key,
+    required this.invoiceId,
+    required this.onGenerateRequested,
+  });
 
   final String invoiceId;
+
+  /// Triggered by the "Generate Invoice" button; owned by `InvoiceBottomSheet`
+  /// so it can orchestrate saving both tabs before generating both PDFs.
+  final VoidCallback onGenerateRequested;
 
   @override
   State<InvoiceTab> createState() => InvoiceTabState();
@@ -69,6 +81,15 @@ class InvoiceTabState extends State<InvoiceTab> {
   void save() {
     context.read<InvoiceDetailsBloc>().add(
       InvoiceDetailsSaved(
+        paymentTerms: _paymentTermsController.text,
+        notes: _notesController.text,
+      ),
+    );
+  }
+
+  void generate() {
+    context.read<InvoiceDetailsBloc>().add(
+      InvoiceGenerateRequested(
         paymentTerms: _paymentTermsController.text,
         notes: _notesController.text,
       ),
@@ -261,12 +282,26 @@ class InvoiceTabState extends State<InvoiceTab> {
                       BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
                         buildWhen: (previous, current) =>
                             previous.isSaving != current.isSaving ||
+                            previous.isSending != current.isSending ||
                             previous.isLoading != current.isLoading,
                         builder: (context, state) {
-                          return InspectionGradientButton(
-                            label: 'Save invoice draft',
-                            isLoading: state.isSaving || state.isLoading,
-                            onTap: save,
+                          final isBusy =
+                              state.isSaving ||
+                              state.isSending ||
+                              state.isLoading;
+                          return Column(
+                            children: [
+                              InspectionGradientButton(
+                                label: 'Generate Invoice',
+                                isLoading: state.isSending,
+                                onTap: isBusy ? () {} : widget.onGenerateRequested,
+                              ),
+                              const SizedBox(height: 12),
+                              GradientOutlineButton(
+                                label: 'Save invoice draft',
+                                onTap: isBusy ? () {} : save,
+                              ),
+                            ],
                           );
                         },
                       ),
@@ -297,7 +332,7 @@ class _InvoiceNumberHeading extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
-      'INV-#${invoiceId.substring(0, 8).toUpperCase()}',
+      formatInvoiceNumber(invoiceId),
       style: TextStyle(
         fontSize: 26,
         fontWeight: FontWeight.w700,
@@ -319,14 +354,11 @@ class _RecipientCard extends StatelessWidget {
     final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
     final borderColor = isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite;
 
-    return BlocSelector<
-      InvoiceDetailsBloc,
-      InvoiceDetailsState,
-      (String, String)
-    >(
-      selector: (state) => (state.ownerName, state.address),
-      builder: (context, recipient) {
-        final (ownerName, address) = recipient;
+    return BlocSelector<InspectionBloc, InspectionState, VehicleDetails?>(
+      selector: (state) => state.vehicleDetails,
+      builder: (context, vehicleDetails) {
+        final ownerName = vehicleDetails?.ownerName ?? '';
+        final address = vehicleDetails?.address ?? '';
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(

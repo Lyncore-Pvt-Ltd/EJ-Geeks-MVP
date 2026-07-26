@@ -17,11 +17,11 @@ class InvoiceLineItemCard extends StatelessWidget {
   final VoidCallback onRemove;
 
   Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<DeleteDialogResult>(
       context: context,
       builder: (_) => const ShowDeleteDialog(),
     );
-    if (confirmed == true) onRemove();
+    if (result?.confirmed == true) onRemove();
   }
 
   @override

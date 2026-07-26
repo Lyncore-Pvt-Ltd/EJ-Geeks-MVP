@@ -18,23 +18,28 @@ class InvoiceCard extends StatelessWidget {
 
   Future<void> _openInvoice(BuildContext context) async {
     final invoiceBloc = context.read<InvoiceBloc>();
-    await InvoiceBottomSheet.show(context, invoiceId: summary.id);
+    await InvoiceBottomSheet.show(
+      context,
+      invoiceId: summary.id,
+      createdAt: summary.createdAt,
+    );
     invoiceBloc.add(const InvoiceListRequested());
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
     final invoiceBloc = context.read<InvoiceBloc>();
-    final confirmed = await showDialog<bool>(
+    final result = await showDialog<DeleteDialogResult>(
       context: context,
       builder: (_) => ShowDeleteDialog(
         title: 'Delete Invoice',
-        message:
-            'Are you sure you want to delete this invoice? '
-            'Its inspection details and photos will also be removed.',
+        message: 'Are you sure you want to delete this invoice?',
+        showDeleteFilesOption: true,
       ),
     );
-    if (confirmed == true) {
-      invoiceBloc.add(InvoiceDeleted(summary.id));
+    if (result?.confirmed == true) {
+      invoiceBloc.add(
+        InvoiceDeleted(summary.id, deleteFiles: result!.deleteFiles),
+      );
     }
   }
 

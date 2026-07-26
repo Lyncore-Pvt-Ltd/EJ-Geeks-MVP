@@ -14,6 +14,11 @@ import 'inspection_state.dart';
 
 class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
   final String invoiceId;
+
+  /// The invoice's creation date — used to key on-disk storage
+  /// (`AppStoragePaths`) so this inspection's photos land in the same
+  /// dated folder as the invoice/inspection PDFs.
+  final DateTime invoiceCreatedAt;
   final SaveInspection _saveInspection;
   final GetInspectionByInvoiceId _getInspectionByInvoiceId;
   final PickInspectionImage _pickInspectionImage;
@@ -29,6 +34,7 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
 
   InspectionBloc({
     required this.invoiceId,
+    required this.invoiceCreatedAt,
     required SaveInspection saveInspection,
     required GetInspectionByInvoiceId getInspectionByInvoiceId,
     required PickInspectionImage pickInspectionImage,
@@ -93,7 +99,11 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
     emit(state.copyWith(isPickingImage: true, errorMessage: null));
 
     final result = await _pickInspectionImage(
-      PickInspectionImageParams(source: event.source, invoiceId: invoiceId),
+      PickInspectionImageParams(
+        source: event.source,
+        invoiceId: invoiceId,
+        invoiceCreatedAt: invoiceCreatedAt,
+      ),
     );
 
     result.fold(
@@ -135,7 +145,7 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
       vehicleDetails: event.vehicleDetails,
       sections: state.sections,
       imagePaths: state.imagePaths,
-      createdAt: DateTime.now(),
+      createdAt: invoiceCreatedAt,
     );
 
     final result = await _saveInspection(record);

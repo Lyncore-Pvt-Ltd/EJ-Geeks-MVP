@@ -22,9 +22,10 @@ class InvoiceServiceCompleted extends InvoiceEvent {
 
 class InvoiceDeleted extends InvoiceEvent {
   final String invoiceId;
+  final bool deleteFiles;
 
-  const InvoiceDeleted(this.invoiceId);
+  const InvoiceDeleted(this.invoiceId, {this.deleteFiles = false});
 
   @override
-  List<Object?> get props => [invoiceId];
+  List<Object?> get props => [invoiceId, deleteFiles];
 }

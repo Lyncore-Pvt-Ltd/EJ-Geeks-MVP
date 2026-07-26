@@ -16,11 +16,13 @@ class InspectionImageRepositoryImpl implements InspectionImageRepository {
   Future<Either<Failure, String?>> pickAndStoreImage({
     required ImageSource source,
     required String invoiceId,
+    required DateTime invoiceCreatedAt,
   }) async {
     try {
       final path = await _dataSource.pickAndStoreImage(
         source: source,
         invoiceId: invoiceId,
+        invoiceCreatedAt: invoiceCreatedAt,
       );
       return Right(path);
     } on StorageException catch (e) {

@@ -106,3 +106,16 @@ class InvoiceDetailsSaved extends InvoiceDetailsEvent {
   @override
   List<Object?> get props => [paymentTerms, notes];
 }
+
+class InvoiceGenerateRequested extends InvoiceDetailsEvent {
+  final String paymentTerms;
+  final String notes;
+
+  const InvoiceGenerateRequested({
+    required this.paymentTerms,
+    required this.notes,
+  });
+
+  @override
+  List<Object?> get props => [paymentTerms, notes];
+}
