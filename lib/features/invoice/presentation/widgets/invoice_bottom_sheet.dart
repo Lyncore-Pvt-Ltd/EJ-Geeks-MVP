@@ -1,5 +1,6 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:ej_geek/core/di/service_locator.dart';
+import 'package:ej_geek/core/presentation/widget/pdf_generation_progress_dialog.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_state.dart';
@@ -7,20 +8,31 @@ import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_state.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/inspection_tab.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_tab.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_success_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 class InvoiceBottomSheet extends StatefulWidget {
-  InvoiceBottomSheet({super.key, String? invoiceId})
-    : invoiceId = invoiceId ?? const Uuid().v4();
+  InvoiceBottomSheet({super.key, String? invoiceId, DateTime? createdAt})
+    : invoiceId = invoiceId ?? const Uuid().v4(),
+      createdAt = createdAt ?? DateTime.now();
 
   /// Ties this invoice's inspection, images and (later) PDF together under
   /// one id. Reused when reopening an existing invoice's card; otherwise a
   /// fresh id is minted for a brand new invoice.
   final String invoiceId;
 
-  static Future<void> show(BuildContext context, {String? invoiceId}) {
+  /// The invoice's creation date, used to key its on-disk storage folder
+  /// (`AppStoragePaths`). Reused from the persisted row when reopening an
+  /// existing invoice; defaults to now for a brand new invoice.
+  final DateTime createdAt;
+
+  static Future<void> show(
+    BuildContext context, {
+    String? invoiceId,
+    DateTime? createdAt,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -28,7 +40,7 @@ class InvoiceBottomSheet extends StatefulWidget {
       barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.9,
-        child: InvoiceBottomSheet(invoiceId: invoiceId),
+        child: InvoiceBottomSheet(invoiceId: invoiceId, createdAt: createdAt),
       ),
     );
   }
@@ -45,6 +57,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
 
   bool _isClosing = false;
   bool _popScheduled = false;
+  bool _pendingGenerate = false;
 
   @override
   void initState() {
@@ -74,6 +87,14 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
 
   void _onSavePressed() {
     _triggerActiveSave();
+  }
+
+  /// Shared "Generate" entry point for both tabs: always saves the
+  /// Inspection tab's current form data first, then (once that completes)
+  /// triggers the Invoice tab's save + both-PDF generation.
+  void _onGeneratePressed() {
+    _pendingGenerate = true;
+    _inspectionKey.currentState?.save();
   }
 
   void _onClosePressed() {
@@ -123,10 +144,16 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
     return MultiBlocProvider(
       providers: [
         BlocProvider<InspectionBloc>(
-          create: (_) => sl<InspectionBloc>(param1: widget.invoiceId),
+          create: (_) => sl<InspectionBloc>(
+            param1: widget.invoiceId,
+            param2: widget.createdAt,
+          ),
         ),
         BlocProvider<InvoiceDetailsBloc>(
-          create: (_) => sl<InvoiceDetailsBloc>(param1: widget.invoiceId),
+          create: (_) => sl<InvoiceDetailsBloc>(
+            param1: widget.invoiceId,
+            param2: widget.createdAt,
+          ),
         ),
       ],
       child: MultiBlocListener(
@@ -144,6 +171,68 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                 previous.saveSuccess != current.saveSuccess ||
                 previous.errorMessage != current.errorMessage,
             listener: (context, state) => _handleInvoiceSaveState(state),
+          ),
+          BlocListener<InspectionBloc, InspectionState>(
+            listenWhen: (previous, current) =>
+                _pendingGenerate && previous.isSaving && !current.isSaving,
+            listener: (context, state) {
+              _pendingGenerate = false;
+              if (state.errorMessage == null) {
+                _invoiceKey.currentState?.generate();
+              } else {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+              }
+            },
+          ),
+          BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
+            listenWhen: (previous, current) =>
+                previous.isSending != current.isSending,
+            listener: (context, state) {
+              if (state.isSending) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (_) =>
+                      const PdfGenerationProgressDialog(
+                        message: 'Generating PDFs…',
+                      ),
+                );
+                return;
+              }
+
+              // isSending just flipped true -> false: the progress dialog
+              // above is on the stack, dismiss it first.
+              Navigator.of(context).pop();
+
+              if (state.sendSuccess) {
+                final invoiceDetailsBloc = context.read<InvoiceDetailsBloc>();
+                final clientName =
+                    context.read<InspectionBloc>().state.vehicleDetails?.ownerName ??
+                    '';
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => InvoiceSuccessDialog(
+                    totalAmount: state.totals.totalAmount,
+                    clientName: clientName,
+                    invoiceId: invoiceDetailsBloc.invoiceId,
+                    invoicePdfPath: state.invoicePdfPath,
+                    inspectionPdfPath: state.inspectionPdfPath,
+                    onDone: () {
+                      Navigator.of(dialogContext).pop();
+                      Navigator.of(context).pop();
+                    },
+                    onSendNew: () {
+                      Navigator.of(dialogContext).pop();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                );
+              }
+              // On error, the tab's own errorMessage listener (unchanged)
+              // shows the SnackBar; nothing further to do here.
+            },
           ),
         ],
         child: Container(
@@ -240,8 +329,13 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                       InspectionTab(
                         key: _inspectionKey,
                         invoiceId: widget.invoiceId,
+                        onGenerateRequested: _onGeneratePressed,
                       ),
-                      InvoiceTab(key: _invoiceKey, invoiceId: widget.invoiceId),
+                      InvoiceTab(
+                        key: _invoiceKey,
+                        invoiceId: widget.invoiceId,
+                        onGenerateRequested: _onGeneratePressed,
+                      ),
                     ],
                   ),
                 ),

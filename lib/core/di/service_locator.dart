@@ -14,6 +14,7 @@ import '../../features/invoice/data/datasources/invoice_local_data_source.dart';
 import '../../features/invoice/data/repositories/invoice_repository_impl.dart';
 import '../../features/invoice/domain/repositories/invoice_repository.dart';
 import '../../features/invoice/domain/usecases/delete_invoice.dart';
+import '../../features/invoice/domain/usecases/generate_invoice_pdfs.dart';
 import '../../features/invoice/domain/usecases/get_all_invoices.dart';
 import '../../features/invoice/domain/usecases/get_invoice_details_by_invoice_id.dart';
 import '../../features/invoice/domain/usecases/save_invoice_details.dart';
@@ -73,10 +74,14 @@ void setupServiceLocator() {
   sl.registerLazySingleton<GetInvoiceDetailsByInvoiceId>(
     () => GetInvoiceDetailsByInvoiceId(sl()),
   );
+  sl.registerLazySingleton<GenerateInvoicePdfs>(
+    () => GenerateInvoicePdfs(sl(), sl()),
+  );
 
-  sl.registerFactoryParam<InspectionBloc, String, void>(
-    (invoiceId, _) => InspectionBloc(
+  sl.registerFactoryParam<InspectionBloc, String, DateTime>(
+    (invoiceId, invoiceCreatedAt) => InspectionBloc(
       invoiceId: invoiceId,
+      invoiceCreatedAt: invoiceCreatedAt,
       saveInspection: sl(),
       getInspectionByInvoiceId: sl(),
       pickInspectionImage: sl(),
@@ -92,13 +97,15 @@ void setupServiceLocator() {
     ),
   );
 
-  sl.registerFactoryParam<InvoiceDetailsBloc, String, void>(
-    (invoiceId, _) => InvoiceDetailsBloc(
+  sl.registerFactoryParam<InvoiceDetailsBloc, String, DateTime>(
+    (invoiceId, invoiceCreatedAt) => InvoiceDetailsBloc(
       invoiceId: invoiceId,
+      invoiceCreatedAt: invoiceCreatedAt,
       saveInvoiceDetails: sl(),
       getInvoiceDetailsByInvoiceId: sl(),
       getInspectionByInvoiceId: sl(),
       upsertInvoiceDraft: sl(),
+      generateInvoicePdfs: sl(),
     ),
   );
 }

@@ -50,9 +50,12 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteInvoice(String invoiceId) async {
+  Future<Either<Failure, void>> deleteInvoice(
+    String invoiceId, {
+    bool deleteFiles = false,
+  }) async {
     try {
-      await _localDataSource.deleteInvoice(invoiceId);
+      await _localDataSource.deleteInvoice(invoiceId, deleteFiles: deleteFiles);
       return const Right(null);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));

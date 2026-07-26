@@ -9,14 +9,16 @@ import '../repositories/inspection_image_repository.dart';
 class PickInspectionImageParams extends Equatable {
   final ImageSource source;
   final String invoiceId;
+  final DateTime invoiceCreatedAt;
 
   const PickInspectionImageParams({
     required this.source,
     required this.invoiceId,
+    required this.invoiceCreatedAt,
   });
 
   @override
-  List<Object?> get props => [source, invoiceId];
+  List<Object?> get props => [source, invoiceId, invoiceCreatedAt];
 }
 
 class PickInspectionImage
@@ -30,6 +32,7 @@ class PickInspectionImage
     return _repository.pickAndStoreImage(
       source: params.source,
       invoiceId: params.invoiceId,
+      invoiceCreatedAt: params.invoiceCreatedAt,
     );
   }
 }
