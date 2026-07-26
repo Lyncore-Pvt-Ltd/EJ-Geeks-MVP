@@ -119,6 +119,7 @@ class InvoiceLocalDataSource {
             'notes': details.notes,
             'vat_percent': details.vatPercent,
             'discount_percent': details.discountPercent,
+            'app_owner_address': details.appOwnerAddress,
             'updated_at': DateTime.now().toIso8601String(),
           },
           where: 'id = ?',
@@ -173,6 +174,7 @@ class InvoiceLocalDataSource {
         notes: row?['notes'] as String? ?? '',
         vatPercent: (row?['vat_percent'] as num?)?.toDouble() ?? 0,
         discountPercent: (row?['discount_percent'] as num?)?.toDouble() ?? 0,
+        appOwnerAddress: row?['app_owner_address'] as String? ?? '',
       );
 
       final items = itemRows
