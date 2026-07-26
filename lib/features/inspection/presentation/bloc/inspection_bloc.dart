@@ -162,6 +162,7 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
             isSaving: false,
             saveSuccess: true,
             errorMessage: draftError,
+            vehicleDetails: event.vehicleDetails,
           ),
         );
       },

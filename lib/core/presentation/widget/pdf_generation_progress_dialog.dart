@@ -22,9 +22,7 @@ class PdfGenerationProgressDialog extends StatelessWidget {
       canPop: false,
       child: Dialog(
         backgroundColor: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
           child: Column(
