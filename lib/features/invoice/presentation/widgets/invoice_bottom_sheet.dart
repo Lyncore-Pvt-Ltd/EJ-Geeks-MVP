@@ -5,6 +5,7 @@ import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_state.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
+import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_event.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_state.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/inspection_tab.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_tab.dart';
@@ -178,7 +179,24 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
             listener: (context, state) {
               _pendingGenerate = false;
               if (state.errorMessage == null) {
-                _invoiceKey.currentState?.generate();
+                final invoiceTabState = _invoiceKey.currentState;
+                if (invoiceTabState != null) {
+                  invoiceTabState.generate();
+                } else {
+                  // The Invoice tab has never been built in this sheet
+                  // session (TabBarView builds tabs lazily), so there's no
+                  // unsaved edit to its Payment Terms/Notes fields to read —
+                  // fall back to the bloc's own loaded values so Generate
+                  // still fires instead of silently no-oping.
+                  final invoiceDetailsBloc = context
+                      .read<InvoiceDetailsBloc>();
+                  invoiceDetailsBloc.add(
+                    InvoiceGenerateRequested(
+                      paymentTerms: invoiceDetailsBloc.state.paymentTerms,
+                      notes: invoiceDetailsBloc.state.notes,
+                    ),
+                  );
+                }
               } else {
                 ScaffoldMessenger.of(
                   context,
@@ -271,12 +289,24 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                               : AppPallete.tricornBlack,
                         ),
                       ),
-                      _HeaderActions(
-                        isDark: isDark,
-                        isClosing: _isClosing,
-                        activeTabIndex: _tabController.index,
-                        onSavePressed: _onSavePressed,
-                        onClosePressed: _onClosePressed,
+                      Builder(
+                        builder: (context) {
+                          final isInitialLoading =
+                              context.select<InspectionBloc, bool>(
+                                (bloc) => bloc.state.isLoading,
+                              ) ||
+                              context.select<InvoiceDetailsBloc, bool>(
+                                (bloc) => bloc.state.isLoading,
+                              );
+                          return _HeaderActions(
+                            isDark: isDark,
+                            isClosing: _isClosing,
+                            isInitialLoading: isInitialLoading,
+                            activeTabIndex: _tabController.index,
+                            onSavePressed: _onSavePressed,
+                            onClosePressed: _onClosePressed,
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -352,6 +382,7 @@ class _HeaderActions extends StatelessWidget {
   const _HeaderActions({
     required this.isDark,
     required this.isClosing,
+    required this.isInitialLoading,
     required this.activeTabIndex,
     required this.onSavePressed,
     required this.onClosePressed,
@@ -359,6 +390,7 @@ class _HeaderActions extends StatelessWidget {
 
   final bool isDark;
   final bool isClosing;
+  final bool isInitialLoading;
   final int activeTabIndex;
   final VoidCallback onSavePressed;
   final VoidCallback onClosePressed;
@@ -396,7 +428,7 @@ class _HeaderActions extends StatelessWidget {
               ),
             )
           : Icon(Icons.save, color: iconColor),
-      onPressed: isSaving ? null : onSavePressed,
+      onPressed: (isSaving || isInitialLoading) ? null : onSavePressed,
     );
 
     final Widget closeIcon;
@@ -414,7 +446,7 @@ class _HeaderActions extends StatelessWidget {
 
     final closeButton = IconButton(
       icon: closeIcon,
-      onPressed: isClosing ? null : onClosePressed,
+      onPressed: (isClosing || isInitialLoading) ? null : onClosePressed,
     );
 
     return Row(

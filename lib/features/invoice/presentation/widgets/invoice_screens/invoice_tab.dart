@@ -285,10 +285,15 @@ class InvoiceTabState extends State<InvoiceTab> {
                             previous.isSending != current.isSending ||
                             previous.isLoading != current.isLoading,
                         builder: (context, state) {
+                          final inspectionLoading = context
+                              .select<InspectionBloc, bool>(
+                                (bloc) => bloc.state.isLoading,
+                              );
                           final isBusy =
                               state.isSaving ||
                               state.isSending ||
-                              state.isLoading;
+                              state.isLoading ||
+                              inspectionLoading;
                           return Column(
                             children: [
                               InspectionGradientButton(
