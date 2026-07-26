@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../inspection/domain/usecases/get_inspection_by_invoice_id.dart';
+import '../../data/constants/invoice_owner_defaults.dart';
 import '../../domain/entities/invoice_details.dart';
 import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_totals.dart';
@@ -38,6 +39,7 @@ class InvoiceDetailsBloc
     on<LineItemRemoved>(_onLineItemRemoved);
     on<VatPercentChanged>(_onVatPercentChanged);
     on<DiscountPercentChanged>(_onDiscountPercentChanged);
+    on<AppOwnerAddressChanged>(_onAppOwnerAddressChanged);
     on<InvoiceDetailsSaved>(_onSaved);
     add(const InvoiceDetailsLoadRequested());
   }
@@ -78,6 +80,9 @@ class InvoiceDetailsBloc
         notes: bundle?.details.notes ?? '',
         vatPercent: vatPercent,
         discountPercent: discountPercent,
+        appOwnerAddress: bundle?.details.appOwnerAddress.isNotEmpty == true
+            ? bundle!.details.appOwnerAddress
+            : kDefaultAppOwnerAddress,
         items: items,
         totals: computeInvoiceTotals(items, vatPercent, discountPercent),
       ),
@@ -218,6 +223,13 @@ class InvoiceDetailsBloc
     );
   }
 
+  void _onAppOwnerAddressChanged(
+    AppOwnerAddressChanged event,
+    Emitter<InvoiceDetailsState> emit,
+  ) {
+    emit(state.copyWith(appOwnerAddress: event.value));
+  }
+
   Future<void> _onSaved(
     InvoiceDetailsSaved event,
     Emitter<InvoiceDetailsState> emit,
@@ -239,6 +251,7 @@ class InvoiceDetailsBloc
       notes: event.notes,
       vatPercent: state.vatPercent,
       discountPercent: state.discountPercent,
+      appOwnerAddress: state.appOwnerAddress,
     );
 
     final result = await _saveInvoiceDetails(

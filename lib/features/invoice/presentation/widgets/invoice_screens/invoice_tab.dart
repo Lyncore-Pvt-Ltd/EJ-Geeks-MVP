@@ -1,4 +1,3 @@
-import 'package:ej_geek/core/di/service_locator.dart';
 import 'package:ej_geek/core/presentation/widget/gradient_outline_button.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_gradient_button.dart';
@@ -24,11 +23,12 @@ class InvoiceTab extends StatefulWidget {
   final String invoiceId;
 
   @override
-  State<InvoiceTab> createState() => _InvoiceTabState();
+  State<InvoiceTab> createState() => InvoiceTabState();
 }
 
-class _InvoiceTabState extends State<InvoiceTab> {
+class InvoiceTabState extends State<InvoiceTab> {
   final _paymentTermsController = TextEditingController();
+  final _appOwnerAddressController = TextEditingController();
   final _notesController = TextEditingController();
   final _vatController = TextEditingController();
   final _discountController = TextEditingController();
@@ -42,6 +42,7 @@ class _InvoiceTabState extends State<InvoiceTab> {
   @override
   void dispose() {
     _paymentTermsController.dispose();
+    _appOwnerAddressController.dispose();
     _notesController.dispose();
     _vatController.dispose();
     _discountController.dispose();
@@ -65,7 +66,7 @@ class _InvoiceTabState extends State<InvoiceTab> {
     _itemPriceController.clear();
   }
 
-  void _save(BuildContext context) {
+  void save() {
     context.read<InvoiceDetailsBloc>().add(
       InvoiceDetailsSaved(
         paymentTerms: _paymentTermsController.text,
@@ -76,200 +77,206 @@ class _InvoiceTabState extends State<InvoiceTab> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<InvoiceDetailsBloc>(param1: widget.invoiceId),
-      child: MultiBlocListener(
-        listeners: [
-          BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
-            listenWhen: (previous, current) =>
-                previous.errorMessage != current.errorMessage ||
-                previous.saveSuccess != current.saveSuccess,
-            listener: (context, state) {
-              if (state.errorMessage != null) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-              } else if (state.saveSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Invoice draft saved')),
-                );
-              }
-            },
-          ),
-          BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
-            listenWhen: (previous, current) =>
-                previous.isLoading && !current.isLoading,
-            listener: (context, state) {
-              _paymentTermsController.text = state.paymentTerms;
-              _notesController.text = state.notes;
-              _vatController.text = state.vatPercent == 0
-                  ? ''
-                  : _trimmed(state.vatPercent);
-              _discountController.text = state.discountPercent == 0
-                  ? ''
-                  : _trimmed(state.discountPercent);
-            },
-          ),
-        ],
-        child: Builder(
-          builder: (context) {
-            return CustomScrollView(
-              slivers: [
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _InvoiceNumberHeading(invoiceId: widget.invoiceId),
-                        const SizedBox(height: 16),
-                        const _RecipientCard(),
-                        const SizedBox(height: 16),
-                        Row(
-                          children: [
-                            Expanded(
-                              child:
-                                  BlocSelector<
-                                    InvoiceDetailsBloc,
-                                    InvoiceDetailsState,
-                                    DateTime?
-                                  >(
-                                    selector: (state) => state.issueDate,
-                                    builder: (context, issueDate) {
-                                      return InvoiceDatePickerField(
-                                        label: 'Issue Date',
-                                        date: issueDate,
-                                        onPicked: (date) => context
-                                            .read<InvoiceDetailsBloc>()
-                                            .add(IssueDateChanged(date)),
-                                      );
-                                    },
-                                  ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child:
-                                  BlocSelector<
-                                    InvoiceDetailsBloc,
-                                    InvoiceDetailsState,
-                                    DateTime?
-                                  >(
-                                    selector: (state) => state.dueDate,
-                                    builder: (context, dueDate) {
-                                      return InvoiceDatePickerField(
-                                        label: 'Due Date',
-                                        date: dueDate,
-                                        onPicked: (date) => context
-                                            .read<InvoiceDetailsBloc>()
-                                            .add(DueDateChanged(date)),
-                                      );
-                                    },
-                                  ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        InspectionTextField(
-                          controller: _paymentTermsController,
-                          label: 'Payment Terms',
-                        ),
-                        const SizedBox(height: 20),
-                        _ItemAddForm(
-                          nameController: _itemNameController,
-                          qtyController: _itemQtyController,
-                          priceController: _itemPriceController,
-                          onAdd: () => _addItem(context),
-                        ),
-                        const SizedBox(height: 20),
-                        BlocSelector<
-                          InvoiceDetailsBloc,
-                          InvoiceDetailsState,
-                          List<InvoiceLineItem>
-                        >(
-                          selector: (state) => state.items,
-                          builder: (context, items) {
-                            return _LineItemsCarousel(
-                              items: items,
-                              pageController: _pageController,
-                              onEdit: (item) =>
-                                  EditLineItemDialog.show(context, item),
-                              onRemove: (id) => context
-                                  .read<InvoiceDetailsBloc>()
-                                  .add(LineItemRemoved(id)),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: InspectionTextField(
-                                controller: _vatController,
-                                label: 'VAT %',
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d{0,2}'),
-                                  ),
-                                ],
-                                onChanged: (value) => context
-                                    .read<InvoiceDetailsBloc>()
-                                    .add(VatPercentChanged(value)),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: InspectionTextField(
-                                controller: _discountController,
-                                label: 'Discount %',
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(
-                                    RegExp(r'^\d*\.?\d{0,2}'),
-                                  ),
-                                ],
-                                onChanged: (value) => context
-                                    .read<InvoiceDetailsBloc>()
-                                    .add(DiscountPercentChanged(value)),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        const _TotalsSummary(),
-                        const SizedBox(height: 16),
-                        InspectionTextField(
-                          controller: _notesController,
-                          label: 'Notes',
-                          growable: true,
-                        ),
-                        const SizedBox(height: 20),
-                        BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
-                          buildWhen: (previous, current) =>
-                              previous.isSaving != current.isSaving ||
-                              previous.isLoading != current.isLoading,
-                          builder: (context, state) {
-                            return InspectionGradientButton(
-                              label: 'Save invoice draft',
-                              isLoading: state.isSaving || state.isLoading,
-                              onTap: () => _save(context),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            );
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
+          listenWhen: (previous, current) =>
+              previous.errorMessage != current.errorMessage ||
+              previous.saveSuccess != current.saveSuccess,
+          listener: (context, state) {
+            if (state.errorMessage != null) {
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+            } else if (state.saveSuccess) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Invoice draft saved')),
+              );
+            }
           },
         ),
+        BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
+          listenWhen: (previous, current) =>
+              previous.isLoading && !current.isLoading,
+          listener: (context, state) {
+            _paymentTermsController.text = state.paymentTerms;
+            _appOwnerAddressController.text = state.appOwnerAddress;
+            _notesController.text = state.notes;
+            _vatController.text = state.vatPercent == 0
+                ? ''
+                : _trimmed(state.vatPercent);
+            _discountController.text = state.discountPercent == 0
+                ? ''
+                : _trimmed(state.discountPercent);
+          },
+        ),
+      ],
+      child: Builder(
+        builder: (context) {
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _InvoiceNumberHeading(invoiceId: widget.invoiceId),
+                      const SizedBox(height: 16),
+                      const _RecipientCard(),
+                      const SizedBox(height: 16),
+                      InspectionTextField(
+                        controller: _appOwnerAddressController,
+                        label: 'App Owner Address',
+                        onChanged: (value) => context
+                            .read<InvoiceDetailsBloc>()
+                            .add(AppOwnerAddressChanged(value)),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child:
+                                BlocSelector<
+                                  InvoiceDetailsBloc,
+                                  InvoiceDetailsState,
+                                  DateTime?
+                                >(
+                                  selector: (state) => state.issueDate,
+                                  builder: (context, issueDate) {
+                                    return InvoiceDatePickerField(
+                                      label: 'Issue Date',
+                                      date: issueDate,
+                                      onPicked: (date) => context
+                                          .read<InvoiceDetailsBloc>()
+                                          .add(IssueDateChanged(date)),
+                                    );
+                                  },
+                                ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child:
+                                BlocSelector<
+                                  InvoiceDetailsBloc,
+                                  InvoiceDetailsState,
+                                  DateTime?
+                                >(
+                                  selector: (state) => state.dueDate,
+                                  builder: (context, dueDate) {
+                                    return InvoiceDatePickerField(
+                                      label: 'Due Date',
+                                      date: dueDate,
+                                      onPicked: (date) => context
+                                          .read<InvoiceDetailsBloc>()
+                                          .add(DueDateChanged(date)),
+                                    );
+                                  },
+                                ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      InspectionTextField(
+                        controller: _paymentTermsController,
+                        label: 'Payment Terms',
+                      ),
+                      const SizedBox(height: 20),
+                      _ItemAddForm(
+                        nameController: _itemNameController,
+                        qtyController: _itemQtyController,
+                        priceController: _itemPriceController,
+                        onAdd: () => _addItem(context),
+                      ),
+                      const SizedBox(height: 20),
+                      BlocSelector<
+                        InvoiceDetailsBloc,
+                        InvoiceDetailsState,
+                        List<InvoiceLineItem>
+                      >(
+                        selector: (state) => state.items,
+                        builder: (context, items) {
+                          return _LineItemsCarousel(
+                            items: items,
+                            pageController: _pageController,
+                            onEdit: (item) =>
+                                EditLineItemDialog.show(context, item),
+                            onRemove: (id) => context
+                                .read<InvoiceDetailsBloc>()
+                                .add(LineItemRemoved(id)),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InspectionTextField(
+                              controller: _vatController,
+                              label: 'VAT %',
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d{0,2}'),
+                                ),
+                              ],
+                              onChanged: (value) => context
+                                  .read<InvoiceDetailsBloc>()
+                                  .add(VatPercentChanged(value)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: InspectionTextField(
+                              controller: _discountController,
+                              label: 'Discount %',
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'^\d*\.?\d{0,2}'),
+                                ),
+                              ],
+                              onChanged: (value) => context
+                                  .read<InvoiceDetailsBloc>()
+                                  .add(DiscountPercentChanged(value)),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const _TotalsSummary(),
+                      const SizedBox(height: 16),
+                      InspectionTextField(
+                        controller: _notesController,
+                        label: 'Notes',
+                        growable: true,
+                      ),
+                      const SizedBox(height: 20),
+                      BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
+                        buildWhen: (previous, current) =>
+                            previous.isSaving != current.isSaving ||
+                            previous.isLoading != current.isLoading,
+                        builder: (context, state) {
+                          return InspectionGradientButton(
+                            label: 'Save invoice draft',
+                            isLoading: state.isSaving || state.isLoading,
+                            onTap: save,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

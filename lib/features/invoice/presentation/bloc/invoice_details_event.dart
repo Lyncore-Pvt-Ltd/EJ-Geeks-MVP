@@ -88,6 +88,15 @@ class DiscountPercentChanged extends InvoiceDetailsEvent {
   List<Object?> get props => [rawValue];
 }
 
+class AppOwnerAddressChanged extends InvoiceDetailsEvent {
+  final String value;
+
+  const AppOwnerAddressChanged(this.value);
+
+  @override
+  List<Object?> get props => [value];
+}
+
 class InvoiceDetailsSaved extends InvoiceDetailsEvent {
   final String paymentTerms;
   final String notes;

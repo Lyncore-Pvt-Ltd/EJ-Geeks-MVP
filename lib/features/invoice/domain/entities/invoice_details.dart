@@ -8,6 +8,7 @@ class InvoiceDetails extends Equatable {
   final String notes;
   final double vatPercent;
   final double discountPercent;
+  final String appOwnerAddress;
 
   const InvoiceDetails({
     required this.invoiceId,
@@ -17,6 +18,7 @@ class InvoiceDetails extends Equatable {
     this.notes = '',
     this.vatPercent = 0,
     this.discountPercent = 0,
+    this.appOwnerAddress = '',
   });
 
   @override
@@ -28,5 +30,6 @@ class InvoiceDetails extends Equatable {
     notes,
     vatPercent,
     discountPercent,
+    appOwnerAddress,
   ];
 }
