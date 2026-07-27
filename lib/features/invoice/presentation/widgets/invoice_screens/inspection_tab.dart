@@ -28,7 +28,11 @@ class InspectionTab extends StatefulWidget {
   State<InspectionTab> createState() => InspectionTabState();
 }
 
-class InspectionTabState extends State<InspectionTab> {
+class InspectionTabState extends State<InspectionTab>
+    with AutomaticKeepAliveClientMixin<InspectionTab> {
+  @override
+  bool get wantKeepAlive => true;
+
   final _ownerNameController = TextEditingController();
   final _addressController = TextEditingController();
   final _makeController = TextEditingController();
@@ -71,8 +75,27 @@ class InspectionTabState extends State<InspectionTab> {
     ).showSnackBar(const SnackBar(content: Text('Inspection saved')));
   }
 
+  void _populateFrom(VehicleDetails vehicleDetails) {
+    _ownerNameController.text = vehicleDetails.ownerName;
+    _addressController.text = vehicleDetails.address;
+    _makeController.text = vehicleDetails.make;
+    _modelController.text = vehicleDetails.model;
+    _regoController.text = vehicleDetails.rego;
+    _yearController.text = vehicleDetails.year;
+    _odometerController.text = vehicleDetails.odometer;
+    _vinController.text = vehicleDetails.vin;
+    _engineNoController.text = vehicleDetails.engineNo;
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
+    final vehicleDetails = context.read<InspectionBloc>().state.vehicleDetails;
+    if (vehicleDetails != null && _ownerNameController.text.isEmpty) {
+      _populateFrom(vehicleDetails);
+    }
+
     return MultiBlocListener(
       listeners: [
         BlocListener<InspectionBloc, InspectionState>(
@@ -94,18 +117,7 @@ class InspectionTabState extends State<InspectionTab> {
         BlocListener<InspectionBloc, InspectionState>(
           listenWhen: (previous, current) =>
               previous.vehicleDetails == null && current.vehicleDetails != null,
-          listener: (context, state) {
-            final vehicleDetails = state.vehicleDetails!;
-            _ownerNameController.text = vehicleDetails.ownerName;
-            _addressController.text = vehicleDetails.address;
-            _makeController.text = vehicleDetails.make;
-            _modelController.text = vehicleDetails.model;
-            _regoController.text = vehicleDetails.rego;
-            _yearController.text = vehicleDetails.year;
-            _odometerController.text = vehicleDetails.odometer;
-            _vinController.text = vehicleDetails.vin;
-            _engineNoController.text = vehicleDetails.engineNo;
-          },
+          listener: (context, state) => _populateFrom(state.vehicleDetails!),
         ),
       ],
       child: Builder(

@@ -38,7 +38,11 @@ class InvoiceTab extends StatefulWidget {
   State<InvoiceTab> createState() => InvoiceTabState();
 }
 
-class InvoiceTabState extends State<InvoiceTab> {
+class InvoiceTabState extends State<InvoiceTab>
+    with AutomaticKeepAliveClientMixin<InvoiceTab> {
+  @override
+  bool get wantKeepAlive => true;
+
   final _paymentTermsController = TextEditingController();
   final _appOwnerAddressController = TextEditingController();
   final _notesController = TextEditingController();
@@ -98,6 +102,7 @@ class InvoiceTabState extends State<InvoiceTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return MultiBlocListener(
       listeners: [
         BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
