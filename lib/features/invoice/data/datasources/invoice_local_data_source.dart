@@ -142,6 +142,25 @@ class InvoiceLocalDataSource {
     }
   }
 
+  Future<void> updatePdfContentSignature(
+    String invoiceId,
+    String? signature,
+  ) async {
+    try {
+      final db = await _appDatabase.database;
+      await db.update(
+        'invoices',
+        {'pdf_content_signature': signature},
+        where: 'id = ?',
+        whereArgs: [invoiceId],
+      );
+    } catch (e) {
+      throw CacheException(
+        message: 'Failed to update PDF content signature: $e',
+      );
+    }
+  }
+
   Future<InvoiceDetailsBundle> getInvoiceDetailsByInvoiceId(
     String invoiceId,
   ) async {
@@ -171,6 +190,7 @@ class InvoiceLocalDataSource {
         vatPercent: (row?['vat_percent'] as num?)?.toDouble() ?? 0,
         discountPercent: (row?['discount_percent'] as num?)?.toDouble() ?? 0,
         appOwnerAddress: row?['app_owner_address'] as String? ?? '',
+        pdfContentSignature: row?['pdf_content_signature'] as String?,
       );
 
       final items = itemRows

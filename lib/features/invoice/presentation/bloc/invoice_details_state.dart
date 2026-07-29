@@ -18,6 +18,7 @@ class InvoiceDetailsState extends Equatable {
   final bool saveSuccess;
   final bool isSending;
   final bool sendSuccess;
+  final bool needsRegenerationConfirmation;
   final String? invoicePdfPath;
   final String? inspectionPdfPath;
   final String? errorMessage;
@@ -37,6 +38,7 @@ class InvoiceDetailsState extends Equatable {
     this.saveSuccess = false,
     this.isSending = false,
     this.sendSuccess = false,
+    this.needsRegenerationConfirmation = false,
     this.invoicePdfPath,
     this.inspectionPdfPath,
     this.errorMessage,
@@ -57,6 +59,7 @@ class InvoiceDetailsState extends Equatable {
     bool? saveSuccess,
     bool? isSending,
     bool? sendSuccess,
+    bool? needsRegenerationConfirmation,
     String? invoicePdfPath,
     String? inspectionPdfPath,
     String? errorMessage,
@@ -76,6 +79,7 @@ class InvoiceDetailsState extends Equatable {
       saveSuccess: saveSuccess ?? false,
       isSending: isSending ?? this.isSending,
       sendSuccess: sendSuccess ?? false,
+      needsRegenerationConfirmation: needsRegenerationConfirmation ?? false,
       invoicePdfPath: invoicePdfPath ?? this.invoicePdfPath,
       inspectionPdfPath: inspectionPdfPath ?? this.inspectionPdfPath,
       errorMessage: errorMessage,
@@ -98,6 +102,7 @@ class InvoiceDetailsState extends Equatable {
     saveSuccess,
     isSending,
     sendSuccess,
+    needsRegenerationConfirmation,
     invoicePdfPath,
     inspectionPdfPath,
     errorMessage,

@@ -30,4 +30,9 @@ abstract class InvoiceRepository {
   Future<Either<Failure, InvoiceDetailsBundle>> getInvoiceDetailsByInvoiceId(
     String invoiceId,
   );
+
+  Future<Either<Failure, void>> updatePdfContentSignature(
+    String invoiceId,
+    String? signature,
+  );
 }

@@ -88,4 +88,17 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
       return Left(CacheFailure(message: e.message));
     }
   }
+
+  @override
+  Future<Either<Failure, void>> updatePdfContentSignature(
+    String invoiceId,
+    String? signature,
+  ) async {
+    try {
+      await _localDataSource.updatePdfContentSignature(invoiceId, signature);
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    }
+  }
 }

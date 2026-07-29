@@ -111,11 +111,17 @@ class InvoiceGenerateRequested extends InvoiceDetailsEvent {
   final String paymentTerms;
   final String notes;
 
+  /// Bypasses the "content unchanged" short-circuit — set when re-dispatching
+  /// after the user has confirmed they want to regenerate despite detected
+  /// changes.
+  final bool forceRegenerate;
+
   const InvoiceGenerateRequested({
     required this.paymentTerms,
     required this.notes,
+    this.forceRegenerate = false,
   });
 
   @override
-  List<Object?> get props => [paymentTerms, notes];
+  List<Object?> get props => [paymentTerms, notes, forceRegenerate];
 }
