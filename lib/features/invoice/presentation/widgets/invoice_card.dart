@@ -44,9 +44,9 @@ class InvoiceCard extends StatelessWidget {
   }
 
   void _showGeneratePdfStub(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('PDF generation coming soon')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('PDF generation coming soon')));
   }
 
   void _showActionSheet(BuildContext context) {
@@ -63,7 +63,9 @@ class InvoiceCard extends StatelessWidget {
       summary.rego,
     ].where((part) => part.isNotEmpty).join(' · ');
     final sheetTitle = summary.ownerName.isEmpty
-        ? (vehicleLine.isEmpty ? 'Invoice #${summary.id.substring(0, 8)}' : vehicleLine)
+        ? (vehicleLine.isEmpty
+              ? 'Invoice #${summary.id.substring(0, 8)}'
+              : vehicleLine)
         : summary.ownerName;
 
     showModalBottomSheet(
@@ -74,8 +76,8 @@ class InvoiceCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: isDark
-                ? [AppPallete.dynamicBlack, AppPallete.warmOnyx, AppPallete.dynamicBlack]
-                : [Colors.grey[200]!, Colors.grey[100]!, Colors.white],
+                ? AppPallete.invoiceCardGradientDark
+                : AppPallete.invoiceCardGradientLight,
             begin: Alignment.topLeft,
             end: Alignment.topRight,
           ),
@@ -164,7 +166,10 @@ class InvoiceCard extends StatelessWidget {
                       Navigator.pop(sheetContext);
                       _showGeneratePdfStub(context);
                     },
-                    leading: Icon(Icons.picture_as_pdf_outlined, color: textColor),
+                    leading: Icon(
+                      Icons.picture_as_pdf_outlined,
+                      color: textColor,
+                    ),
                     title: Text(
                       'Generate PDF',
                       style: TextStyle(
@@ -291,9 +296,7 @@ class InvoiceCard extends StatelessWidget {
                   vehicleLine,
                   style: TextStyle(
                     fontSize: 13,
-                    color: isDark
-                        ? AppPallete.boatAnchor
-                        : AppPallete.hypnotic,
+                    color: isDark ? AppPallete.boatAnchor : AppPallete.hypnotic,
                   ),
                 ),
               ],

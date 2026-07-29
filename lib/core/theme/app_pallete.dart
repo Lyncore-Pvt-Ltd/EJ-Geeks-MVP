@@ -16,6 +16,16 @@ class AppPallete {
     Color(0xFFFF6060),
     Color(0xFFFF8A80),
   ];
+  static List<Color> invoiceCardGradientLight = [
+    Colors.grey[200]!,
+    Colors.grey[100]!,
+    Colors.white,
+  ];
+  static List<Color> invoiceCardGradientDark = [
+    AppPallete.dynamicBlack,
+    AppPallete.warmOnyx,
+    AppPallete.dynamicBlack,
+  ];
   //dark theme colors
   static const Color backgroundColor = Color.fromRGBO(24, 24, 32, 1);
   static const Color cascadingWhite = Color(0xFFf6f6f6);
