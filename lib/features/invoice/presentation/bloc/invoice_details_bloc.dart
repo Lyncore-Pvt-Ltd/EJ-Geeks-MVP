@@ -333,6 +333,7 @@ class InvoiceDetailsBloc
       GenerateInvoicePdfsParams(
         invoiceId: invoiceId,
         invoiceCreatedAt: invoiceCreatedAt,
+        forceRegenerate: event.forceRegenerate,
       ),
     );
 
@@ -342,16 +343,26 @@ class InvoiceDetailsBloc
       (failure) => emit(
         state.copyWith(isSending: false, errorMessage: failure.message),
       ),
-      (pdfs) => emit(
-        state.copyWith(
-          isSending: false,
-          sendSuccess: true,
-          paymentTerms: event.paymentTerms,
-          notes: event.notes,
-          invoicePdfPath: pdfs.invoicePdfPath,
-          inspectionPdfPath: pdfs.inspectionPdfPath,
+      (result) => switch (result) {
+        GeneratedInvoicePdfs() => emit(
+          state.copyWith(
+            isSending: false,
+            sendSuccess: true,
+            paymentTerms: event.paymentTerms,
+            notes: event.notes,
+            invoicePdfPath: result.invoicePdfPath,
+            inspectionPdfPath: result.inspectionPdfPath,
+          ),
         ),
-      ),
+        PdfRegenerationConfirmationRequired() => emit(
+          state.copyWith(
+            isSending: false,
+            needsRegenerationConfirmation: true,
+            paymentTerms: event.paymentTerms,
+            notes: event.notes,
+          ),
+        ),
+      },
     );
   }
 }

@@ -10,6 +10,12 @@ class InvoiceDetails extends Equatable {
   final double discountPercent;
   final String appOwnerAddress;
 
+  /// Canonical JSON snapshot of every field that fed the last successful
+  /// PDF generation for this invoice (see `GenerateInvoicePdfs`). Compared
+  /// against a freshly computed signature to decide whether "Generate" can
+  /// reuse the existing PDFs instead of rebuilding them.
+  final String? pdfContentSignature;
+
   const InvoiceDetails({
     required this.invoiceId,
     this.issueDate,
@@ -19,6 +25,7 @@ class InvoiceDetails extends Equatable {
     this.vatPercent = 0,
     this.discountPercent = 0,
     this.appOwnerAddress = '',
+    this.pdfContentSignature,
   });
 
   @override
@@ -31,5 +38,6 @@ class InvoiceDetails extends Equatable {
     vatPercent,
     discountPercent,
     appOwnerAddress,
+    pdfContentSignature,
   ];
 }

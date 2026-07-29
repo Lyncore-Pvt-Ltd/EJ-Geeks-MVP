@@ -6,7 +6,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'ej_geek.db';
-  static const _dbVersion = 4;
+  static const _dbVersion = 5;
 
   Database? _database;
 
@@ -64,6 +64,12 @@ class AppDatabase {
         'ALTER TABLE invoices ADD COLUMN app_owner_address TEXT',
       );
     }
+
+    if (oldVersion < 5) {
+      await db.execute(
+        'ALTER TABLE invoices ADD COLUMN pdf_content_signature TEXT',
+      );
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -97,7 +103,8 @@ class AppDatabase {
         notes TEXT,
         vat_percent REAL,
         discount_percent REAL,
-        app_owner_address TEXT
+        app_owner_address TEXT,
+        pdf_content_signature TEXT
       )
     ''');
 

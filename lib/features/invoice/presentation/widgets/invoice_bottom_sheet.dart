@@ -1,6 +1,6 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
 import 'package:ej_geek/core/di/service_locator.dart';
-import 'package:ej_geek/core/presentation/widget/pdf_generation_progress_dialog.dart';
+import 'package:ej_geek/core/presentation/widget/confirm_dialog.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_state.dart';
@@ -98,6 +98,29 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
     _inspectionKey.currentState?.save();
   }
 
+  Future<void> _confirmRegeneration(BuildContext context) async {
+    final invoiceDetailsBloc = context.read<InvoiceDetailsBloc>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const ConfirmDialog(
+        title: 'Changes Detected',
+        message:
+            'Changes have been made to the invoice and/or inspection. '
+            'Generate a new PDF?',
+        confirmLabel: 'Generate',
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    invoiceDetailsBloc.add(
+      InvoiceGenerateRequested(
+        paymentTerms: invoiceDetailsBloc.state.paymentTerms,
+        notes: invoiceDetailsBloc.state.notes,
+        forceRegenerate: true,
+      ),
+    );
+  }
+
   void _onClosePressed() {
     setState(() => _isClosing = true);
     _triggerActiveSave();
@@ -188,8 +211,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                   // unsaved edit to its Payment Terms/Notes fields to read —
                   // fall back to the bloc's own loaded values so Generate
                   // still fires instead of silently no-oping.
-                  final invoiceDetailsBloc = context
-                      .read<InvoiceDetailsBloc>();
+                  final invoiceDetailsBloc = context.read<InvoiceDetailsBloc>();
                   invoiceDetailsBloc.add(
                     InvoiceGenerateRequested(
                       paymentTerms: invoiceDetailsBloc.state.paymentTerms,
@@ -209,37 +231,23 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                 previous.isSending != current.isSending,
             listener: (context, state) {
               if (state.isSending) {
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (_) =>
-                      const PdfGenerationProgressDialog(
-                        message: 'Generating PDFs…',
-                      ),
-                );
-                return;
-              }
-
-              // isSending just flipped true -> false: the progress dialog
-              // above is on the stack, dismiss it first.
-              Navigator.of(context).pop();
-
-              if (state.sendSuccess) {
                 final invoiceDetailsBloc = context.read<InvoiceDetailsBloc>();
                 final clientName =
-                    context.read<InspectionBloc>().state.vehicleDetails?.ownerName ??
+                    context
+                        .read<InspectionBloc>()
+                        .state
+                        .vehicleDetails
+                        ?.ownerName ??
                     '';
                 showDialog(
                   context: context,
+                  barrierDismissible: false,
                   builder: (dialogContext) => InvoiceSuccessDialog(
-                    totalAmount: state.totals.totalAmount,
+                    bloc: invoiceDetailsBloc,
                     clientName: clientName,
                     invoiceId: invoiceDetailsBloc.invoiceId,
-                    invoicePdfPath: state.invoicePdfPath,
-                    inspectionPdfPath: state.inspectionPdfPath,
                     onDone: () {
                       Navigator.of(dialogContext).pop();
-                      Navigator.of(context).pop();
                     },
                     onSendNew: () {
                       Navigator.of(dialogContext).pop();
@@ -247,9 +255,25 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                     },
                   ),
                 );
+                return;
               }
-              // On error, the tab's own errorMessage listener (unchanged)
-              // shows the SnackBar; nothing further to do here.
+
+              // isSending just flipped true -> false.
+              if (state.needsRegenerationConfirmation) {
+                // Nothing was generated — the dialog above is stuck
+                // mid-progress; dismiss it and ask before rebuilding.
+                Navigator.of(context).pop();
+                _confirmRegeneration(context);
+                return;
+              }
+
+              // On failure, dismiss the dialog opened above; the tab's own
+              // errorMessage listener shows the SnackBar. On success, the
+              // dialog is already open and transitions itself once its
+              // progress animation catches up to the now-ready state.
+              if (!state.sendSuccess) {
+                Navigator.of(context).pop();
+              }
             },
           ),
         ],
