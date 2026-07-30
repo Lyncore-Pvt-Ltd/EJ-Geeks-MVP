@@ -24,11 +24,11 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
+              Column(
                 children: [
-                  Expanded(child: TotalRevenueCard()),
-                  const SizedBox(width: 12),
-                  Expanded(child: PendingPaymentsCard()),
+                  TotalRevenueCard(),
+                  const SizedBox(height: 12),
+                  PendingPaymentsCard(),
                 ],
               ),
               const SizedBox(height: 20),
