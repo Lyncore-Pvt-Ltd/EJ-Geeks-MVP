@@ -5,6 +5,9 @@ class DashboardProvider extends ChangeNotifier {
   final int invoiceCount = dummyInvoiceCount;
   final int pendingCount = dummyPendingCount;
   final int paidCount = dummyPaidCount;
+  final double invoiceTrend = dummyInvoiceTrend;
+  final double pendingTrend = dummyPendingTrend;
+  final double paidTrend = dummyPaidTrend;
   final String revenueLabel = dummyRevenueLabel;
   final String revenueChangeLabel = dummyRevenueChangeLabel;
   final String pendingAmountLabel = dummyPendingAmountLabel;

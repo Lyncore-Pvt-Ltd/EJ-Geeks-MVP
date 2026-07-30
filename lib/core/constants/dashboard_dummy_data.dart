@@ -8,6 +8,9 @@ class MonthlyRevenue {
 const int dummyInvoiceCount = 125;
 const int dummyPendingCount = 18;
 const int dummyPaidCount = 107;
+const double dummyInvoiceTrend = 8.2;
+const double dummyPendingTrend = -12.0;
+const double dummyPaidTrend = 5.0;
 const String dummyRevenueLabel = 'A\$2.4M';
 const String dummyRevenueChangeLabel = '12.8% than last month';
 const String dummyPendingAmountLabel = 'A\$185K';

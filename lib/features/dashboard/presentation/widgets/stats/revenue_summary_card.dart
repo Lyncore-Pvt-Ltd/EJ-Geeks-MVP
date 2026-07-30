@@ -11,15 +11,16 @@ class TotalRevenueCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final dashboard = context.watch<DashboardProvider>();
-    final titleColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
 
     return _SummaryPanel(
       isDark: isDark,
       title: 'Total Revenue',
       value: dashboard.revenueLabel,
+      headerIcon: Icons.trending_up,
+      headerIconColor: AppPallete.emeraldTeal,
       chart: _RevenueBars(
         monthlyRevenue: dashboard.monthlyRevenue,
-        mutedColor: titleColor,
+        isDark: isDark,
       ),
     );
   }
@@ -38,6 +39,9 @@ class PendingPaymentsCard extends StatelessWidget {
       isDark: isDark,
       title: 'Pending Payments',
       value: dashboard.pendingAmountLabel,
+      headerIcon: Icons.access_time_rounded,
+      headerIconColor: AppPallete.amberOrange,
+      headerIconOutlined: true,
       chart: _PendingDots(
         pendingCount: dashboard.pendingCount,
         mutedColor: titleColor,
@@ -53,12 +57,18 @@ class _SummaryPanel extends StatelessWidget {
   final String title;
   final String value;
   final Widget chart;
+  final IconData headerIcon;
+  final Color headerIconColor;
+  final bool headerIconOutlined;
 
   const _SummaryPanel({
     required this.isDark,
     required this.title,
     required this.value,
     required this.chart,
+    required this.headerIcon,
+    required this.headerIconColor,
+    this.headerIconOutlined = false,
   });
 
   @override
@@ -86,7 +96,29 @@ class _SummaryPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(title, style: TextStyle(fontSize: 12, color: titleColor)),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                  color: titleColor,
+                ),
+              ),
+              headerIconOutlined
+                  ? Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: headerIconColor, width: 1.5),
+                      ),
+                      child: Icon(headerIcon, size: 12, color: headerIconColor),
+                    )
+                  : Icon(headerIcon, size: 20, color: headerIconColor),
+            ],
+          ),
           const SizedBox(height: 6),
           Text(
             value,
@@ -106,9 +138,9 @@ class _SummaryPanel extends StatelessWidget {
 
 class _RevenueBars extends StatelessWidget {
   final List<MonthlyRevenue> monthlyRevenue;
-  final Color mutedColor;
+  final bool isDark;
 
-  const _RevenueBars({required this.monthlyRevenue, required this.mutedColor});
+  const _RevenueBars({required this.monthlyRevenue, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -132,8 +164,8 @@ class _RevenueBars extends StatelessWidget {
                       constraints.maxHeight * (bars[i].revenue / maxRevenue),
                   decoration: BoxDecoration(
                     color: i == bars.length - 1
-                        ? const Color(0xFFFF6060)
-                        : mutedColor.withValues(alpha: 0.25),
+                        ? AppPallete.selectionGradient[1]
+                        : (isDark ? Colors.white : Colors.black),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -165,12 +197,12 @@ class _PendingDots extends StatelessWidget {
         children: [
           for (var i = 0; i < totalDots; i++)
             Container(
-              width: 5,
-              height: 5,
+              width: 18,
+              height: 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: i < highlightedDots
-                    ? const Color(0xFFFF6060)
+                    ? AppPallete.selectionGradient[1]
                     : mutedColor.withValues(alpha: 0.25),
               ),
             ),
