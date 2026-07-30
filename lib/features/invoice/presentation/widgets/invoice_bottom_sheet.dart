@@ -94,6 +94,16 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
   /// Inspection tab's current form data first, then (once that completes)
   /// triggers the Invoice tab's save + both-PDF generation.
   void _onGeneratePressed() {
+    final inspectionValid = _inspectionKey.currentState?.validate() ?? true;
+    final invoiceValid = _invoiceKey.currentState?.validate() ?? true;
+    if (!inspectionValid) {
+      _tabController.animateTo(0);
+      return;
+    }
+    if (!invoiceValid) {
+      _tabController.animateTo(1);
+      return;
+    }
     _pendingGenerate = true;
     _inspectionKey.currentState?.save();
   }
@@ -327,6 +337,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                             isClosing: _isClosing,
                             isInitialLoading: isInitialLoading,
                             activeTabIndex: _tabController.index,
+                            onGeneratePressed: _onGeneratePressed,
                             onSavePressed: _onSavePressed,
                             onClosePressed: _onClosePressed,
                           );
@@ -408,6 +419,7 @@ class _HeaderActions extends StatelessWidget {
     required this.isClosing,
     required this.isInitialLoading,
     required this.activeTabIndex,
+    required this.onGeneratePressed,
     required this.onSavePressed,
     required this.onClosePressed,
   });
@@ -416,6 +428,7 @@ class _HeaderActions extends StatelessWidget {
   final bool isClosing;
   final bool isInitialLoading;
   final int activeTabIndex;
+  final VoidCallback onGeneratePressed;
   final VoidCallback onSavePressed;
   final VoidCallback onClosePressed;
 
@@ -440,6 +453,12 @@ class _HeaderActions extends StatelessWidget {
     final iconColor = isDark
         ? AppPallete.cascadingWhite
         : AppPallete.tricornBlack;
+
+    final generateButton = IconButton(
+      tooltip: 'Generate PDF',
+      icon: Icon(Icons.picture_as_pdf_outlined, color: iconColor),
+      onPressed: isInitialLoading ? null : onGeneratePressed,
+    );
 
     final saveButton = IconButton(
       icon: isSaving && !isClosing
@@ -475,7 +494,7 @@ class _HeaderActions extends StatelessWidget {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [saveButton, closeButton],
+      children: [generateButton, saveButton, closeButton],
     );
   }
 }

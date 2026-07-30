@@ -30,6 +30,7 @@ class InspectionLocalDataSource {
           'engine_no': record.vehicleDetails.engineNo,
           'owner_name': record.vehicleDetails.ownerName,
           'address': record.vehicleDetails.address,
+          'phone_number': record.vehicleDetails.phoneNumber,
           'created_at': record.createdAt.toIso8601String(),
         }, conflictAlgorithm: ConflictAlgorithm.replace);
 
@@ -149,6 +150,7 @@ class InspectionLocalDataSource {
           engineNo: row['engine_no'] as String? ?? '',
           ownerName: row['owner_name'] as String? ?? '',
           address: row['address'] as String? ?? '',
+          phoneNumber: row['phone_number'] as String? ?? '',
         ),
         sections: sections,
         imagePaths: imageRows.map((r) => r['file_path'] as String).toList(),

@@ -8,6 +8,7 @@ class VehicleDetailsForm extends StatelessWidget {
     super.key,
     required this.ownerNameController,
     required this.addressController,
+    required this.phoneController,
     required this.makeController,
     required this.modelController,
     required this.regoController,
@@ -19,6 +20,7 @@ class VehicleDetailsForm extends StatelessWidget {
 
   final TextEditingController ownerNameController;
   final TextEditingController addressController;
+  final TextEditingController phoneController;
   final TextEditingController makeController;
   final TextEditingController modelController;
   final TextEditingController regoController;
@@ -54,13 +56,24 @@ class VehicleDetailsForm extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _field('Owner Name', ownerNameController),
+          _field(
+            'Owner Name',
+            ownerNameController,
+            validator: _requiredValidator,
+          ),
           const SizedBox(height: 10),
           _field(
             'Address',
             addressController,
             growable: true,
             collapsedLines: 2,
+            validator: _requiredValidator,
+          ),
+          const SizedBox(height: 10),
+          _field(
+            'Phone Number',
+            phoneController,
+            keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 10),
           _field('Make', makeController),
@@ -103,6 +116,7 @@ class VehicleDetailsForm extends StatelessWidget {
     List<TextInputFormatter>? inputFormatters,
     bool growable = false,
     int collapsedLines = 3,
+    String? Function(String?)? validator,
   }) {
     return InspectionTextField(
       controller: controller,
@@ -112,6 +126,11 @@ class VehicleDetailsForm extends StatelessWidget {
       inputFormatters: inputFormatters,
       growable: growable,
       collapsedLines: collapsedLines,
+      validator: validator,
     );
   }
+}
+
+String? _requiredValidator(String? value) {
+  return value == null || value.trim().isEmpty ? 'Required' : null;
 }

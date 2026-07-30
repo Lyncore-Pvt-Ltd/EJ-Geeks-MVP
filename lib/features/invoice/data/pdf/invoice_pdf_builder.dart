@@ -30,6 +30,7 @@ Future<Uint8List> buildInvoicePdf({
 
   final ownerName = inspection?.vehicleDetails.ownerName ?? '';
   final ownerAddress = inspection?.vehicleDetails.address ?? '';
+  final ownerPhone = inspection?.vehicleDetails.phoneNumber ?? '';
 
   final doc = pw.Document();
 
@@ -66,6 +67,15 @@ Future<Uint8List> buildInvoicePdf({
                   if (ownerAddress.isNotEmpty)
                     pw.Text(
                       ownerAddress,
+                      style: pw.TextStyle(
+                        font: fonts.regular,
+                        fontSize: 10,
+                        color: AppPdfPallete.textSecondary,
+                      ),
+                    ),
+                  if (ownerPhone.isNotEmpty)
+                    pw.Text(
+                      ownerPhone,
                       style: pw.TextStyle(
                         font: fonts.regular,
                         fontSize: 10,

@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class VehicleDetails extends Equatable {
   final String ownerName;
   final String address;
+  final String phoneNumber;
   final String make;
   final String model;
   final String rego;
@@ -14,6 +15,7 @@ class VehicleDetails extends Equatable {
   const VehicleDetails({
     this.ownerName = '',
     this.address = '',
+    this.phoneNumber = '',
     this.make = '',
     this.model = '',
     this.rego = '',
@@ -27,6 +29,7 @@ class VehicleDetails extends Equatable {
   List<Object?> get props => [
     ownerName,
     address,
+    phoneNumber,
     make,
     model,
     rego,
