@@ -39,6 +39,12 @@ class AppPallete {
   static const Color astroscopusGrey = Color(0xFFaeb4b7);
   static const Color nebulousWhite = Color(0xFFdddfdd);
   static const Color whiteout = Color(0xFFfbfbfb);
+  //accent colors
+  static const Color deepTeal = Color(0xFF264653);
+  static const Color emeraldTeal = Color(0xFF2A9D8F);
+  static const Color sunGold = Color(0xFFE9C46A);
+  static const Color amberOrange = Color(0xFFF4A261);
+  static const Color burntCoral = Color(0xFFE76F51);
 }
 
 class FontFamily {
