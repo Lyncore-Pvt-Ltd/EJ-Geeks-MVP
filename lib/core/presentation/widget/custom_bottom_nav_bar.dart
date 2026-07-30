@@ -88,15 +88,7 @@ class CustomBottomNavBar extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFFFF3D3D),
-                    Color(0xFFFF6060),
-                    Color(0xFFFF8A80),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: isDark ? AppPallete.whiteout : AppPallete.dynamicBlack,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
@@ -116,7 +108,12 @@ class CustomBottomNavBar extends StatelessWidget {
                     await InvoiceBottomSheet.show(context);
                     invoiceBloc.add(const InvoiceListRequested());
                   },
-                  child: const Icon(Icons.add, color: Colors.black),
+                  child: Icon(
+                    Icons.add,
+                    color: isDark
+                        ? AppPallete.dynamicBlack
+                        : AppPallete.whiteout,
+                  ),
                 ),
               ),
             ),

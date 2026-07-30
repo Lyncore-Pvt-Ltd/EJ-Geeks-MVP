@@ -463,7 +463,7 @@ class _HeaderActions extends StatelessWidget {
         child: CircularProgressIndicator(strokeWidth: 2, color: iconColor),
       );
     } else if (isClosing && saveSuccess) {
-      closeIcon = const Icon(Icons.check, color: Colors.green);
+      closeIcon = const Icon(Icons.check, color: AppPallete.gradient3);
     } else {
       closeIcon = Icon(Icons.close, color: iconColor);
     }
