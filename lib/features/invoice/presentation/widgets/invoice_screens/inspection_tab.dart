@@ -33,8 +33,11 @@ class InspectionTabState extends State<InspectionTab>
   @override
   bool get wantKeepAlive => true;
 
+  final _formKey = GlobalKey<FormState>();
+
   final _ownerNameController = TextEditingController();
   final _addressController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _makeController = TextEditingController();
   final _modelController = TextEditingController();
   final _regoController = TextEditingController();
@@ -47,6 +50,7 @@ class InspectionTabState extends State<InspectionTab>
   void dispose() {
     _ownerNameController.dispose();
     _addressController.dispose();
+    _phoneController.dispose();
     _makeController.dispose();
     _modelController.dispose();
     _regoController.dispose();
@@ -57,10 +61,13 @@ class InspectionTabState extends State<InspectionTab>
     super.dispose();
   }
 
+  bool validate() => _formKey.currentState?.validate() ?? true;
+
   void save() {
     final vehicleDetails = VehicleDetails(
       ownerName: _ownerNameController.text,
       address: _addressController.text,
+      phoneNumber: _phoneController.text,
       make: _makeController.text,
       model: _modelController.text,
       rego: _regoController.text,
@@ -78,6 +85,7 @@ class InspectionTabState extends State<InspectionTab>
   void _populateFrom(VehicleDetails vehicleDetails) {
     _ownerNameController.text = vehicleDetails.ownerName;
     _addressController.text = vehicleDetails.address;
+    _phoneController.text = vehicleDetails.phoneNumber;
     _makeController.text = vehicleDetails.make;
     _modelController.text = vehicleDetails.model;
     _regoController.text = vehicleDetails.rego;
@@ -133,16 +141,20 @@ class InspectionTabState extends State<InspectionTab>
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     children: [
-                      VehicleDetailsForm(
-                        ownerNameController: _ownerNameController,
-                        addressController: _addressController,
-                        makeController: _makeController,
-                        modelController: _modelController,
-                        regoController: _regoController,
-                        yearController: _yearController,
-                        odometerController: _odometerController,
-                        vinController: _vinController,
-                        engineNoController: _engineNoController,
+                      Form(
+                        key: _formKey,
+                        child: VehicleDetailsForm(
+                          ownerNameController: _ownerNameController,
+                          addressController: _addressController,
+                          phoneController: _phoneController,
+                          makeController: _makeController,
+                          modelController: _modelController,
+                          regoController: _regoController,
+                          yearController: _yearController,
+                          odometerController: _odometerController,
+                          vinController: _vinController,
+                          engineNoController: _engineNoController,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       const InspectionImagePicker(),

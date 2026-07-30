@@ -21,6 +21,7 @@ class InspectionTextField extends StatefulWidget {
     this.collapsedLines = 3,
     this.expandedLines = 6,
     this.prefixText,
+    this.validator,
   }) : assert(
          controller == null || initialValue == null,
          'Pass either controller or initialValue, not both.',
@@ -37,6 +38,7 @@ class InspectionTextField extends StatefulWidget {
   final int collapsedLines;
   final int expandedLines;
   final String? prefixText;
+  final FormFieldValidator<String>? validator;
 
   @override
   State<InspectionTextField> createState() => _InspectionTextFieldState();
@@ -89,6 +91,8 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
           keyboardType: widget.keyboardType,
           textCapitalization: widget.textCapitalization,
           inputFormatters: widget.inputFormatters,
+          validator: widget.validator,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           cursorColor: highlightColor,
           selectionControls: materialTextSelectionControls,
           style: TextStyle(

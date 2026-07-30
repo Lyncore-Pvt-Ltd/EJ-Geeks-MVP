@@ -43,6 +43,8 @@ class InvoiceTabState extends State<InvoiceTab>
   @override
   bool get wantKeepAlive => true;
 
+  final _formKey = GlobalKey<FormState>();
+
   final _paymentTermsController = TextEditingController();
   final _appOwnerAddressController = TextEditingController();
   final _notesController = TextEditingController();
@@ -81,6 +83,8 @@ class InvoiceTabState extends State<InvoiceTab>
     _itemQtyController.clear();
     _itemPriceController.clear();
   }
+
+  bool validate() => _formKey.currentState?.validate() ?? true;
 
   void save() {
     context.read<InvoiceDetailsBloc>().add(
@@ -144,7 +148,9 @@ class InvoiceTabState extends State<InvoiceTab>
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
                 sliver: SliverToBoxAdapter(
-                  child: Column(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _InvoiceNumberHeading(invoiceId: widget.invoiceId),
@@ -157,6 +163,9 @@ class InvoiceTabState extends State<InvoiceTab>
                         onChanged: (value) => context
                             .read<InvoiceDetailsBloc>()
                             .add(AppOwnerAddressChanged(value)),
+                        validator: (value) => value == null || value.trim().isEmpty
+                            ? 'Required'
+                            : null,
                       ),
                       const SizedBox(height: 16),
                       Row(
@@ -316,6 +325,7 @@ class InvoiceTabState extends State<InvoiceTab>
                         },
                       ),
                     ],
+                  ),
                   ),
                 ),
               ),
