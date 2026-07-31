@@ -1,5 +1,8 @@
 import 'package:ej_geek/core/presentation/widget/show_delete_dialog.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
+// TEMPORARY TRIAL LOCK — remove when no longer needed
+import 'package:ej_geek/core/presentation/widget/trial_expired_dialog.dart';
+import 'package:ej_geek/core/trial/trial_controller.dart';
 import 'package:ej_geek/features/invoice/data/constants/invoice_date_format.dart';
 import 'package:ej_geek/features/invoice/domain/entities/invoice_summary.dart';
 import 'package:ej_geek/features/invoice/domain/entities/payment_status.dart';
@@ -18,6 +21,14 @@ class InvoiceCard extends StatelessWidget {
   final InvoiceSummary summary;
 
   Future<void> _openInvoice(BuildContext context) async {
+    // TEMPORARY TRIAL LOCK — remove when no longer needed
+    if (context.read<TrialController>().isExpired) {
+      showDialog(
+        context: context,
+        builder: (_) => const TrialExpiredDialog(),
+      );
+      return;
+    }
     final invoiceBloc = context.read<InvoiceBloc>();
     await InvoiceBottomSheet.show(
       context,

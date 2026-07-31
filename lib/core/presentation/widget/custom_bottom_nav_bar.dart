@@ -1,10 +1,14 @@
 import 'package:ej_geek/core/theme/app_pallete.dart';
+// TEMPORARY TRIAL LOCK — remove when no longer needed
+import 'package:ej_geek/core/presentation/widget/trial_expired_dialog.dart';
+import 'package:ej_geek/core/trial/trial_controller.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_event.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_bottom_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:provider/provider.dart';
 
 class NavBarTab {
   final IconData icon;
@@ -28,6 +32,8 @@ class CustomBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    // TEMPORARY TRIAL LOCK — remove when no longer needed
+    final isExpired = context.watch<TrialController>().isExpired;
 
     return SafeArea(
       minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -103,14 +109,28 @@ class CustomBottomNavBar extends StatelessWidget {
               clipBehavior: Clip.antiAlias,
               child: InkWell(
                 customBorder: const CircleBorder(),
+                // TEMPORARY TRIAL LOCK — remove when no longer needed
+                splashColor: isExpired ? Colors.transparent : null,
+                highlightColor: isExpired ? Colors.transparent : null,
                 onTap: () async {
+                  // TEMPORARY TRIAL LOCK — remove when no longer needed
+                  if (isExpired) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => const TrialExpiredDialog(),
+                    );
+                    return;
+                  }
                   final invoiceBloc = context.read<InvoiceBloc>();
                   await InvoiceBottomSheet.show(context);
                   invoiceBloc.add(const InvoiceListRequested());
                 },
                 child: Icon(
                   Icons.add,
-                  color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
+                  // TEMPORARY TRIAL LOCK — remove when no longer needed
+                  color: isExpired
+                      ? Colors.grey
+                      : (isDark ? AppPallete.dynamicBlack : AppPallete.whiteout),
                 ),
               ),
             ),
