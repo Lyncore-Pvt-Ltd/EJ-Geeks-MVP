@@ -7,6 +7,7 @@ import 'package:ej_geek/features/invoice/domain/entities/service_status.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_event.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_bottom_sheet.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -57,10 +58,12 @@ class InvoiceCard extends StatelessWidget {
     final groupColor = isDark ? AppPallete.warmOnyx : Colors.grey[200];
     final dividerColor = isDark ? Colors.white12 : Colors.black12;
     final handleColor = isDark ? Colors.white24 : Colors.black26;
+    final isCompleted = summary.serviceStatus == ServiceStatus.completed;
     final vehicleLine = [
       summary.make,
       summary.model,
       summary.rego,
+      summary.year,
     ].where((part) => part.isNotEmpty).join(' · ');
     final sheetTitle = summary.ownerName.isEmpty
         ? (vehicleLine.isEmpty
@@ -138,16 +141,22 @@ class InvoiceCard extends StatelessWidget {
                     endIndent: 20,
                   ),
                   ListTile(
-                    enabled: summary.serviceStatus != ServiceStatus.completed,
                     onTap: () {
                       Navigator.pop(sheetContext);
                       context.read<InvoiceBloc>().add(
-                        InvoiceServiceCompleted(summary.id),
+                        isCompleted
+                            ? InvoiceServiceReverted(summary.id)
+                            : InvoiceServiceCompleted(summary.id),
                       );
                     },
-                    leading: Icon(Icons.check_circle_outline, color: textColor),
+                    leading: Icon(
+                      isCompleted ? Icons.undo : Icons.check_circle_outline,
+                      color: textColor,
+                    ),
                     title: Text(
-                      'Complete Service',
+                      isCompleted
+                          ? 'Undo Complete Service'
+                          : 'Complete Service',
                       style: TextStyle(
                         color: textColor,
                         fontSize: 16,
@@ -213,10 +222,13 @@ class InvoiceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mutedColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
+    final dividerColor = isDark ? Colors.white12 : Colors.black12;
     final vehicleLine = [
       summary.make,
       summary.model,
       summary.rego,
+      summary.year,
     ].where((part) => part.isNotEmpty).join(' · ');
 
     return Slidable(
@@ -263,50 +275,58 @@ class InvoiceCard extends StatelessWidget {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text(
-                      summary.ownerName.isEmpty
-                          ? 'Unnamed Owner'
-                          : summary.ownerName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? AppPallete.cascadingWhite
-                            : AppPallete.tricornBlack,
-                      ),
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          summary.ownerName.isEmpty
+                              ? 'Unnamed Owner'
+                              : summary.ownerName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? AppPallete.cascadingWhite
+                                : AppPallete.tricornBlack,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (vehicleLine.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            vehicleLine,
+                            style: TextStyle(fontSize: 13, color: mutedColor),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
-                  Text(
-                    '#${summary.id.substring(0, 8)}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDark
-                          ? AppPallete.boatAnchor
-                          : AppPallete.hypnotic,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '#${summary.id.substring(0, 8)}',
+                        style: TextStyle(fontSize: 12, color: mutedColor),
+                      ),
+                      if (summary.totalAmount != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          formatAud(summary.totalAmount!),
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? AppPallete.cascadingWhite
+                                : AppPallete.dynamicBlack,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
-              ),
-              if (vehicleLine.isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Text(
-                  vehicleLine,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? AppPallete.boatAnchor : AppPallete.hypnotic,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 4),
-              Text(
-                'Updated ${formatInvoiceDateTime(summary.updatedAt)}',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? AppPallete.boatAnchor : AppPallete.hypnotic,
-                ),
               ),
               const SizedBox(height: 10),
               Wrap(
@@ -327,23 +347,39 @@ class InvoiceCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
+              Divider(color: dividerColor, height: 1),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    tooltip: 'Complete Service',
-                    onPressed: summary.serviceStatus == ServiceStatus.completed
-                        ? null
-                        : () => context.read<InvoiceBloc>().add(
-                            InvoiceServiceCompleted(summary.id),
-                          ),
-                    icon: const Icon(Icons.check_circle_outline),
+                  Text(
+                    'Updated ${formatInvoiceDateTime(summary.updatedAt)}',
+                    style: TextStyle(fontSize: 12, color: mutedColor),
                   ),
-                  IconButton(
-                    tooltip: 'Generate PDF',
-                    onPressed: () => _showGeneratePdfStub(context),
-                    icon: const Icon(Icons.picture_as_pdf_outlined),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: summary.serviceStatus == ServiceStatus.completed
+                            ? 'Undo Complete Service'
+                            : 'Complete Service',
+                        onPressed: () => context.read<InvoiceBloc>().add(
+                          summary.serviceStatus == ServiceStatus.completed
+                              ? InvoiceServiceReverted(summary.id)
+                              : InvoiceServiceCompleted(summary.id),
+                        ),
+                        icon: Icon(
+                          summary.serviceStatus == ServiceStatus.completed
+                              ? Icons.undo
+                              : Icons.check_circle_outline,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Generate PDF',
+                        onPressed: () => _showGeneratePdfStub(context),
+                        icon: const Icon(Icons.picture_as_pdf_outlined),
+                      ),
+                    ],
                   ),
                 ],
               ),
