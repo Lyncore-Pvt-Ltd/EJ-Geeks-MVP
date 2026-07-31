@@ -1,0 +1,125 @@
+name: Dev Build & Release
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch: {}
+
+env:
+  FLUTTER_VERSION: "3.44.2"
+  FLUTTER_CHANNEL: "stable"
+
+jobs:
+  prep:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | cut -d '+' -f1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build-android:
+    needs: prep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      - name: Decode Android keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/release-key.jks
+
+      - name: Debug keystore secret length
+        run: echo -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | wc -c
+
+      - name: Write key.properties
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=release-key.jks
+          EOF
+
+      - run: flutter pub get
+
+      - run: flutter build apk --release
+
+      - name: Rename APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            "build/app/outputs/flutter-apk/ej-geek-beta-${{ needs.prep.outputs.version }}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/ej-geek-beta-${{ needs.prep.outputs.version }}.apk
+          retention-days: 7
+
+  build-ios:
+    needs: prep
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: ${{ env.FLUTTER_CHANNEL }}
+
+      - run: flutter pub get
+
+      # No Apple Developer signing assets are configured yet, so this only
+      # verifies the iOS build compiles. It produces an unsigned Runner.app,
+      # not an installable .ipa.
+      #
+      # To upgrade to a signed, installable IPA later:
+      #   1. Add secrets: IOS_DIST_CERT_P12_BASE64, IOS_DIST_CERT_PASSWORD,
+      #      IOS_PROVISIONING_PROFILE_BASE64
+      #   2. Import the cert into a temporary keychain and install the
+      #      provisioning profile under ~/Library/MobileDevice/Provisioning Profiles
+      #   3. Add ios/ExportOptions.plist
+      #   4. Replace the build step below with `flutter build ipa --export-options-plist=ios/ExportOptions.plist`
+      - run: flutter build ios --release --no-codesign
+
+      - name: Zip unsigned app
+        run: |
+          cd build/ios/iphoneos
+          zip -r "ej-geek-beta-${{ needs.prep.outputs.version }}-ios.zip" Runner.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-unsigned-app
+          path: build/ios/iphoneos/ej-geek-beta-${{ needs.prep.outputs.version }}-ios.zip
+          retention-days: 7
+
+  release:
+    needs: [prep, build-android, build-ios]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Compute release tag
+        id: tag
+        run: echo "tag=dev-build-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: Dev build #${{ github.run_number }} (${{ github.sha }})
+          target_commitish: ${{ github.sha }}
+          files: |
+            artifacts/android-apk/ej-geek-beta-${{ needs.prep.outputs.version }}.apk
+            artifacts/ios-unsigned-app/ej-geek-beta-${{ needs.prep.outputs.version }}-ios.zip

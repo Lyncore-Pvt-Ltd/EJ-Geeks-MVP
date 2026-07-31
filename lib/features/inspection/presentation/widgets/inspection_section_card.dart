@@ -36,6 +36,7 @@ class InspectionSectionCard extends StatelessWidget {
             section.name,
             style: TextStyle(
               fontSize: 16,
+
               fontWeight: FontWeight.w600,
               color: isDark
                   ? AppPallete.cascadingWhite
