@@ -137,67 +137,91 @@ Future<Uint8List> buildInspectionReportPdf({
 
   for (final section in inspection.sections) {
     doc.addPage(
-      pw.Page(
+      pw.MultiPage(
         theme: pw.ThemeData.withFont(base: fonts.regular, bold: fonts.bold),
-        build: (context) => pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.start,
-          children: [
-            pdfSectionHeading(section.name, fonts),
-            pw.TableHelper.fromTextArray(
-              headers: ['Category', 'Rating'],
-              data: section.items
-                  .map((item) => [item.label, item.rating?.label ?? '-'])
-                  .toList(),
-              headerStyle: pw.TextStyle(
-                font: fonts.bold,
-                fontSize: 10,
-                color: AppPdfPallete.white,
-              ),
-              headerDecoration: const pw.BoxDecoration(
-                color: AppPdfPallete.textPrimary,
-              ),
-              cellStyle: pw.TextStyle(
-                font: fonts.regular,
-                fontSize: 10,
-                color: AppPdfPallete.textPrimary,
-              ),
-              border: pw.TableBorder.all(color: AppPdfPallete.border),
+        build: (context) => [
+          pdfSectionHeading(section.name, fonts),
+          pw.TableHelper.fromTextArray(
+            headers: ['Category', 'Rating'],
+            data: section.items
+                .map((item) => [item.label, item.rating?.label ?? '-'])
+                .toList(),
+            headerStyle: pw.TextStyle(
+              font: fonts.bold,
+              fontSize: 10,
+              color: AppPdfPallete.white,
             ),
-            if (section.comment.isNotEmpty) ...[
-              pw.SizedBox(height: 12),
-              pw.Text(
-                'Comments:',
-                style: pw.TextStyle(
-                  font: fonts.bold,
-                  fontSize: 11,
-                  color: AppPdfPallete.textPrimary,
-                ),
+            headerDecoration: const pw.BoxDecoration(
+              color: AppPdfPallete.textPrimary,
+            ),
+            cellStyle: pw.TextStyle(
+              font: fonts.regular,
+              fontSize: 10,
+              color: AppPdfPallete.textPrimary,
+            ),
+            border: pw.TableBorder.all(color: AppPdfPallete.border),
+          ),
+          if (section.comment.isNotEmpty) ...[
+            pw.SizedBox(height: 12),
+            pw.Text(
+              'Comments:',
+              style: pw.TextStyle(
+                font: fonts.bold,
+                fontSize: 11,
+                color: AppPdfPallete.textPrimary,
               ),
-              pw.SizedBox(height: 4),
-              ...section.comment
-                  .split('\n')
-                  .where((line) => line.trim().isNotEmpty)
-                  .map(
-                    (line) => pw.Text(
-                      '• ${line.trim()}',
-                      style: pw.TextStyle(
-                        font: fonts.regular,
-                        fontSize: 10,
-                        color: AppPdfPallete.textPrimary,
-                      ),
+            ),
+            pw.SizedBox(height: 4),
+            ...section.comment
+                .split('\n')
+                .where((line) => line.trim().isNotEmpty)
+                .map(
+                  (line) => pw.Text(
+                    '• ${line.trim()}',
+                    style: pw.TextStyle(
+                      font: fonts.regular,
+                      fontSize: 10,
+                      color: AppPdfPallete.textPrimary,
                     ),
                   ),
-            ],
+                ),
           ],
-        ),
+          if (section.imagePaths.isNotEmpty) ...[
+            pw.SizedBox(height: 12),
+            pw.Text(
+              'Photos:',
+              style: pw.TextStyle(
+                font: fonts.bold,
+                fontSize: 11,
+                color: AppPdfPallete.textPrimary,
+              ),
+            ),
+            pw.SizedBox(height: 4),
+            pw.Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: section.imagePaths
+                  .map(
+                    (path) => pw.SizedBox(
+                      width: 240,
+                      height: 180,
+                      child: pw.Image(
+                        pw.MemoryImage(File(path).readAsBytesSync()),
+                        fit: pw.BoxFit.cover,
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+        ],
       ),
     );
   }
 
   // Generic photo gallery: any images beyond the one already shown on the
-  // cover page. Not associated with a specific section yet — that requires
-  // a future `inspection_images.section` column once per-section photo
-  // pickers exist.
+  // cover page, from the global (not section-scoped) picker only —
+  // per-section photos are rendered on their own section's page above.
   final galleryPaths = inspection.imagePaths.skip(1).toList();
   if (galleryPaths.isNotEmpty) {
     doc.addPage(

@@ -17,12 +17,14 @@ class InspectionImageRepositoryImpl implements InspectionImageRepository {
     required ImageSource source,
     required String invoiceId,
     required DateTime invoiceCreatedAt,
+    String? section,
   }) async {
     try {
       final path = await _dataSource.pickAndStoreImage(
         source: source,
         invoiceId: invoiceId,
         invoiceCreatedAt: invoiceCreatedAt,
+        section: section,
       );
       return Right(path);
     } on StorageException catch (e) {

@@ -42,19 +42,25 @@ class SectionCommentChanged extends InspectionEvent {
 class ImagePicked extends InspectionEvent {
   final ImageSource source;
 
-  const ImagePicked(this.source);
+  /// Null targets the global (not section-scoped) image list.
+  final String? sectionName;
+
+  const ImagePicked(this.source, {this.sectionName});
 
   @override
-  List<Object?> get props => [source];
+  List<Object?> get props => [source, sectionName];
 }
 
 class ImageRemoved extends InspectionEvent {
   final String path;
 
-  const ImageRemoved(this.path);
+  /// Null targets the global (not section-scoped) image list.
+  final String? sectionName;
+
+  const ImageRemoved(this.path, {this.sectionName});
 
   @override
-  List<Object?> get props => [path];
+  List<Object?> get props => [path, sectionName];
 }
 
 class InspectionLoadRequested extends InspectionEvent {
