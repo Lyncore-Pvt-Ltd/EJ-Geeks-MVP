@@ -56,11 +56,7 @@ class VehicleDetailsForm extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          _field(
-            'Owner Name',
-            ownerNameController,
-            validator: _requiredValidator,
-          ),
+          _field('Name', ownerNameController, validator: _requiredValidator),
           const SizedBox(height: 10),
           _field(
             'Address',
@@ -70,11 +66,7 @@ class VehicleDetailsForm extends StatelessWidget {
             validator: _requiredValidator,
           ),
           const SizedBox(height: 10),
-          _field(
-            'Phone Number',
-            phoneController,
-            keyboardType: TextInputType.phone,
-          ),
+          _field('Phone', phoneController, keyboardType: TextInputType.phone),
           const SizedBox(height: 10),
           _field('Make', makeController),
           const SizedBox(height: 10),
@@ -96,7 +88,11 @@ class VehicleDetailsForm extends StatelessWidget {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
           const SizedBox(height: 10),
-          _field('VIN', vinController, textCapitalization: TextCapitalization.characters),
+          _field(
+            'VIN',
+            vinController,
+            textCapitalization: TextCapitalization.characters,
+          ),
           const SizedBox(height: 10),
           _field(
             'Engine No.',

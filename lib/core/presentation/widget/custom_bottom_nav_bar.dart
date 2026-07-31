@@ -30,13 +30,12 @@ class CustomBottomNavBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
+      minimum: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: isDark ? AppPallete.whiteout : AppPallete.dynamicBlack,
@@ -82,43 +81,41 @@ class CustomBottomNavBar extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDark ? AppPallete.whiteout : AppPallete.dynamicBlack,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Material(
-                color: Colors.transparent,
-                shape: const CircleBorder(),
-                clipBehavior: Clip.antiAlias,
-                child: InkWell(
-                  customBorder: const CircleBorder(),
-                  onTap: () async {
-                    final invoiceBloc = context.read<InvoiceBloc>();
-                    await InvoiceBottomSheet.show(context);
-                    invoiceBloc.add(const InvoiceListRequested());
-                  },
-                  child: Icon(
-                    Icons.add,
-                    color: isDark
-                        ? AppPallete.dynamicBlack
-                        : AppPallete.whiteout,
-                  ),
+          ),
+          const SizedBox(width: 10),
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isDark ? AppPallete.whiteout : AppPallete.dynamicBlack,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () async {
+                  final invoiceBloc = context.read<InvoiceBloc>();
+                  await InvoiceBottomSheet.show(context);
+                  invoiceBloc.add(const InvoiceListRequested());
+                },
+                child: Icon(
+                  Icons.add,
+                  color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

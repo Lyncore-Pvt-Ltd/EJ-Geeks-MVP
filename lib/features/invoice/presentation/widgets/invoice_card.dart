@@ -360,7 +360,8 @@ class InvoiceCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        tooltip: summary.serviceStatus == ServiceStatus.completed
+                        tooltip:
+                            summary.serviceStatus == ServiceStatus.completed
                             ? 'Undo Complete Service'
                             : 'Complete Service',
                         onPressed: () => context.read<InvoiceBloc>().add(
