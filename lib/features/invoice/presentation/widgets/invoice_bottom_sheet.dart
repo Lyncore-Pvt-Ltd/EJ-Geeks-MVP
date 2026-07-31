@@ -287,124 +287,130 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
             },
           ),
         ],
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppPallete.forgedSteel
-                        : AppPallete.nebulousWhite,
-                    borderRadius: BorderRadius.circular(12),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          resizeToAvoidBottomInset: true,
+          body: Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppPallete.forgedSteel
+                          : AppPallete.nebulousWhite,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Invoice',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? AppPallete.cascadingWhite
-                              : AppPallete.tricornBlack,
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Invoice',
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w600,
+                            color: isDark
+                                ? AppPallete.cascadingWhite
+                                : AppPallete.tricornBlack,
+                          ),
+                        ),
+                        Builder(
+                          builder: (context) {
+                            final isInitialLoading =
+                                context.select<InspectionBloc, bool>(
+                                  (bloc) => bloc.state.isLoading,
+                                ) ||
+                                context.select<InvoiceDetailsBloc, bool>(
+                                  (bloc) => bloc.state.isLoading,
+                                );
+                            return _HeaderActions(
+                              isDark: isDark,
+                              isClosing: _isClosing,
+                              isInitialLoading: isInitialLoading,
+                              activeTabIndex: _tabController.index,
+                              onGeneratePressed: _onGeneratePressed,
+                              onSavePressed: _onSavePressed,
+                              onClosePressed: _onClosePressed,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: SegmentedTabControl(
+                      controller: _tabController,
+                      height: 40,
+                      squeezeIntensity: 2,
+                      tabTextColor: isDark
+                          ? AppPallete.cascadingWhite
+                          : AppPallete.tricornBlack,
+                      selectedTabTextColor: AppPallete.whiteColor,
+                      tabPadding: const EdgeInsets.symmetric(horizontal: 5),
+                      textStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      barDecoration: BoxDecoration(
+                        color: isDark
+                            ? AppPallete.warmOnyx
+                            : AppPallete.nebulousWhite,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(12),
                         ),
                       ),
-                      Builder(
-                        builder: (context) {
-                          final isInitialLoading =
-                              context.select<InspectionBloc, bool>(
-                                (bloc) => bloc.state.isLoading,
-                              ) ||
-                              context.select<InvoiceDetailsBloc, bool>(
-                                (bloc) => bloc.state.isLoading,
-                              );
-                          return _HeaderActions(
-                            isDark: isDark,
-                            isClosing: _isClosing,
-                            isInitialLoading: isInitialLoading,
-                            activeTabIndex: _tabController.index,
-                            onGeneratePressed: _onGeneratePressed,
-                            onSavePressed: _onSavePressed,
-                            onClosePressed: _onClosePressed,
-                          );
-                        },
+                      indicatorDecoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFFFF3D3D),
+                            Color(0xFFFF6060),
+                            Color(0xFFFF8A80),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
                       ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: SegmentedTabControl(
-                    controller: _tabController,
-                    height: 40,
-                    squeezeIntensity: 2,
-                    tabTextColor: isDark
-                        ? AppPallete.cascadingWhite
-                        : AppPallete.tricornBlack,
-                    selectedTabTextColor: AppPallete.whiteColor,
-                    tabPadding: const EdgeInsets.symmetric(horizontal: 5),
-                    textStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      tabs: const [
+                        SegmentTab(label: 'Inspection'),
+                        SegmentTab(label: 'Invoice'),
+                      ],
                     ),
-                    barDecoration: BoxDecoration(
-                      color: isDark
-                          ? AppPallete.warmOnyx
-                          : AppPallete.nebulousWhite,
-                      borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    ),
-                    indicatorDecoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFFFF3D3D),
-                          Color(0xFFFF6060),
-                          Color(0xFFFF8A80),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                    tabs: const [
-                      SegmentTab(label: 'Inspection'),
-                      SegmentTab(label: 'Invoice'),
-                    ],
                   ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      InspectionTab(
-                        key: _inspectionKey,
-                        invoiceId: widget.invoiceId,
-                        onGenerateRequested: _onGeneratePressed,
-                      ),
-                      InvoiceTab(
-                        key: _invoiceKey,
-                        invoiceId: widget.invoiceId,
-                        onGenerateRequested: _onGeneratePressed,
-                      ),
-                    ],
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        InspectionTab(
+                          key: _inspectionKey,
+                          invoiceId: widget.invoiceId,
+                          onGenerateRequested: _onGeneratePressed,
+                        ),
+                        InvoiceTab(
+                          key: _invoiceKey,
+                          invoiceId: widget.invoiceId,
+                          onGenerateRequested: _onGeneratePressed,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

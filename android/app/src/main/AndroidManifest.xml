@@ -8,7 +8,7 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <application
-        android:label="ej_geek"
+        android:label="E&amp;J Geeks Invoice"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
