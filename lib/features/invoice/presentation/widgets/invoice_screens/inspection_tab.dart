@@ -171,6 +171,7 @@ class InspectionTabState extends State<InspectionTab>
                     // Only rebuilds this one card when its own section
                     // changes (e.g. a rating tick or comment keystroke) —
                     // not the other four sections.
+                    // add new
                     return BlocSelector<
                       InspectionBloc,
                       InspectionState,
