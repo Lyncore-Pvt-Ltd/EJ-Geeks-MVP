@@ -329,6 +329,11 @@ class InvoiceTabState extends State<InvoiceTab>
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: MediaQuery.of(context).viewInsets.bottom,
+                ),
+              ),
             ],
           );
         },

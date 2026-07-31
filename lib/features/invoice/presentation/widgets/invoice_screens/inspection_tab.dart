@@ -212,6 +212,11 @@ class InspectionTabState extends State<InspectionTab>
                   ),
                 ),
               ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: MediaQuery.of(context).viewInsets.bottom,
+                ),
+              ),
             ],
           );
         },

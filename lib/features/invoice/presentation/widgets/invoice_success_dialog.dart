@@ -114,38 +114,45 @@ class _InvoiceSuccessDialogState extends State<InvoiceSuccessDialog>
               color: backdropColor,
               borderRadius: BorderRadius.circular(20),
             ),
-            child: AnimatedBuilder(
-              animation: _progressAnimation,
-              builder: (context, _) {
-                final progress = _progressAnimation.value;
-                final showContent =
-                    state.sendSuccess && !state.isSending && progress >= 1.0;
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
+            child: SingleChildScrollView(
+              child: AnimatedBuilder(
+                animation: _progressAnimation,
+                builder: (context, _) {
+                  final progress = _progressAnimation.value;
+                  final showContent =
+                      state.sendSuccess &&
+                      !state.isSending &&
+                      progress >= 1.0;
 
-                return AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: showContent
-                      ? _SuccessContent(
-                          key: const ValueKey('success'),
-                          state: state,
-                          clientName: widget.clientName,
-                          invoiceId: widget.invoiceId,
-                          textColor: textColor,
-                          labelColor: labelColor,
-                          dividerColor: dividerColor,
-                          cardColor: cardColor,
-                          onDone: widget.onDone,
-                          onSendNew: widget.onSendNew,
-                        )
-                      : _GenerationProgressContent(
-                          key: const ValueKey('progress'),
-                          progress: progress,
-                          textColor: textColor,
-                          labelColor: labelColor,
-                          dividerColor: dividerColor,
-                          cardColor: cardColor,
-                        ),
-                );
-              },
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 250),
+                    child: showContent
+                        ? _SuccessContent(
+                            key: const ValueKey('success'),
+                            state: state,
+                            clientName: widget.clientName,
+                            invoiceId: widget.invoiceId,
+                            textColor: textColor,
+                            labelColor: labelColor,
+                            dividerColor: dividerColor,
+                            cardColor: cardColor,
+                            onDone: widget.onDone,
+                            onSendNew: widget.onSendNew,
+                          )
+                        : _GenerationProgressContent(
+                            key: const ValueKey('progress'),
+                            progress: progress,
+                            textColor: textColor,
+                            labelColor: labelColor,
+                            dividerColor: dividerColor,
+                            cardColor: cardColor,
+                          ),
+                  );
+                },
+              ),
             ),
           ),
         );
