@@ -46,18 +46,33 @@ class InvoiceLocalDataSource {
                invoices.payment_status AS payment_status,
                invoices.created_at AS created_at,
                invoices.updated_at AS updated_at,
+               invoices.vat_percent AS vat_percent,
+               invoices.discount_percent AS discount_percent,
                inspections.owner_name AS owner_name,
                inspections.make AS make,
                inspections.model AS model,
-               inspections.rego AS rego
+               inspections.rego AS rego,
+               inspections.year AS year,
+               (SELECT SUM(quantity * unit_price) FROM invoice_items
+                WHERE invoice_items.invoice_id = invoices.id) AS net_total
         FROM invoices
         LEFT JOIN inspections ON inspections.invoice_id = invoices.id
         ORDER BY invoices.updated_at DESC
       ''');
 
       return rows
-          .map(
-            (row) => InvoiceSummary(
+          .map((row) {
+            final netTotal = (row['net_total'] as num?)?.toDouble();
+            final vatPercent = (row['vat_percent'] as num?)?.toDouble() ?? 0;
+            final discountPercent =
+                (row['discount_percent'] as num?)?.toDouble() ?? 0;
+            final totalAmount = netTotal == null
+                ? null
+                : netTotal +
+                      (netTotal * vatPercent / 100) -
+                      (netTotal * discountPercent / 100);
+
+            return InvoiceSummary(
               id: row['id'] as String,
               serviceStatus: ServiceStatus.fromDb(
                 row['service_status'] as String,
@@ -69,10 +84,12 @@ class InvoiceLocalDataSource {
               make: row['make'] as String? ?? '',
               model: row['model'] as String? ?? '',
               rego: row['rego'] as String? ?? '',
+              year: row['year'] as String? ?? '',
               createdAt: DateTime.parse(row['created_at'] as String),
               updatedAt: DateTime.parse(row['updated_at'] as String),
-            ),
-          )
+              totalAmount: totalAmount,
+            );
+          })
           .toList();
     } catch (e) {
       throw CacheException(message: 'Failed to load invoices: $e');

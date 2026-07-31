@@ -14,8 +14,13 @@ class InvoiceSummary extends Equatable {
   final String make;
   final String model;
   final String rego;
+  final String year;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// The invoice's computed total (net + VAT - discount), or `null` when it
+  /// has no line items yet.
+  final double? totalAmount;
 
   const InvoiceSummary({
     required this.id,
@@ -25,8 +30,10 @@ class InvoiceSummary extends Equatable {
     this.make = '',
     this.model = '',
     this.rego = '',
+    this.year = '',
     required this.createdAt,
     required this.updatedAt,
+    this.totalAmount,
   });
 
   @override
@@ -38,7 +45,9 @@ class InvoiceSummary extends Equatable {
     make,
     model,
     rego,
+    year,
     createdAt,
     updatedAt,
+    totalAmount,
   ];
 }

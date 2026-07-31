@@ -22,6 +22,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
        super(const InvoiceState()) {
     on<InvoiceListRequested>(_onInvoiceListRequested);
     on<InvoiceServiceCompleted>(_onInvoiceServiceCompleted);
+    on<InvoiceServiceReverted>(_onInvoiceServiceReverted);
     on<InvoiceDeleted>(_onInvoiceDeleted);
     add(const InvoiceListRequested());
   }
@@ -50,6 +51,26 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
       UpdateInvoiceServiceStatusParams(
         invoiceId: event.invoiceId,
         status: ServiceStatus.completed,
+      ),
+    );
+
+    final failure = result.fold((failure) => failure, (_) => null);
+    if (failure != null) {
+      emit(state.copyWith(errorMessage: failure.message));
+      return;
+    }
+
+    add(const InvoiceListRequested());
+  }
+
+  Future<void> _onInvoiceServiceReverted(
+    InvoiceServiceReverted event,
+    Emitter<InvoiceState> emit,
+  ) async {
+    final result = await _updateInvoiceServiceStatus(
+      UpdateInvoiceServiceStatusParams(
+        invoiceId: event.invoiceId,
+        status: ServiceStatus.ongoingService,
       ),
     );
 

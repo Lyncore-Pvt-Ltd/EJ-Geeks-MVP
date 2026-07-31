@@ -20,6 +20,15 @@ class InvoiceServiceCompleted extends InvoiceEvent {
   List<Object?> get props => [invoiceId];
 }
 
+class InvoiceServiceReverted extends InvoiceEvent {
+  final String invoiceId;
+
+  const InvoiceServiceReverted(this.invoiceId);
+
+  @override
+  List<Object?> get props => [invoiceId];
+}
+
 class InvoiceDeleted extends InvoiceEvent {
   final String invoiceId;
   final bool deleteFiles;
