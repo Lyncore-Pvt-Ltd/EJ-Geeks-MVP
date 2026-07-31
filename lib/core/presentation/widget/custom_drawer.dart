@@ -1,4 +1,6 @@
 import 'package:ej_geek/core/presentation/pages/settings_screen.dart';
+// TEMPORARY TRIAL LOCK — remove when no longer needed
+import 'package:ej_geek/core/presentation/widget/unlock_code_dialog.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -29,7 +31,14 @@ class CustomDrawer extends StatelessWidget {
                   //   ),
                   // ),
                   const SizedBox(height: 12),
-                  const Text('E&J Geek Invoice'),
+                  // TEMPORARY TRIAL LOCK — remove when no longer needed
+                  GestureDetector(
+                    onLongPress: () => showDialog(
+                      context: context,
+                      builder: (_) => const UnlockCodeDialog(),
+                    ),
+                    child: const Text('E&J Geek Invoice'),
+                  ),
                 ],
               ),
             ),
