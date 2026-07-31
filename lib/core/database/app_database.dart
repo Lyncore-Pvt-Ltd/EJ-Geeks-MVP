@@ -6,7 +6,7 @@ class AppDatabase {
   static final AppDatabase instance = AppDatabase._();
 
   static const _dbName = 'ej_geek.db';
-  static const _dbVersion = 6;
+  static const _dbVersion = 7;
 
   Database? _database;
 
@@ -45,9 +45,7 @@ class AppDatabase {
       await db.execute('ALTER TABLE invoices ADD COLUMN payment_terms TEXT');
       await db.execute('ALTER TABLE invoices ADD COLUMN notes TEXT');
       await db.execute('ALTER TABLE invoices ADD COLUMN vat_percent REAL');
-      await db.execute(
-        'ALTER TABLE invoices ADD COLUMN discount_percent REAL',
-      );
+      await db.execute('ALTER TABLE invoices ADD COLUMN discount_percent REAL');
       await db.execute('''
         CREATE TABLE invoice_items (
           id TEXT PRIMARY KEY,
@@ -73,6 +71,10 @@ class AppDatabase {
 
     if (oldVersion < 6) {
       await db.execute('ALTER TABLE inspections ADD COLUMN phone_number TEXT');
+    }
+
+    if (oldVersion < 7) {
+      await db.execute('ALTER TABLE inspection_images ADD COLUMN section TEXT');
     }
   }
 
@@ -146,6 +148,7 @@ class AppDatabase {
       CREATE TABLE inspection_images (
         id TEXT PRIMARY KEY,
         inspection_id TEXT NOT NULL,
+        section TEXT,
         file_path TEXT NOT NULL,
         created_at TEXT NOT NULL
       )

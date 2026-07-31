@@ -10,15 +10,17 @@ class PickInspectionImageParams extends Equatable {
   final ImageSource source;
   final String invoiceId;
   final DateTime invoiceCreatedAt;
+  final String? section;
 
   const PickInspectionImageParams({
     required this.source,
     required this.invoiceId,
     required this.invoiceCreatedAt,
+    this.section,
   });
 
   @override
-  List<Object?> get props => [source, invoiceId, invoiceCreatedAt];
+  List<Object?> get props => [source, invoiceId, invoiceCreatedAt, section];
 }
 
 class PickInspectionImage
@@ -33,6 +35,7 @@ class PickInspectionImage
       source: params.source,
       invoiceId: params.invoiceId,
       invoiceCreatedAt: params.invoiceCreatedAt,
+      section: params.section,
     );
   }
 }

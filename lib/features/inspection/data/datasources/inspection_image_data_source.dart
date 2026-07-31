@@ -18,6 +18,7 @@ class InspectionImageDataSource {
     required ImageSource source,
     required String invoiceId,
     required DateTime invoiceCreatedAt,
+    String? section,
   }) async {
     try {
       final picked = await _imagePicker.pickImage(
@@ -31,6 +32,7 @@ class InspectionImageDataSource {
       final destinationPath = await AppStoragePaths.newImagePath(
         invoiceId,
         invoiceCreatedAt,
+        section: section,
       );
       await File(picked.path).copy(destinationPath);
       return destinationPath;

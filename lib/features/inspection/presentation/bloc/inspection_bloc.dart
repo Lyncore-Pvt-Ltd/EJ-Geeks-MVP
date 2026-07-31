@@ -96,29 +96,55 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
     ImagePicked event,
     Emitter<InspectionState> emit,
   ) async {
-    emit(state.copyWith(isPickingImage: true, errorMessage: null));
+    emit(
+      state.copyWith(
+        isPickingImage: true,
+        pickingSectionName: event.sectionName,
+        errorMessage: null,
+      ),
+    );
 
     final result = await _pickInspectionImage(
       PickInspectionImageParams(
         source: event.source,
         invoiceId: invoiceId,
         invoiceCreatedAt: invoiceCreatedAt,
+        section: event.sectionName,
       ),
     );
 
     result.fold(
       (failure) => emit(
-        state.copyWith(isPickingImage: false, errorMessage: failure.message),
+        state.copyWith(
+          isPickingImage: false,
+          pickingSectionName: null,
+          errorMessage: failure.message,
+        ),
       ),
       (path) {
         if (path == null) {
-          emit(state.copyWith(isPickingImage: false));
+          emit(state.copyWith(isPickingImage: false, pickingSectionName: null));
           return;
         }
+        if (event.sectionName == null) {
+          emit(
+            state.copyWith(
+              imagePaths: [...state.imagePaths, path],
+              isPickingImage: false,
+              pickingSectionName: null,
+            ),
+          );
+          return;
+        }
+        final updatedSections = state.sections.map((section) {
+          if (section.name != event.sectionName) return section;
+          return section.copyWith(imagePaths: [...section.imagePaths, path]);
+        }).toList();
         emit(
           state.copyWith(
-            imagePaths: [...state.imagePaths, path],
+            sections: updatedSections,
             isPickingImage: false,
+            pickingSectionName: null,
           ),
         );
       },
@@ -126,11 +152,21 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
   }
 
   void _onImageRemoved(ImageRemoved event, Emitter<InspectionState> emit) {
-    emit(
-      state.copyWith(
-        imagePaths: state.imagePaths.where((p) => p != event.path).toList(),
-      ),
-    );
+    if (event.sectionName == null) {
+      emit(
+        state.copyWith(
+          imagePaths: state.imagePaths.where((p) => p != event.path).toList(),
+        ),
+      );
+      return;
+    }
+    final updatedSections = state.sections.map((section) {
+      if (section.name != event.sectionName) return section;
+      return section.copyWith(
+        imagePaths: section.imagePaths.where((p) => p != event.path).toList(),
+      );
+    }).toList();
+    emit(state.copyWith(sections: updatedSections));
   }
 
   Future<void> _onInspectionSaved(
@@ -151,9 +187,8 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
     final result = await _saveInspection(record);
 
     await result.fold(
-      (failure) async => emit(
-        state.copyWith(isSaving: false, errorMessage: failure.message),
-      ),
+      (failure) async =>
+          emit(state.copyWith(isSaving: false, errorMessage: failure.message)),
       (_) async {
         final draftResult = await _upsertInvoiceDraft(invoiceId);
         final draftError = draftResult.fold((f) => f.message, (_) => null);
@@ -223,6 +258,7 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
         name: canonicalSection.name,
         items: mergedItems,
         comment: loadedSection.comment,
+        imagePaths: loadedSection.imagePaths,
       );
     }).toList();
   }

@@ -29,25 +29,41 @@ class AppStoragePaths {
     DateTime createdAt,
   ) async {
     final base = await _baseDir();
+    final dir = Directory(p.join(base.path, _dateKey(createdAt), invoiceId));
+    return dir.create(recursive: true);
+  }
+
+  /// Collapses a section name like `Tyres, Wheels & Brakes` into a
+  /// filesystem-safe subfolder segment like `tyres_wheels_brakes`.
+  static String _sanitizeSection(String section) => section
+      .toLowerCase()
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+      .replaceAll(RegExp(r'^_+|_+$'), '');
+
+  static Future<Directory> imagesDir(
+    String invoiceId,
+    DateTime createdAt, {
+    String? section,
+  }) async {
+    final folder = await invoiceFolder(invoiceId, createdAt);
     final dir = Directory(
-      p.join(base.path, _dateKey(createdAt), invoiceId),
+      section == null
+          ? p.join(folder.path, 'images')
+          : p.join(folder.path, 'images', _sanitizeSection(section)),
     );
     return dir.create(recursive: true);
   }
 
-  static Future<Directory> imagesDir(String invoiceId, DateTime createdAt) async {
-    final folder = await invoiceFolder(invoiceId, createdAt);
-    final dir = Directory(p.join(folder.path, 'images'));
-    return dir.create(recursive: true);
-  }
-
   /// Builds a new, unique, date/time-based path for an image belonging to
-  /// [invoiceId], creating the per-invoice images folder if needed.
+  /// [invoiceId], creating the per-invoice images folder if needed. Pass
+  /// [section] to file the image under that section's own subfolder instead
+  /// of the shared images folder.
   static Future<String> newImagePath(
     String invoiceId,
-    DateTime createdAt,
-  ) async {
-    final images = await imagesDir(invoiceId, createdAt);
+    DateTime createdAt, {
+    String? section,
+  }) async {
+    final images = await imagesDir(invoiceId, createdAt, section: section);
 
     final now = DateTime.now();
     final timestamp =

@@ -67,6 +67,16 @@ class InspectionLocalDataSource {
             'section': section.name,
             'comment': section.comment,
           });
+
+          for (var i = 0; i < section.imagePaths.length; i++) {
+            await txn.insert('inspection_images', {
+              'id': '${record.id}_${section.name}_image_$i',
+              'inspection_id': record.id,
+              'section': section.name,
+              'file_path': section.imagePaths[i],
+              'created_at': record.createdAt.toIso8601String(),
+            });
+          }
         }
 
         for (var i = 0; i < record.imagePaths.length; i++) {
@@ -126,16 +136,28 @@ class InspectionLocalDataSource {
               ),
             )
             .toList();
-        final comment = commentRows.firstWhere(
-          (r) => r['section'] == sectionName,
-          orElse: () => const {},
-        )['comment'] as String?;
+        final comment =
+            commentRows.firstWhere(
+                  (r) => r['section'] == sectionName,
+                  orElse: () => const {},
+                )['comment']
+                as String?;
+        final sectionImagePaths = imageRows
+            .where((r) => r['section'] == sectionName)
+            .map((r) => r['file_path'] as String)
+            .toList();
         return InspectionSection(
           name: sectionName,
           items: items,
           comment: comment ?? '',
+          imagePaths: sectionImagePaths,
         );
       }).toList();
+
+      final globalImagePaths = imageRows
+          .where((r) => r['section'] == null)
+          .map((r) => r['file_path'] as String)
+          .toList();
 
       return InspectionRecord(
         id: row['id'] as String,
@@ -153,7 +175,7 @@ class InspectionLocalDataSource {
           phoneNumber: row['phone_number'] as String? ?? '',
         ),
         sections: sections,
-        imagePaths: imageRows.map((r) => r['file_path'] as String).toList(),
+        imagePaths: globalImagePaths,
         createdAt: DateTime.parse(row['created_at'] as String),
       );
     } catch (e) {

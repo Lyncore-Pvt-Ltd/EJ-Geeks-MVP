@@ -8,5 +8,6 @@ abstract class InspectionImageRepository {
     required ImageSource source,
     required String invoiceId,
     required DateTime invoiceCreatedAt,
+    String? section,
   });
 }

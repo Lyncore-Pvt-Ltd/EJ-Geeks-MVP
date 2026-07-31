@@ -8,6 +8,11 @@ class InspectionState extends Equatable {
   final List<String> imagePaths;
   final VehicleDetails? vehicleDetails;
   final bool isPickingImage;
+
+  /// Section currently having a photo picked, or null when the in-flight
+  /// pick targets the global image list. Only meaningful while
+  /// [isPickingImage] is true.
+  final String? pickingSectionName;
   final bool isSaving;
   final bool isLoading;
   final bool saveSuccess;
@@ -18,6 +23,7 @@ class InspectionState extends Equatable {
     this.imagePaths = const [],
     this.vehicleDetails,
     this.isPickingImage = false,
+    this.pickingSectionName,
     this.isSaving = false,
     this.isLoading = false,
     this.saveSuccess = false,
@@ -29,6 +35,7 @@ class InspectionState extends Equatable {
     List<String>? imagePaths,
     VehicleDetails? vehicleDetails,
     bool? isPickingImage,
+    String? pickingSectionName,
     bool? isSaving,
     bool? isLoading,
     bool? saveSuccess,
@@ -39,6 +46,7 @@ class InspectionState extends Equatable {
       imagePaths: imagePaths ?? this.imagePaths,
       vehicleDetails: vehicleDetails ?? this.vehicleDetails,
       isPickingImage: isPickingImage ?? this.isPickingImage,
+      pickingSectionName: pickingSectionName,
       isSaving: isSaving ?? this.isSaving,
       isLoading: isLoading ?? this.isLoading,
       saveSuccess: saveSuccess ?? false,
@@ -52,6 +60,7 @@ class InspectionState extends Equatable {
     imagePaths,
     vehicleDetails,
     isPickingImage,
+    pickingSectionName,
     isSaving,
     isLoading,
     saveSuccess,

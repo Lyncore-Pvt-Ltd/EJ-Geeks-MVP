@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/inspection_section.dart';
 import '../bloc/inspection_bloc.dart';
 import '../bloc/inspection_event.dart';
+import 'inspection_image_picker.dart';
 import 'inspection_text_field.dart';
 import 'rating_selector.dart';
 
@@ -71,6 +72,10 @@ class InspectionSectionCard extends StatelessWidget {
                 ],
               ),
             ),
+          if (section.name != 'Road Test') ...[
+            InspectionImagePicker(sectionName: section.name),
+            const SizedBox(height: 8),
+          ],
           const SizedBox(height: 4),
           InspectionTextField(
             key: ValueKey('comment_${section.name}'),
