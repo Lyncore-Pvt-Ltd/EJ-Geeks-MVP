@@ -293,7 +293,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
           body: Container(
             decoration: BoxDecoration(
               color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(12),
+              ),
             ),
             child: SafeArea(
               top: false,
