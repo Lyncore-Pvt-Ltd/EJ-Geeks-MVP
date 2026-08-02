@@ -123,9 +123,7 @@ class _InvoiceSuccessDialogState extends State<InvoiceSuccessDialog>
                 builder: (context, _) {
                   final progress = _progressAnimation.value;
                   final showContent =
-                      state.sendSuccess &&
-                      !state.isSending &&
-                      progress >= 1.0;
+                      state.sendSuccess && !state.isSending && progress >= 1.0;
 
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 250),
@@ -511,14 +509,14 @@ class _OpenPdfButton extends StatelessWidget {
 /// Clips a row of evenly-spaced semicircular scallops along the top edge
 /// and rounds the bottom two corners, giving a torn-ticket-stub look.
 class _ScallopedTopClipper extends CustomClipper<Path> {
-  const _ScallopedTopClipper({this.scallopWidth = 18, this.bottomRadius = 16});
+  const _ScallopedTopClipper();
 
-  final double scallopWidth;
-  final double bottomRadius;
+  static const double _scallopWidth = 18;
+  static const double _bottomRadius = 16;
 
   @override
   Path getClip(Size size) {
-    final count = (size.width / scallopWidth).round().clamp(4, 200);
+    final count = (size.width / _scallopWidth).round().clamp(4, 200);
     final w = size.width / count;
     final path = Path()..moveTo(0, w / 2);
 
@@ -532,15 +530,15 @@ class _ScallopedTopClipper extends CustomClipper<Path> {
     }
 
     path
-      ..lineTo(size.width, size.height - bottomRadius)
+      ..lineTo(size.width, size.height - _bottomRadius)
       ..quadraticBezierTo(
         size.width,
         size.height,
-        size.width - bottomRadius,
+        size.width - _bottomRadius,
         size.height,
       )
-      ..lineTo(bottomRadius, size.height)
-      ..quadraticBezierTo(0, size.height, 0, size.height - bottomRadius)
+      ..lineTo(_bottomRadius, size.height)
+      ..quadraticBezierTo(0, size.height, 0, size.height - _bottomRadius)
       ..close();
 
     return path;
