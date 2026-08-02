@@ -48,7 +48,7 @@ class InvoiceTabState extends State<InvoiceTab>
   final _paymentTermsController = TextEditingController();
   final _appOwnerAddressController = TextEditingController();
   final _notesController = TextEditingController();
-  final _vatController = TextEditingController();
+  final _gstController = TextEditingController();
   final _discountController = TextEditingController();
 
   final _itemNameController = TextEditingController();
@@ -62,7 +62,7 @@ class InvoiceTabState extends State<InvoiceTab>
     _paymentTermsController.dispose();
     _appOwnerAddressController.dispose();
     _notesController.dispose();
-    _vatController.dispose();
+    _gstController.dispose();
     _discountController.dispose();
     _itemNameController.dispose();
     _itemQtyController.dispose();
@@ -132,9 +132,9 @@ class InvoiceTabState extends State<InvoiceTab>
             _paymentTermsController.text = state.paymentTerms;
             _appOwnerAddressController.text = state.appOwnerAddress;
             _notesController.text = state.notes;
-            _vatController.text = state.vatPercent == 0
+            _gstController.text = state.gstPercent == 0
                 ? ''
-                : _trimmed(state.vatPercent);
+                : _trimmed(state.gstPercent);
             _discountController.text = state.discountPercent == 0
                 ? ''
                 : _trimmed(state.discountPercent);
@@ -151,181 +151,184 @@ class InvoiceTabState extends State<InvoiceTab>
                   child: Form(
                     key: _formKey,
                     child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _InvoiceNumberHeading(invoiceId: widget.invoiceId),
-                      const SizedBox(height: 16),
-                      const _RecipientCard(),
-                      const SizedBox(height: 16),
-                      InspectionTextField(
-                        controller: _appOwnerAddressController,
-                        label: 'App Owner Address',
-                        onChanged: (value) => context
-                            .read<InvoiceDetailsBloc>()
-                            .add(AppOwnerAddressChanged(value)),
-                        validator: (value) => value == null || value.trim().isEmpty
-                            ? 'Required'
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child:
-                                BlocSelector<
-                                  InvoiceDetailsBloc,
-                                  InvoiceDetailsState,
-                                  DateTime?
-                                >(
-                                  selector: (state) => state.issueDate,
-                                  builder: (context, issueDate) {
-                                    return InvoiceDatePickerField(
-                                      label: 'Issue Date',
-                                      date: issueDate,
-                                      onPicked: (date) => context
-                                          .read<InvoiceDetailsBloc>()
-                                          .add(IssueDateChanged(date)),
-                                    );
-                                  },
-                                ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child:
-                                BlocSelector<
-                                  InvoiceDetailsBloc,
-                                  InvoiceDetailsState,
-                                  DateTime?
-                                >(
-                                  selector: (state) => state.dueDate,
-                                  builder: (context, dueDate) {
-                                    return InvoiceDatePickerField(
-                                      label: 'Due Date',
-                                      date: dueDate,
-                                      onPicked: (date) => context
-                                          .read<InvoiceDetailsBloc>()
-                                          .add(DueDateChanged(date)),
-                                    );
-                                  },
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      InspectionTextField(
-                        controller: _paymentTermsController,
-                        label: 'Payment Terms',
-                      ),
-                      const SizedBox(height: 20),
-                      _ItemAddForm(
-                        nameController: _itemNameController,
-                        qtyController: _itemQtyController,
-                        priceController: _itemPriceController,
-                        onAdd: () => _addItem(context),
-                      ),
-                      const SizedBox(height: 20),
-                      BlocSelector<
-                        InvoiceDetailsBloc,
-                        InvoiceDetailsState,
-                        List<InvoiceLineItem>
-                      >(
-                        selector: (state) => state.items,
-                        builder: (context, items) {
-                          return _LineItemsCarousel(
-                            items: items,
-                            pageController: _pageController,
-                            onEdit: (item) =>
-                                EditLineItemDialog.show(context, item),
-                            onRemove: (id) => context
-                                .read<InvoiceDetailsBloc>()
-                                .add(LineItemRemoved(id)),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: InspectionTextField(
-                              controller: _vatController,
-                              label: 'VAT %',
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _InvoiceNumberHeading(invoiceId: widget.invoiceId),
+                        const SizedBox(height: 16),
+                        const _RecipientCard(),
+                        const SizedBox(height: 16),
+                        InspectionTextField(
+                          controller: _appOwnerAddressController,
+                          label: 'App Owner Address',
+                          onChanged: (value) => context
+                              .read<InvoiceDetailsBloc>()
+                              .add(AppOwnerAddressChanged(value)),
+                          validator: (value) =>
+                              value == null || value.trim().isEmpty
+                              ? 'Required'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child:
+                                  BlocSelector<
+                                    InvoiceDetailsBloc,
+                                    InvoiceDetailsState,
+                                    DateTime?
+                                  >(
+                                    selector: (state) => state.issueDate,
+                                    builder: (context, issueDate) {
+                                      return InvoiceDatePickerField(
+                                        label: 'Issue Date',
+                                        date: issueDate,
+                                        onPicked: (date) => context
+                                            .read<InvoiceDetailsBloc>()
+                                            .add(IssueDateChanged(date)),
+                                      );
+                                    },
                                   ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d{0,2}'),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child:
+                                  BlocSelector<
+                                    InvoiceDetailsBloc,
+                                    InvoiceDetailsState,
+                                    DateTime?
+                                  >(
+                                    selector: (state) => state.dueDate,
+                                    builder: (context, dueDate) {
+                                      return InvoiceDatePickerField(
+                                        label: 'Due Date',
+                                        date: dueDate,
+                                        onPicked: (date) => context
+                                            .read<InvoiceDetailsBloc>()
+                                            .add(DueDateChanged(date)),
+                                      );
+                                    },
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        InspectionTextField(
+                          controller: _paymentTermsController,
+                          label: 'Payment Terms',
+                        ),
+                        const SizedBox(height: 20),
+                        _ItemAddForm(
+                          nameController: _itemNameController,
+                          qtyController: _itemQtyController,
+                          priceController: _itemPriceController,
+                          onAdd: () => _addItem(context),
+                        ),
+                        const SizedBox(height: 20),
+                        BlocSelector<
+                          InvoiceDetailsBloc,
+                          InvoiceDetailsState,
+                          List<InvoiceLineItem>
+                        >(
+                          selector: (state) => state.items,
+                          builder: (context, items) {
+                            return _LineItemsCarousel(
+                              items: items,
+                              pageController: _pageController,
+                              onEdit: (item) =>
+                                  EditLineItemDialog.show(context, item),
+                              onRemove: (id) => context
+                                  .read<InvoiceDetailsBloc>()
+                                  .add(LineItemRemoved(id)),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InspectionTextField(
+                                controller: _gstController,
+                                label: 'GST %',
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d{0,2}'),
+                                  ),
+                                ],
+                                onChanged: (value) => context
+                                    .read<InvoiceDetailsBloc>()
+                                    .add(GstPercentChanged(value)),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: InspectionTextField(
+                                controller: _discountController,
+                                label: 'Discount %',
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'^\d*\.?\d{0,2}'),
+                                  ),
+                                ],
+                                onChanged: (value) => context
+                                    .read<InvoiceDetailsBloc>()
+                                    .add(DiscountPercentChanged(value)),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        const _TotalsSummary(),
+                        const SizedBox(height: 16),
+                        InspectionTextField(
+                          controller: _notesController,
+                          label: 'Notes',
+                          growable: true,
+                        ),
+                        const SizedBox(height: 20),
+                        BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
+                          buildWhen: (previous, current) =>
+                              previous.isSaving != current.isSaving ||
+                              previous.isSending != current.isSending ||
+                              previous.isLoading != current.isLoading,
+                          builder: (context, state) {
+                            final inspectionLoading = context
+                                .select<InspectionBloc, bool>(
+                                  (bloc) => bloc.state.isLoading,
+                                );
+                            final isBusy =
+                                state.isSaving ||
+                                state.isSending ||
+                                state.isLoading ||
+                                inspectionLoading;
+                            return Column(
+                              children: [
+                                InspectionGradientButton(
+                                  label: 'Generate Invoice',
+                                  isLoading: state.isSending,
+                                  onTap: isBusy
+                                      ? () {}
+                                      : widget.onGenerateRequested,
+                                ),
+                                const SizedBox(height: 12),
+                                GradientOutlineButton(
+                                  label: 'Save invoice draft',
+                                  onTap: isBusy ? () {} : save,
                                 ),
                               ],
-                              onChanged: (value) => context
-                                  .read<InvoiceDetailsBloc>()
-                                  .add(VatPercentChanged(value)),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: InspectionTextField(
-                              controller: _discountController,
-                              label: 'Discount %',
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                    decimal: true,
-                                  ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d*\.?\d{0,2}'),
-                                ),
-                              ],
-                              onChanged: (value) => context
-                                  .read<InvoiceDetailsBloc>()
-                                  .add(DiscountPercentChanged(value)),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const _TotalsSummary(),
-                      const SizedBox(height: 16),
-                      InspectionTextField(
-                        controller: _notesController,
-                        label: 'Notes',
-                        growable: true,
-                      ),
-                      const SizedBox(height: 20),
-                      BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
-                        buildWhen: (previous, current) =>
-                            previous.isSaving != current.isSaving ||
-                            previous.isSending != current.isSending ||
-                            previous.isLoading != current.isLoading,
-                        builder: (context, state) {
-                          final inspectionLoading = context
-                              .select<InspectionBloc, bool>(
-                                (bloc) => bloc.state.isLoading,
-                              );
-                          final isBusy =
-                              state.isSaving ||
-                              state.isSending ||
-                              state.isLoading ||
-                              inspectionLoading;
-                          return Column(
-                            children: [
-                              InspectionGradientButton(
-                                label: 'Generate Invoice',
-                                isLoading: state.isSending,
-                                onTap: isBusy ? () {} : widget.onGenerateRequested,
-                              ),
-                              const SizedBox(height: 12),
-                              GradientOutlineButton(
-                                label: 'Save invoice draft',
-                                onTap: isBusy ? () {} : save,
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -544,7 +547,7 @@ class _TotalsSummary extends StatelessWidget {
             children: [
               _row('Net Total', totals.netTotal, labelColor, textColor),
               const SizedBox(height: 6),
-              _row('VAT Amount', totals.vatAmount, labelColor, textColor),
+              _row('GST Amount', totals.gstAmount, labelColor, textColor),
               const SizedBox(height: 6),
               _row(
                 'Discount Amount',

@@ -6,7 +6,7 @@ class InvoiceDetails extends Equatable {
   final DateTime? dueDate;
   final String paymentTerms;
   final String notes;
-  final double vatPercent;
+  final double gstPercent;
   final double discountPercent;
   final String appOwnerAddress;
 
@@ -22,7 +22,7 @@ class InvoiceDetails extends Equatable {
     this.dueDate,
     this.paymentTerms = '',
     this.notes = '',
-    this.vatPercent = 0,
+    this.gstPercent = 0,
     this.discountPercent = 0,
     this.appOwnerAddress = '',
     this.pdfContentSignature,
@@ -35,7 +35,7 @@ class InvoiceDetails extends Equatable {
     dueDate,
     paymentTerms,
     notes,
-    vatPercent,
+    gstPercent,
     discountPercent,
     appOwnerAddress,
     pdfContentSignature,

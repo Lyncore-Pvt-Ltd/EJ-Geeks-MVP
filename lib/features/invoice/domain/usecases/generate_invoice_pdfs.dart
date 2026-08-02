@@ -199,7 +199,7 @@ class GenerateInvoicePdfs
       'dueDate': details.dueDate?.toIso8601String(),
       'paymentTerms': details.paymentTerms,
       'notes': details.notes,
-      'vatPercent': details.vatPercent,
+      'gstPercent': details.gstPercent,
       'discountPercent': details.discountPercent,
       'appOwnerAddress': details.appOwnerAddress,
       'items': items

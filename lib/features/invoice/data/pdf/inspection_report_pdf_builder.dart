@@ -38,6 +38,7 @@ Future<Uint8List> buildInspectionReportPdf({
             fonts: fonts,
             companyName: kCompanyName,
             addressLine: invoiceDetails.appOwnerAddress,
+            abn: kCompanyAbn,
             email: kCompanyEmail,
             phone: kCompanyPhone,
           ),

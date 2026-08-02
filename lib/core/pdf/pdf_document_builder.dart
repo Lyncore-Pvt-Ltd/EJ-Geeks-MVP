@@ -16,6 +16,7 @@ pw.Widget pdfLetterheadHeader({
   required AppPdfFonts fonts,
   required String companyName,
   required String addressLine,
+  required String abn,
   required String email,
   required String phone,
 }) {
@@ -24,7 +25,7 @@ pw.Widget pdfLetterheadHeader({
     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
     children: [
       pw.ClipOval(
-        child: pw.Image(logo, width: 56, height: 56, fit: pw.BoxFit.cover),
+        child: pw.Image(logo, width: 80, height: 80, fit: pw.BoxFit.cover),
       ),
       pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.end,
@@ -41,6 +42,15 @@ pw.Widget pdfLetterheadHeader({
           if (addressLine.isNotEmpty)
             pw.Text(
               addressLine,
+              style: pw.TextStyle(
+                font: fonts.regular,
+                fontSize: 10,
+                color: AppPdfPallete.textSecondary,
+              ),
+            ),
+          if (abn.isNotEmpty)
+            pw.Text(
+              abn,
               style: pw.TextStyle(
                 font: fonts.regular,
                 fontSize: 10,

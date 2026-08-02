@@ -46,7 +46,7 @@ class InvoiceDetailsBloc
     on<LineItemAdded>(_onLineItemAdded);
     on<LineItemEdited>(_onLineItemEdited);
     on<LineItemRemoved>(_onLineItemRemoved);
-    on<VatPercentChanged>(_onVatPercentChanged);
+    on<GstPercentChanged>(_onGstPercentChanged);
     on<DiscountPercentChanged>(_onDiscountPercentChanged);
     on<AppOwnerAddressChanged>(_onAppOwnerAddressChanged);
     on<InvoiceDetailsSaved>(_onSaved);
@@ -74,7 +74,7 @@ class InvoiceDetailsBloc
     final bundle = detailsResult.fold((_) => null, (bundle) => bundle);
 
     final items = bundle?.items ?? const <InvoiceLineItem>[];
-    final vatPercent = bundle?.details.vatPercent ?? 0;
+    final gstPercent = bundle?.details.gstPercent ?? 0;
     final discountPercent = bundle?.details.discountPercent ?? 0;
 
     emit(
@@ -85,13 +85,13 @@ class InvoiceDetailsBloc
         dueDate: bundle?.details.dueDate,
         paymentTerms: bundle?.details.paymentTerms ?? '',
         notes: bundle?.details.notes ?? '',
-        vatPercent: vatPercent,
+        gstPercent: gstPercent,
         discountPercent: discountPercent,
         appOwnerAddress: bundle?.details.appOwnerAddress.isNotEmpty == true
             ? bundle!.details.appOwnerAddress
             : kDefaultAppOwnerAddress,
         items: items,
-        totals: computeInvoiceTotals(items, vatPercent, discountPercent),
+        totals: computeInvoiceTotals(items, gstPercent, discountPercent),
       ),
     );
   }
@@ -135,7 +135,7 @@ class InvoiceDetailsBloc
         items: updatedItems,
         totals: computeInvoiceTotals(
           updatedItems,
-          state.vatPercent,
+          state.gstPercent,
           state.discountPercent,
         ),
       ),
@@ -169,7 +169,7 @@ class InvoiceDetailsBloc
         items: updatedItems,
         totals: computeInvoiceTotals(
           updatedItems,
-          state.vatPercent,
+          state.gstPercent,
           state.discountPercent,
         ),
       ),
@@ -189,24 +189,24 @@ class InvoiceDetailsBloc
         items: updatedItems,
         totals: computeInvoiceTotals(
           updatedItems,
-          state.vatPercent,
+          state.gstPercent,
           state.discountPercent,
         ),
       ),
     );
   }
 
-  void _onVatPercentChanged(
-    VatPercentChanged event,
+  void _onGstPercentChanged(
+    GstPercentChanged event,
     Emitter<InvoiceDetailsState> emit,
   ) {
-    final vatPercent = _parseOrZero(event.rawValue);
+    final gstPercent = _parseOrZero(event.rawValue);
     emit(
       state.copyWith(
-        vatPercent: vatPercent,
+        gstPercent: gstPercent,
         totals: computeInvoiceTotals(
           state.items,
-          vatPercent,
+          gstPercent,
           state.discountPercent,
         ),
       ),
@@ -223,7 +223,7 @@ class InvoiceDetailsBloc
         discountPercent: discountPercent,
         totals: computeInvoiceTotals(
           state.items,
-          state.vatPercent,
+          state.gstPercent,
           discountPercent,
         ),
       ),
@@ -256,7 +256,7 @@ class InvoiceDetailsBloc
       dueDate: state.dueDate,
       paymentTerms: event.paymentTerms,
       notes: event.notes,
-      vatPercent: state.vatPercent,
+      gstPercent: state.gstPercent,
       discountPercent: state.discountPercent,
       appOwnerAddress: state.appOwnerAddress,
     );
@@ -314,7 +314,7 @@ class InvoiceDetailsBloc
       dueDate: state.dueDate,
       paymentTerms: event.paymentTerms,
       notes: event.notes,
-      vatPercent: state.vatPercent,
+      gstPercent: state.gstPercent,
       discountPercent: state.discountPercent,
       appOwnerAddress: state.appOwnerAddress,
     );
