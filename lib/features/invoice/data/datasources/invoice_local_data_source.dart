@@ -46,7 +46,7 @@ class InvoiceLocalDataSource {
                invoices.payment_status AS payment_status,
                invoices.created_at AS created_at,
                invoices.updated_at AS updated_at,
-               invoices.vat_percent AS vat_percent,
+               invoices.gst_percent AS gst_percent,
                invoices.discount_percent AS discount_percent,
                inspections.owner_name AS owner_name,
                inspections.make AS make,
@@ -63,13 +63,13 @@ class InvoiceLocalDataSource {
       return rows
           .map((row) {
             final netTotal = (row['net_total'] as num?)?.toDouble();
-            final vatPercent = (row['vat_percent'] as num?)?.toDouble() ?? 0;
+            final gstPercent = (row['gst_percent'] as num?)?.toDouble() ?? 0;
             final discountPercent =
                 (row['discount_percent'] as num?)?.toDouble() ?? 0;
             final totalAmount = netTotal == null
                 ? null
                 : netTotal +
-                      (netTotal * vatPercent / 100) -
+                      (netTotal * gstPercent / 100) -
                       (netTotal * discountPercent / 100);
 
             return InvoiceSummary(
@@ -130,7 +130,7 @@ class InvoiceLocalDataSource {
             'due_date': details.dueDate?.toIso8601String(),
             'payment_terms': details.paymentTerms,
             'notes': details.notes,
-            'vat_percent': details.vatPercent,
+            'gst_percent': details.gstPercent,
             'discount_percent': details.discountPercent,
             'app_owner_address': details.appOwnerAddress,
             'updated_at': DateTime.now().toIso8601String(),
@@ -204,7 +204,7 @@ class InvoiceLocalDataSource {
         dueDate: dueDateRaw != null ? DateTime.parse(dueDateRaw) : null,
         paymentTerms: row?['payment_terms'] as String? ?? '',
         notes: row?['notes'] as String? ?? '',
-        vatPercent: (row?['vat_percent'] as num?)?.toDouble() ?? 0,
+        gstPercent: (row?['gst_percent'] as num?)?.toDouble() ?? 0,
         discountPercent: (row?['discount_percent'] as num?)?.toDouble() ?? 0,
         appOwnerAddress: row?['app_owner_address'] as String? ?? '',
         pdfContentSignature: row?['pdf_content_signature'] as String?,

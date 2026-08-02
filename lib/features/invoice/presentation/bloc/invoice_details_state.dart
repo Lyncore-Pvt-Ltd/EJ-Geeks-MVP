@@ -8,7 +8,7 @@ class InvoiceDetailsState extends Equatable {
   final DateTime? dueDate;
   final String paymentTerms;
   final String notes;
-  final double vatPercent;
+  final double gstPercent;
   final double discountPercent;
   final String appOwnerAddress;
   final List<InvoiceLineItem> items;
@@ -28,7 +28,7 @@ class InvoiceDetailsState extends Equatable {
     this.dueDate,
     this.paymentTerms = '',
     this.notes = '',
-    this.vatPercent = 0,
+    this.gstPercent = 0,
     this.discountPercent = 0,
     this.appOwnerAddress = '',
     this.items = const [],
@@ -49,7 +49,7 @@ class InvoiceDetailsState extends Equatable {
     DateTime? dueDate,
     String? paymentTerms,
     String? notes,
-    double? vatPercent,
+    double? gstPercent,
     double? discountPercent,
     String? appOwnerAddress,
     List<InvoiceLineItem>? items,
@@ -69,7 +69,7 @@ class InvoiceDetailsState extends Equatable {
       dueDate: dueDate ?? this.dueDate,
       paymentTerms: paymentTerms ?? this.paymentTerms,
       notes: notes ?? this.notes,
-      vatPercent: vatPercent ?? this.vatPercent,
+      gstPercent: gstPercent ?? this.gstPercent,
       discountPercent: discountPercent ?? this.discountPercent,
       appOwnerAddress: appOwnerAddress ?? this.appOwnerAddress,
       items: items ?? this.items,
@@ -92,7 +92,7 @@ class InvoiceDetailsState extends Equatable {
     dueDate,
     paymentTerms,
     notes,
-    vatPercent,
+    gstPercent,
     discountPercent,
     appOwnerAddress,
     items,

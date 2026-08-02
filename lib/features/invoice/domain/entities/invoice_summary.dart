@@ -18,7 +18,7 @@ class InvoiceSummary extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  /// The invoice's computed total (net + VAT - discount), or `null` when it
+  /// The invoice's computed total (net + GST - discount), or `null` when it
   /// has no line items yet.
   final double? totalAmount;
 

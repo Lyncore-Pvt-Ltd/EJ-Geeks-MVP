@@ -24,7 +24,7 @@ Future<Uint8List> buildInvoicePdf({
   final details = bundle.details;
   final totals = computeInvoiceTotals(
     bundle.items,
-    details.vatPercent,
+    details.gstPercent,
     details.discountPercent,
   );
 
@@ -43,6 +43,7 @@ Future<Uint8List> buildInvoicePdf({
           fonts: fonts,
           companyName: kCompanyName,
           addressLine: details.appOwnerAddress,
+          abn: kCompanyAbn,
           email: kCompanyEmail,
           phone: kCompanyPhone,
         ),
@@ -156,8 +157,8 @@ Future<Uint8List> buildInvoicePdf({
               children: [
                 _totalRow('Subtotal', formatAud(totals.netTotal), fonts),
                 _totalRow(
-                  'VAT (${trimmedAmount(details.vatPercent)}%)',
-                  formatAud(totals.vatAmount),
+                  'GST (${trimmedAmount(details.gstPercent)}%)',
+                  formatAud(totals.gstAmount),
                   fonts,
                 ),
                 _totalRow(
@@ -203,9 +204,7 @@ Future<Uint8List> buildInvoicePdf({
                 children: [
                   pdfSectionHeading('TERMS & CONDITIONS', fonts),
                   pw.Text(
-                    details.paymentTerms.isEmpty
-                        ? '-'
-                        : details.paymentTerms,
+                    details.paymentTerms.isEmpty ? '-' : details.paymentTerms,
                     style: pw.TextStyle(font: fonts.regular, fontSize: 10),
                   ),
                 ],

@@ -70,10 +70,10 @@ class LineItemRemoved extends InvoiceDetailsEvent {
   List<Object?> get props => [itemId];
 }
 
-class VatPercentChanged extends InvoiceDetailsEvent {
+class GstPercentChanged extends InvoiceDetailsEvent {
   final String rawValue;
 
-  const VatPercentChanged(this.rawValue);
+  const GstPercentChanged(this.rawValue);
 
   @override
   List<Object?> get props => [rawValue];
