@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/invoice_defaults.dart';
 import '../../domain/entities/invoice_details.dart';
 import '../../domain/entities/invoice_details_bundle.dart';
 import '../../domain/entities/invoice_line_item.dart';
@@ -111,6 +112,17 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     try {
       await _localDataSource.updatePdfContentSignature(invoiceId, signature);
       return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, InvoiceDefaults>>
+  getMostRecentInvoiceDefaults() async {
+    try {
+      final defaults = await _localDataSource.getMostRecentInvoiceDefaults();
+      return Right(defaults);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));
     }

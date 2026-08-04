@@ -8,6 +8,7 @@ import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_totals.dart';
 import '../../domain/usecases/generate_invoice_pdfs.dart';
 import '../../domain/usecases/get_invoice_details_by_invoice_id.dart';
+import '../../domain/usecases/get_most_recent_invoice_defaults.dart';
 import '../../domain/usecases/save_invoice_details.dart';
 import '../../domain/usecases/upsert_invoice_draft.dart';
 import 'invoice_details_event.dart';
@@ -22,6 +23,7 @@ class InvoiceDetailsBloc
   final DateTime invoiceCreatedAt;
   final SaveInvoiceDetails _saveInvoiceDetails;
   final GetInvoiceDetailsByInvoiceId _getInvoiceDetailsByInvoiceId;
+  final GetMostRecentInvoiceDefaults _getMostRecentInvoiceDefaults;
   final GetInspectionByInvoiceId _getInspectionByInvoiceId;
   final UpsertInvoiceDraft _upsertInvoiceDraft;
   final GenerateInvoicePdfs _generateInvoicePdfs;
@@ -31,11 +33,13 @@ class InvoiceDetailsBloc
     required this.invoiceCreatedAt,
     required SaveInvoiceDetails saveInvoiceDetails,
     required GetInvoiceDetailsByInvoiceId getInvoiceDetailsByInvoiceId,
+    required GetMostRecentInvoiceDefaults getMostRecentInvoiceDefaults,
     required GetInspectionByInvoiceId getInspectionByInvoiceId,
     required UpsertInvoiceDraft upsertInvoiceDraft,
     required GenerateInvoicePdfs generateInvoicePdfs,
   }) : _saveInvoiceDetails = saveInvoiceDetails,
        _getInvoiceDetailsByInvoiceId = getInvoiceDetailsByInvoiceId,
+       _getMostRecentInvoiceDefaults = getMostRecentInvoiceDefaults,
        _getInspectionByInvoiceId = getInspectionByInvoiceId,
        _upsertInvoiceDraft = upsertInvoiceDraft,
        _generateInvoicePdfs = generateInvoicePdfs,
@@ -77,6 +81,35 @@ class InvoiceDetailsBloc
     final gstPercent = bundle?.details.gstPercent ?? 0;
     final discountPercent = bundle?.details.discountPercent ?? 0;
     final hasSavedAddress = bundle?.details.appOwnerAddress.isNotEmpty == true;
+    // `issueDate` is only non-null once a row for this invoice has actually
+    // been saved (see `saveInvoiceDetails`/`getInvoiceDetailsByInvoiceId`),
+    // so it's a reliable "does this invoice have its own saved row" check —
+    // unlike `hasSavedAddress`, which is also false for a saved row whose
+    // address happens to be empty.
+    final hasExistingRow = bundle?.details.issueDate != null;
+
+    // A brand-new invoice has no saved row of its own yet — carry forward
+    // the most recently saved address/terms from any other invoice instead
+    // of always starting from the static placeholder / blank.
+    String appOwnerAddress;
+    bool appOwnerAddressIsSaved;
+    String paymentTerms;
+    if (hasExistingRow) {
+      appOwnerAddress = hasSavedAddress
+          ? bundle!.details.appOwnerAddress
+          : kDefaultAppOwnerAddress;
+      appOwnerAddressIsSaved = hasSavedAddress;
+      paymentTerms = bundle?.details.paymentTerms ?? '';
+    } else {
+      final defaultsResult = await _getMostRecentInvoiceDefaults(null);
+      final defaults = defaultsResult.fold((_) => null, (d) => d);
+      final carriedAddress = defaults?.appOwnerAddress;
+      appOwnerAddress = carriedAddress?.isNotEmpty == true
+          ? carriedAddress!
+          : kDefaultAppOwnerAddress;
+      appOwnerAddressIsSaved = carriedAddress?.isNotEmpty == true;
+      paymentTerms = defaults?.paymentTerms ?? '';
+    }
 
     emit(
       state.copyWith(
@@ -84,14 +117,12 @@ class InvoiceDetailsBloc
         errorMessage: detailsError ?? inspectionError,
         issueDate: bundle?.details.issueDate ?? DateTime.now(),
         dueDate: bundle?.details.dueDate,
-        paymentTerms: bundle?.details.paymentTerms ?? '',
+        paymentTerms: paymentTerms,
         notes: bundle?.details.notes ?? '',
         gstPercent: gstPercent,
         discountPercent: discountPercent,
-        appOwnerAddress: hasSavedAddress
-            ? bundle!.details.appOwnerAddress
-            : kDefaultAppOwnerAddress,
-        appOwnerAddressIsSaved: hasSavedAddress,
+        appOwnerAddress: appOwnerAddress,
+        appOwnerAddressIsSaved: appOwnerAddressIsSaved,
         items: items,
         totals: computeInvoiceTotals(items, gstPercent, discountPercent),
       ),

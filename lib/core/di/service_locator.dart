@@ -17,6 +17,7 @@ import '../../features/invoice/domain/usecases/delete_invoice.dart';
 import '../../features/invoice/domain/usecases/generate_invoice_pdfs.dart';
 import '../../features/invoice/domain/usecases/get_all_invoices.dart';
 import '../../features/invoice/domain/usecases/get_invoice_details_by_invoice_id.dart';
+import '../../features/invoice/domain/usecases/get_most_recent_invoice_defaults.dart';
 import '../../features/invoice/domain/usecases/save_invoice_details.dart';
 import '../../features/invoice/domain/usecases/update_invoice_payment_status.dart';
 import '../../features/invoice/domain/usecases/update_invoice_service_status.dart';
@@ -79,6 +80,9 @@ void setupServiceLocator() {
   sl.registerLazySingleton<GetInvoiceDetailsByInvoiceId>(
     () => GetInvoiceDetailsByInvoiceId(sl()),
   );
+  sl.registerLazySingleton<GetMostRecentInvoiceDefaults>(
+    () => GetMostRecentInvoiceDefaults(sl()),
+  );
   sl.registerLazySingleton<UpdatePdfContentSignature>(
     () => UpdatePdfContentSignature(sl()),
   );
@@ -112,6 +116,7 @@ void setupServiceLocator() {
       invoiceCreatedAt: invoiceCreatedAt,
       saveInvoiceDetails: sl(),
       getInvoiceDetailsByInvoiceId: sl(),
+      getMostRecentInvoiceDefaults: sl(),
       getInspectionByInvoiceId: sl(),
       upsertInvoiceDraft: sl(),
       generateInvoicePdfs: sl(),
