@@ -22,6 +22,9 @@ class InspectionTextField extends StatefulWidget {
     this.expandedLines = 6,
     this.prefixText,
     this.validator,
+    this.readOnly = false,
+    this.onEditTap,
+    this.onSaveTap,
   }) : assert(
          controller == null || initialValue == null,
          'Pass either controller or initialValue, not both.',
@@ -40,6 +43,18 @@ class InspectionTextField extends StatefulWidget {
   final String? prefixText;
   final FormFieldValidator<String>? validator;
 
+  /// When true, the field is non-editable and shows an edit-icon suffix
+  /// (if [onEditTap] is provided) instead of accepting direct input.
+  final bool readOnly;
+
+  /// Called when the user taps the edit icon on a [readOnly] field. Has no
+  /// effect unless [readOnly] is also true.
+  final VoidCallback? onEditTap;
+
+  /// Called when the user taps the save icon shown while the field is
+  /// editable and non-empty. Has no effect when [readOnly] is true.
+  final VoidCallback? onSaveTap;
+
   @override
   State<InspectionTextField> createState() => _InspectionTextFieldState();
 }
@@ -54,11 +69,37 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
     _focusNode.addListener(() {
       setState(() => _isFocused = _focusNode.hasFocus);
     });
+    if (widget.controller != null && widget.onSaveTap != null) {
+      widget.controller!.addListener(_onControllerChanged);
+    }
+  }
+
+  void _onControllerChanged() => setState(() {});
+
+  Widget? get _suffixIcon {
+    if (widget.readOnly && widget.onEditTap != null) {
+      return IconButton(
+        icon: const Icon(Icons.edit_outlined),
+        onPressed: widget.onEditTap,
+      );
+    }
+    if (!widget.readOnly &&
+        widget.onSaveTap != null &&
+        (widget.controller?.text.trim().isNotEmpty ?? false)) {
+      return IconButton(
+        icon: const Icon(Icons.check_circle_outline),
+        onPressed: widget.onSaveTap,
+      );
+    }
+    return null;
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
+    if (widget.controller != null && widget.onSaveTap != null) {
+      widget.controller!.removeListener(_onControllerChanged);
+    }
     super.dispose();
   }
 
@@ -92,6 +133,7 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
           textCapitalization: widget.textCapitalization,
           inputFormatters: widget.inputFormatters,
           validator: widget.validator,
+          readOnly: widget.readOnly,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           cursorColor: highlightColor,
           selectionControls: materialTextSelectionControls,
@@ -103,6 +145,7 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
           decoration: InputDecoration(
             labelText: widget.label,
             prefixText: widget.prefixText,
+            suffixIcon: _suffixIcon,
             isDense: true,
             labelStyle: TextStyle(
               color: _isFocused

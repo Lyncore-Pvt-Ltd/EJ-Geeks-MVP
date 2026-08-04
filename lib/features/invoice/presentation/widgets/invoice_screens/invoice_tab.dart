@@ -1,3 +1,4 @@
+import 'package:ej_geek/core/presentation/widget/confirm_dialog.dart';
 import 'package:ej_geek/core/presentation/widget/gradient_outline_button.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/domain/entities/vehicle_details.dart';
@@ -57,6 +58,41 @@ class InvoiceTabState extends State<InvoiceTab>
 
   final _pageController = PageController(viewportFraction: 0.88);
 
+  bool _isOwnerAddressLocked = false;
+  bool _isPaymentTermsLocked = false;
+  bool _hasLoadedOnce = false;
+  bool _didSeedFromCurrentState = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The Invoice tab is built lazily inside the bottom sheet's TabBarView,
+    // so by the time it mounts, InvoiceDetailsBloc's initial load may have
+    // already finished — the load-complete BlocListener below only reacts
+    // to the isLoading true→false *transition*, which it would then have
+    // missed entirely. Seed directly from whatever the bloc's state already
+    // is right now, once, so a tab built after loading finishes still
+    // populates and unlocks correctly.
+    if (!_didSeedFromCurrentState) {
+      _didSeedFromCurrentState = true;
+      final state = context.read<InvoiceDetailsBloc>().state;
+      if (!state.isLoading) {
+        _paymentTermsController.text = state.paymentTerms;
+        _appOwnerAddressController.text = state.appOwnerAddress;
+        _notesController.text = state.notes;
+        _gstController.text = state.gstPercent == 0
+            ? ''
+            : _trimmed(state.gstPercent);
+        _discountController.text = state.discountPercent == 0
+            ? ''
+            : _trimmed(state.discountPercent);
+        _isOwnerAddressLocked = state.appOwnerAddressIsSaved;
+        _isPaymentTermsLocked = state.paymentTerms.trim().isNotEmpty;
+        _hasLoadedOnce = true;
+      }
+    }
+  }
+
   @override
   void dispose() {
     _paymentTermsController.dispose();
@@ -86,6 +122,23 @@ class InvoiceTabState extends State<InvoiceTab>
 
   bool validate() => _formKey.currentState?.validate() ?? true;
 
+  Future<void> _confirmFieldAction(
+    String fieldLabel,
+    String actionVerb,
+    VoidCallback onConfirmed,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => ConfirmDialog(
+        title: actionVerb == 'save' ? 'Save $fieldLabel?' : 'Edit $fieldLabel?',
+        message: actionVerb == 'save'
+            ? 'Save this $fieldLabel and lock it from further edits?'
+            : 'You already saved this $fieldLabel. Do you want to change it?',
+      ),
+    );
+    if (confirmed == true) onConfirmed();
+  }
+
   void save() {
     context.read<InvoiceDetailsBloc>().add(
       InvoiceDetailsSaved(
@@ -94,6 +147,12 @@ class InvoiceTabState extends State<InvoiceTab>
       ),
     );
   }
+
+  void _saveAndLockOwnerAddress() =>
+      _confirmFieldAction('App Owner Address', 'save', save);
+
+  void _saveAndLockPaymentTerms() =>
+      _confirmFieldAction('Payment Terms', 'save', save);
 
   void generate() {
     context.read<InvoiceDetailsBloc>().add(
@@ -112,7 +171,8 @@ class InvoiceTabState extends State<InvoiceTab>
         BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
           listenWhen: (previous, current) =>
               previous.errorMessage != current.errorMessage ||
-              previous.saveSuccess != current.saveSuccess,
+              previous.saveSuccess != current.saveSuccess ||
+              previous.sendSuccess != current.sendSuccess,
           listener: (context, state) {
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(
@@ -123,21 +183,36 @@ class InvoiceTabState extends State<InvoiceTab>
                 const SnackBar(content: Text('Invoice draft saved')),
               );
             }
+            if (state.saveSuccess || state.sendSuccess) {
+              setState(() {
+                if (_appOwnerAddressController.text.trim().isNotEmpty) {
+                  _isOwnerAddressLocked = true;
+                }
+                if (_paymentTermsController.text.trim().isNotEmpty) {
+                  _isPaymentTermsLocked = true;
+                }
+              });
+            }
           },
         ),
         BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
           listenWhen: (previous, current) =>
               previous.isLoading && !current.isLoading,
           listener: (context, state) {
-            _paymentTermsController.text = state.paymentTerms;
-            _appOwnerAddressController.text = state.appOwnerAddress;
-            _notesController.text = state.notes;
-            _gstController.text = state.gstPercent == 0
-                ? ''
-                : _trimmed(state.gstPercent);
-            _discountController.text = state.discountPercent == 0
-                ? ''
-                : _trimmed(state.discountPercent);
+            setState(() {
+              _paymentTermsController.text = state.paymentTerms;
+              _appOwnerAddressController.text = state.appOwnerAddress;
+              _notesController.text = state.notes;
+              _gstController.text = state.gstPercent == 0
+                  ? ''
+                  : _trimmed(state.gstPercent);
+              _discountController.text = state.discountPercent == 0
+                  ? ''
+                  : _trimmed(state.discountPercent);
+              _isOwnerAddressLocked = state.appOwnerAddressIsSaved;
+              _isPaymentTermsLocked = state.paymentTerms.trim().isNotEmpty;
+              _hasLoadedOnce = true;
+            });
           },
         ),
       ],
@@ -167,6 +242,19 @@ class InvoiceTabState extends State<InvoiceTab>
                               value == null || value.trim().isEmpty
                               ? 'Required'
                               : null,
+                          readOnly: !_hasLoadedOnce || _isOwnerAddressLocked,
+                          onEditTap: _isOwnerAddressLocked
+                              ? () => _confirmFieldAction(
+                                  'App Owner Address',
+                                  'edit',
+                                  () => setState(
+                                    () => _isOwnerAddressLocked = false,
+                                  ),
+                                )
+                              : null,
+                          onSaveTap: _isOwnerAddressLocked
+                              ? null
+                              : _saveAndLockOwnerAddress,
                         ),
                         const SizedBox(height: 16),
                         Row(
@@ -216,6 +304,19 @@ class InvoiceTabState extends State<InvoiceTab>
                         InspectionTextField(
                           controller: _paymentTermsController,
                           label: 'Payment Terms',
+                          readOnly: !_hasLoadedOnce || _isPaymentTermsLocked,
+                          onEditTap: _isPaymentTermsLocked
+                              ? () => _confirmFieldAction(
+                                  'Payment Terms',
+                                  'edit',
+                                  () => setState(
+                                    () => _isPaymentTermsLocked = false,
+                                  ),
+                                )
+                              : null,
+                          onSaveTap: _isPaymentTermsLocked
+                              ? null
+                              : _saveAndLockPaymentTerms,
                         ),
                         const SizedBox(height: 20),
                         _ItemAddForm(
