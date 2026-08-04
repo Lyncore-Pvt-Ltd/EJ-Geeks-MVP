@@ -1,6 +1,7 @@
 import '../../../../core/database/app_database.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/storage/app_storage_paths.dart';
+import '../../domain/entities/invoice_defaults.dart';
 import '../../domain/entities/invoice_details.dart';
 import '../../domain/entities/invoice_details_bundle.dart';
 import '../../domain/entities/invoice_line_item.dart';
@@ -253,6 +254,36 @@ class InvoiceLocalDataSource {
       return InvoiceDetailsBundle(details: details, items: items);
     } catch (e) {
       throw CacheException(message: 'Failed to load invoice details: $e');
+    }
+  }
+
+  Future<InvoiceDefaults> getMostRecentInvoiceDefaults() async {
+    try {
+      final db = await _appDatabase.database;
+      final addressRows = await db.query(
+        'invoices',
+        columns: ['app_owner_address'],
+        where: "app_owner_address IS NOT NULL AND app_owner_address != ''",
+        orderBy: 'updated_at DESC',
+        limit: 1,
+      );
+      final termsRows = await db.query(
+        'invoices',
+        columns: ['payment_terms'],
+        where: "payment_terms IS NOT NULL AND payment_terms != ''",
+        orderBy: 'updated_at DESC',
+        limit: 1,
+      );
+      return InvoiceDefaults(
+        appOwnerAddress: addressRows.isEmpty
+            ? null
+            : addressRows.first['app_owner_address'] as String?,
+        paymentTerms: termsRows.isEmpty
+            ? null
+            : termsRows.first['payment_terms'] as String?,
+      );
+    } catch (e) {
+      throw CacheException(message: 'Failed to load invoice defaults: $e');
     }
   }
 

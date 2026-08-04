@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
+import '../entities/invoice_defaults.dart';
 import '../entities/invoice_details.dart';
 import '../entities/invoice_details_bundle.dart';
 import '../entities/invoice_line_item.dart';
@@ -41,4 +42,6 @@ abstract class InvoiceRepository {
     String invoiceId,
     String? signature,
   );
+
+  Future<Either<Failure, InvoiceDefaults>> getMostRecentInvoiceDefaults();
 }
