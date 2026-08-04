@@ -34,6 +34,12 @@ class InvoiceBottomSheet extends StatefulWidget {
     String? invoiceId,
     DateTime? createdAt,
   }) {
+    // Resolve once here rather than inside the widget constructor: the
+    // modal route's builder can be re-invoked mid-session (e.g. when the
+    // keyboard opens/closes changes MediaQuery), and re-resolving a null
+    // invoiceId there would mint a fresh random uuid on every rebuild.
+    final resolvedInvoiceId = invoiceId ?? const Uuid().v4();
+    final resolvedCreatedAt = createdAt ?? DateTime.now();
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -41,7 +47,10 @@ class InvoiceBottomSheet extends StatefulWidget {
       barrierColor: Colors.black.withValues(alpha: 0.5),
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.9,
-        child: InvoiceBottomSheet(invoiceId: invoiceId, createdAt: createdAt),
+        child: InvoiceBottomSheet(
+          invoiceId: resolvedInvoiceId,
+          createdAt: resolvedCreatedAt,
+        ),
       ),
     );
   }

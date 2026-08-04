@@ -11,6 +11,7 @@ class InvoiceDetailsState extends Equatable {
   final double gstPercent;
   final double discountPercent;
   final String appOwnerAddress;
+  final bool appOwnerAddressIsSaved;
   final List<InvoiceLineItem> items;
   final InvoiceTotals totals;
   final bool isLoading;
@@ -31,6 +32,7 @@ class InvoiceDetailsState extends Equatable {
     this.gstPercent = 0,
     this.discountPercent = 0,
     this.appOwnerAddress = '',
+    this.appOwnerAddressIsSaved = false,
     this.items = const [],
     this.totals = const InvoiceTotals(),
     this.isLoading = false,
@@ -52,6 +54,7 @@ class InvoiceDetailsState extends Equatable {
     double? gstPercent,
     double? discountPercent,
     String? appOwnerAddress,
+    bool? appOwnerAddressIsSaved,
     List<InvoiceLineItem>? items,
     InvoiceTotals? totals,
     bool? isLoading,
@@ -72,6 +75,8 @@ class InvoiceDetailsState extends Equatable {
       gstPercent: gstPercent ?? this.gstPercent,
       discountPercent: discountPercent ?? this.discountPercent,
       appOwnerAddress: appOwnerAddress ?? this.appOwnerAddress,
+      appOwnerAddressIsSaved:
+          appOwnerAddressIsSaved ?? this.appOwnerAddressIsSaved,
       items: items ?? this.items,
       totals: totals ?? this.totals,
       isLoading: isLoading ?? this.isLoading,
@@ -95,6 +100,7 @@ class InvoiceDetailsState extends Equatable {
     gstPercent,
     discountPercent,
     appOwnerAddress,
+    appOwnerAddressIsSaved,
     items,
     totals,
     isLoading,

@@ -76,6 +76,7 @@ class InvoiceDetailsBloc
     final items = bundle?.items ?? const <InvoiceLineItem>[];
     final gstPercent = bundle?.details.gstPercent ?? 0;
     final discountPercent = bundle?.details.discountPercent ?? 0;
+    final hasSavedAddress = bundle?.details.appOwnerAddress.isNotEmpty == true;
 
     emit(
       state.copyWith(
@@ -87,9 +88,10 @@ class InvoiceDetailsBloc
         notes: bundle?.details.notes ?? '',
         gstPercent: gstPercent,
         discountPercent: discountPercent,
-        appOwnerAddress: bundle?.details.appOwnerAddress.isNotEmpty == true
+        appOwnerAddress: hasSavedAddress
             ? bundle!.details.appOwnerAddress
             : kDefaultAppOwnerAddress,
+        appOwnerAddressIsSaved: hasSavedAddress,
         items: items,
         totals: computeInvoiceTotals(items, gstPercent, discountPercent),
       ),
