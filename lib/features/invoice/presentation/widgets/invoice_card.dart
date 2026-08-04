@@ -23,10 +23,7 @@ class InvoiceCard extends StatelessWidget {
   Future<void> _openInvoice(BuildContext context) async {
     // TEMPORARY TRIAL LOCK — remove when no longer needed
     if (context.read<TrialController>().isExpired) {
-      showDialog(
-        context: context,
-        builder: (_) => const TrialExpiredDialog(),
-      );
+      showDialog(context: context, builder: (_) => const TrialExpiredDialog());
       return;
     }
     final invoiceBloc = context.read<InvoiceBloc>();
