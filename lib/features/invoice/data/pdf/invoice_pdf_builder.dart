@@ -10,6 +10,7 @@ import '../../data/constants/invoice_date_format.dart';
 import '../../data/constants/invoice_number_formatter.dart';
 import '../../domain/entities/invoice_details_bundle.dart';
 import '../../domain/entities/invoice_totals.dart';
+import '../../domain/entities/payment_status.dart';
 import '../../presentation/widgets/invoice_screens/currency_format.dart';
 
 /// Builds the Invoice PDF: letterhead, bill-to, invoice meta, line items
@@ -177,7 +178,17 @@ Future<Uint8List> buildInvoicePdf({
             ),
           ),
         ),
-        pw.SizedBox(height: 32),
+        pw.SizedBox(height: 16),
+        if (details.paymentStatus == PaymentStatus.paid &&
+            details.paidAt != null)
+          pw.Align(
+            alignment: pw.Alignment.centerLeft,
+            child: pdfPaidStamp(
+              formatInvoiceDateTime(details.paidAt!),
+              fonts,
+            ),
+          ),
+        pw.SizedBox(height: 16),
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [

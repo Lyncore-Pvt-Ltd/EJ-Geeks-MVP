@@ -13,6 +13,7 @@ class AppPdfPallete {
   static const PdfColor background = PdfColor.fromInt(0xFFfbfbfb); // whiteout
   static const PdfColor accent = PdfColor.fromInt(0xFFFF3D3D); // selectionGradient start
   static const PdfColor white = PdfColors.white;
+  static const PdfColor paidBlue = PdfColor.fromInt(0xFF14305C);
 }
 
 /// Loads the Inter font family (matching `FontFamily.inter` used across the

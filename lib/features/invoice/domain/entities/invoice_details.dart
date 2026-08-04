@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import 'payment_status.dart';
+
 class InvoiceDetails extends Equatable {
   final String invoiceId;
   final DateTime? issueDate;
@@ -9,6 +11,8 @@ class InvoiceDetails extends Equatable {
   final double gstPercent;
   final double discountPercent;
   final String appOwnerAddress;
+  final PaymentStatus paymentStatus;
+  final DateTime? paidAt;
 
   /// Canonical JSON snapshot of every field that fed the last successful
   /// PDF generation for this invoice (see `GenerateInvoicePdfs`). Compared
@@ -25,6 +29,8 @@ class InvoiceDetails extends Equatable {
     this.gstPercent = 0,
     this.discountPercent = 0,
     this.appOwnerAddress = '',
+    this.paymentStatus = PaymentStatus.pending,
+    this.paidAt,
     this.pdfContentSignature,
   });
 
@@ -38,6 +44,8 @@ class InvoiceDetails extends Equatable {
     gstPercent,
     discountPercent,
     appOwnerAddress,
+    paymentStatus,
+    paidAt,
     pdfContentSignature,
   ];
 }

@@ -5,6 +5,7 @@ import '../entities/invoice_details.dart';
 import '../entities/invoice_details_bundle.dart';
 import '../entities/invoice_line_item.dart';
 import '../entities/invoice_summary.dart';
+import '../entities/payment_status.dart';
 import '../entities/service_status.dart';
 
 abstract class InvoiceRepository {
@@ -15,6 +16,11 @@ abstract class InvoiceRepository {
   Future<Either<Failure, void>> updateServiceStatus(
     String invoiceId,
     ServiceStatus status,
+  );
+
+  Future<Either<Failure, void>> updatePaymentStatus(
+    String invoiceId,
+    PaymentStatus status,
   );
 
   Future<Either<Failure, void>> deleteInvoice(

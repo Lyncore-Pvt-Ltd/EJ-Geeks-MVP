@@ -1,3 +1,4 @@
+import 'package:ej_geek/core/presentation/widget/confirm_dialog.dart';
 import 'package:ej_geek/core/presentation/widget/show_delete_dialog.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 // TEMPORARY TRIAL LOCK — remove when no longer needed
@@ -52,6 +53,27 @@ class InvoiceCard extends StatelessWidget {
     }
   }
 
+  Future<void> _confirmMarkPaid(BuildContext context) async {
+    final invoiceBloc = context.read<InvoiceBloc>();
+    final isPaid = summary.paymentStatus == PaymentStatus.paid;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => ConfirmDialog(
+        title: isPaid ? 'Undo Payment' : 'Mark as Paid',
+        message: isPaid
+            ? 'Are you sure you want to undo the paid status for this invoice?'
+            : 'Confirm this invoice has been paid? A paid date and time will be recorded.',
+      ),
+    );
+    if (confirmed == true) {
+      invoiceBloc.add(
+        isPaid
+            ? InvoicePaymentMarkedUnpaid(summary.id)
+            : InvoicePaymentMarkedPaid(summary.id),
+      );
+    }
+  }
+
   void _showGeneratePdfStub(BuildContext context) {
     ScaffoldMessenger.of(
       context,
@@ -67,6 +89,7 @@ class InvoiceCard extends StatelessWidget {
     final dividerColor = isDark ? Colors.white12 : Colors.black12;
     final handleColor = isDark ? Colors.white24 : Colors.black26;
     final isCompleted = summary.serviceStatus == ServiceStatus.completed;
+    final isPaid = summary.paymentStatus == PaymentStatus.paid;
     final vehicleLine = [
       summary.make,
       summary.model,
@@ -165,6 +188,30 @@ class InvoiceCard extends StatelessWidget {
                       isCompleted
                           ? 'Undo Complete Service'
                           : 'Complete Service',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Divider(
+                    color: dividerColor,
+                    height: 1,
+                    indent: 20,
+                    endIndent: 20,
+                  ),
+                  ListTile(
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+                      _confirmMarkPaid(context);
+                    },
+                    leading: Icon(
+                      isPaid ? Icons.undo : Icons.attach_money,
+                      color: textColor,
+                    ),
+                    title: Text(
+                      isPaid ? 'Undo Payment' : 'Mark Paid',
                       style: TextStyle(
                         color: textColor,
                         fontSize: 16,
@@ -381,6 +428,17 @@ class InvoiceCard extends StatelessWidget {
                           summary.serviceStatus == ServiceStatus.completed
                               ? Icons.undo
                               : Icons.check_circle_outline,
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: summary.paymentStatus == PaymentStatus.paid
+                            ? 'Undo Payment'
+                            : 'Mark Paid',
+                        onPressed: () => _confirmMarkPaid(context),
+                        icon: Icon(
+                          summary.paymentStatus == PaymentStatus.paid
+                              ? Icons.undo
+                              : Icons.attach_money,
                         ),
                       ),
                       IconButton(

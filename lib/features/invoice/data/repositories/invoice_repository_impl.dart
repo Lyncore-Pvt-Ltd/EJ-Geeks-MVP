@@ -6,6 +6,7 @@ import '../../domain/entities/invoice_details.dart';
 import '../../domain/entities/invoice_details_bundle.dart';
 import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_summary.dart';
+import '../../domain/entities/payment_status.dart';
 import '../../domain/entities/service_status.dart';
 import '../../domain/repositories/invoice_repository.dart';
 import '../datasources/invoice_local_data_source.dart';
@@ -43,6 +44,19 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   ) async {
     try {
       await _localDataSource.updateServiceStatus(invoiceId, status);
+      return const Right(null);
+    } on CacheException catch (e) {
+      return Left(CacheFailure(message: e.message));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updatePaymentStatus(
+    String invoiceId,
+    PaymentStatus status,
+  ) async {
+    try {
+      await _localDataSource.updatePaymentStatus(invoiceId, status);
       return const Right(null);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));

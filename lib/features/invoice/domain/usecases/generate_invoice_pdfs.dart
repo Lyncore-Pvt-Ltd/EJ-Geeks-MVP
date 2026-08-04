@@ -202,6 +202,8 @@ class GenerateInvoicePdfs
       'gstPercent': details.gstPercent,
       'discountPercent': details.discountPercent,
       'appOwnerAddress': details.appOwnerAddress,
+      'paymentStatus': details.paymentStatus.toDb(),
+      'paidAt': details.paidAt?.toIso8601String(),
       'items': items
           .map((i) => [i.id, i.name, i.quantity, i.unitPrice])
           .toList(),

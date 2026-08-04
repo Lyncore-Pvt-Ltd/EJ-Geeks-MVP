@@ -18,6 +18,7 @@ import '../../features/invoice/domain/usecases/generate_invoice_pdfs.dart';
 import '../../features/invoice/domain/usecases/get_all_invoices.dart';
 import '../../features/invoice/domain/usecases/get_invoice_details_by_invoice_id.dart';
 import '../../features/invoice/domain/usecases/save_invoice_details.dart';
+import '../../features/invoice/domain/usecases/update_invoice_payment_status.dart';
 import '../../features/invoice/domain/usecases/update_invoice_service_status.dart';
 import '../../features/invoice/domain/usecases/update_pdf_content_signature.dart';
 import '../../features/invoice/domain/usecases/upsert_invoice_draft.dart';
@@ -68,6 +69,9 @@ void setupServiceLocator() {
   sl.registerLazySingleton<UpdateInvoiceServiceStatus>(
     () => UpdateInvoiceServiceStatus(sl()),
   );
+  sl.registerLazySingleton<UpdateInvoicePaymentStatus>(
+    () => UpdateInvoicePaymentStatus(sl()),
+  );
   sl.registerLazySingleton<DeleteInvoice>(() => DeleteInvoice(sl()));
   sl.registerLazySingleton<SaveInvoiceDetails>(
     () => SaveInvoiceDetails(sl()),
@@ -97,6 +101,7 @@ void setupServiceLocator() {
     () => InvoiceBloc(
       getAllInvoices: sl(),
       updateInvoiceServiceStatus: sl(),
+      updateInvoicePaymentStatus: sl(),
       deleteInvoice: sl(),
     ),
   );

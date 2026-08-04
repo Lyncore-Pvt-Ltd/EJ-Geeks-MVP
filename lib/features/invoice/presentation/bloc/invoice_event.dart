@@ -29,6 +29,24 @@ class InvoiceServiceReverted extends InvoiceEvent {
   List<Object?> get props => [invoiceId];
 }
 
+class InvoicePaymentMarkedPaid extends InvoiceEvent {
+  final String invoiceId;
+
+  const InvoicePaymentMarkedPaid(this.invoiceId);
+
+  @override
+  List<Object?> get props => [invoiceId];
+}
+
+class InvoicePaymentMarkedUnpaid extends InvoiceEvent {
+  final String invoiceId;
+
+  const InvoicePaymentMarkedUnpaid(this.invoiceId);
+
+  @override
+  List<Object?> get props => [invoiceId];
+}
+
 class InvoiceDeleted extends InvoiceEvent {
   final String invoiceId;
   final bool deleteFiles;

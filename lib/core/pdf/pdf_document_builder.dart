@@ -97,6 +97,45 @@ pw.Widget pdfSectionHeading(String title, AppPdfFonts fonts) {
 pw.Widget pdfDivider() =>
     pw.Divider(color: AppPdfPallete.border, thickness: 1);
 
+/// A rotated "PAID" stamp with [paidLabel] (a pre-formatted date/time string)
+/// below it, for overlaying near an invoice's totals once payment is
+/// confirmed. Takes a plain string rather than a `DateTime` so this
+/// feature-agnostic file doesn't need a date-formatting dependency.
+pw.Widget pdfPaidStamp(String paidLabel, AppPdfFonts fonts) {
+  return pw.Transform.rotate(
+    angle: 0.35,
+    child: pw.Container(
+      padding: const pw.EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: AppPdfPallete.paidBlue, width: 2),
+        borderRadius: pw.BorderRadius.circular(6),
+      ),
+      child: pw.Column(
+        mainAxisSize: pw.MainAxisSize.min,
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Text(
+            'PAID',
+            style: pw.TextStyle(
+              font: fonts.bold,
+              fontSize: 20,
+              color: AppPdfPallete.paidBlue,
+            ),
+          ),
+          pw.Text(
+            paidLabel,
+            style: pw.TextStyle(
+              font: fonts.regular,
+              fontSize: 8,
+              color: AppPdfPallete.paidBlue,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 /// A QR code encoding [invoiceId], for a future in-app "scan PDF to find
 /// invoice" lookup feature — not implemented yet, just embedded here.
 pw.Widget invoiceIdQrCode(String invoiceId, {double size = 80}) {

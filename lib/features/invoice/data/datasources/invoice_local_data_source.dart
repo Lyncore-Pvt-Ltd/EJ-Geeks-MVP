@@ -116,6 +116,29 @@ class InvoiceLocalDataSource {
     }
   }
 
+  Future<void> updatePaymentStatus(
+    String invoiceId,
+    PaymentStatus status,
+  ) async {
+    try {
+      final db = await _appDatabase.database;
+      await db.update(
+        'invoices',
+        {
+          'payment_status': status.toDb(),
+          'paid_at': status == PaymentStatus.paid
+              ? DateTime.now().toIso8601String()
+              : null,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id = ?',
+        whereArgs: [invoiceId],
+      );
+    } catch (e) {
+      throw CacheException(message: 'Failed to update payment status: $e');
+    }
+  }
+
   Future<void> saveInvoiceDetails(
     InvoiceDetails details,
     List<InvoiceLineItem> items,
@@ -207,6 +230,12 @@ class InvoiceLocalDataSource {
         gstPercent: (row?['gst_percent'] as num?)?.toDouble() ?? 0,
         discountPercent: (row?['discount_percent'] as num?)?.toDouble() ?? 0,
         appOwnerAddress: row?['app_owner_address'] as String? ?? '',
+        paymentStatus: PaymentStatus.fromDb(
+          row?['payment_status'] as String? ?? PaymentStatus.pending.toDb(),
+        ),
+        paidAt: (row?['paid_at'] as String?) != null
+            ? DateTime.parse(row!['paid_at'] as String)
+            : null,
         pdfContentSignature: row?['pdf_content_signature'] as String?,
       );
 
