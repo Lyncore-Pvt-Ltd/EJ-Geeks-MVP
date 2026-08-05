@@ -107,6 +107,10 @@ class InvoiceDetailsSaved extends InvoiceDetailsEvent {
   List<Object?> get props => [paymentTerms, notes];
 }
 
+class PaymentStatusToggled extends InvoiceDetailsEvent {
+  const PaymentStatusToggled();
+}
+
 class InvoiceGenerateRequested extends InvoiceDetailsEvent {
   final String paymentTerms;
   final String notes;

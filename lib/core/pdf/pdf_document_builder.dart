@@ -24,8 +24,11 @@ pw.Widget pdfLetterheadHeader({
     crossAxisAlignment: pw.CrossAxisAlignment.start,
     mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
     children: [
-      pw.ClipOval(
-        child: pw.Image(logo, width: 80, height: 80, fit: pw.BoxFit.cover),
+      pw.Align(
+        alignment: pw.Alignment.topLeft,
+        child: pw.ClipOval(
+          child: pw.Image(logo, width: 80, height: 80, fit: pw.BoxFit.cover),
+        ),
       ),
       pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.end,

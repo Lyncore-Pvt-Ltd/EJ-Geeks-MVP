@@ -6,10 +6,12 @@ import '../../data/constants/invoice_owner_defaults.dart';
 import '../../domain/entities/invoice_details.dart';
 import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_totals.dart';
+import '../../domain/entities/payment_status.dart';
 import '../../domain/usecases/generate_invoice_pdfs.dart';
 import '../../domain/usecases/get_invoice_details_by_invoice_id.dart';
 import '../../domain/usecases/get_most_recent_invoice_defaults.dart';
 import '../../domain/usecases/save_invoice_details.dart';
+import '../../domain/usecases/update_invoice_payment_status.dart';
 import '../../domain/usecases/upsert_invoice_draft.dart';
 import 'invoice_details_event.dart';
 import 'invoice_details_state.dart';
@@ -27,6 +29,7 @@ class InvoiceDetailsBloc
   final GetInspectionByInvoiceId _getInspectionByInvoiceId;
   final UpsertInvoiceDraft _upsertInvoiceDraft;
   final GenerateInvoicePdfs _generateInvoicePdfs;
+  final UpdateInvoicePaymentStatus _updateInvoicePaymentStatus;
 
   InvoiceDetailsBloc({
     required this.invoiceId,
@@ -37,12 +40,14 @@ class InvoiceDetailsBloc
     required GetInspectionByInvoiceId getInspectionByInvoiceId,
     required UpsertInvoiceDraft upsertInvoiceDraft,
     required GenerateInvoicePdfs generateInvoicePdfs,
+    required UpdateInvoicePaymentStatus updateInvoicePaymentStatus,
   }) : _saveInvoiceDetails = saveInvoiceDetails,
        _getInvoiceDetailsByInvoiceId = getInvoiceDetailsByInvoiceId,
        _getMostRecentInvoiceDefaults = getMostRecentInvoiceDefaults,
        _getInspectionByInvoiceId = getInspectionByInvoiceId,
        _upsertInvoiceDraft = upsertInvoiceDraft,
        _generateInvoicePdfs = generateInvoicePdfs,
+       _updateInvoicePaymentStatus = updateInvoicePaymentStatus,
        super(const InvoiceDetailsState()) {
     on<InvoiceDetailsLoadRequested>(_onLoadRequested);
     on<IssueDateChanged>(_onIssueDateChanged);
@@ -55,6 +60,7 @@ class InvoiceDetailsBloc
     on<AppOwnerAddressChanged>(_onAppOwnerAddressChanged);
     on<InvoiceDetailsSaved>(_onSaved);
     on<InvoiceGenerateRequested>(_onGenerateRequested);
+    on<PaymentStatusToggled>(_onPaymentStatusToggled);
     add(const InvoiceDetailsLoadRequested());
   }
 
@@ -123,6 +129,7 @@ class InvoiceDetailsBloc
         discountPercent: discountPercent,
         appOwnerAddress: appOwnerAddress,
         appOwnerAddressIsSaved: appOwnerAddressIsSaved,
+        paymentStatus: bundle?.details.paymentStatus ?? PaymentStatus.pending,
         items: items,
         totals: computeInvoiceTotals(items, gstPercent, discountPercent),
       ),
@@ -396,6 +403,22 @@ class InvoiceDetailsBloc
           ),
         ),
       },
+    );
+  }
+
+  Future<void> _onPaymentStatusToggled(
+    PaymentStatusToggled event,
+    Emitter<InvoiceDetailsState> emit,
+  ) async {
+    final newStatus = state.paymentStatus == PaymentStatus.paid
+        ? PaymentStatus.pending
+        : PaymentStatus.paid;
+    final result = await _updateInvoicePaymentStatus(
+      UpdateInvoicePaymentStatusParams(invoiceId: invoiceId, status: newStatus),
+    );
+    result.fold(
+      (failure) => emit(state.copyWith(errorMessage: failure.message)),
+      (_) => emit(state.copyWith(paymentStatus: newStatus)),
     );
   }
 }
