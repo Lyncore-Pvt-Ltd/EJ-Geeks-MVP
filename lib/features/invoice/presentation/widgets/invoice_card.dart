@@ -74,10 +74,20 @@ class InvoiceCard extends StatelessWidget {
     }
   }
 
-  void _showGeneratePdfStub(BuildContext context) {
-    ScaffoldMessenger.of(
+  Future<void> _generatePdf(BuildContext context) async {
+    // TEMPORARY TRIAL LOCK — remove when no longer needed
+    if (context.read<TrialController>().isExpired) {
+      showDialog(context: context, builder: (_) => const TrialExpiredDialog());
+      return;
+    }
+    final invoiceBloc = context.read<InvoiceBloc>();
+    await InvoiceBottomSheet.show(
       context,
-    ).showSnackBar(const SnackBar(content: Text('PDF generation coming soon')));
+      invoiceId: summary.id,
+      createdAt: summary.createdAt,
+      autoGenerate: true,
+    );
+    invoiceBloc.add(const InvoiceListRequested());
   }
 
   void _showActionSheet(BuildContext context) {
@@ -228,7 +238,7 @@ class InvoiceCard extends StatelessWidget {
                   ListTile(
                     onTap: () {
                       Navigator.pop(sheetContext);
-                      _showGeneratePdfStub(context);
+                      _generatePdf(context);
                     },
                     leading: Icon(
                       Icons.picture_as_pdf_outlined,
@@ -443,7 +453,7 @@ class InvoiceCard extends StatelessWidget {
                       ),
                       IconButton(
                         tooltip: 'Generate PDF',
-                        onPressed: () => _showGeneratePdfStub(context),
+                        onPressed: () => _generatePdf(context),
                         icon: const Icon(Icons.picture_as_pdf_outlined),
                       ),
                     ],
