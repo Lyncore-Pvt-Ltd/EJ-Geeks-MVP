@@ -195,6 +195,14 @@ Future<Uint8List> buildInvoicePdf({
                     'Account Number: $kBankAccountNumber',
                     style: pw.TextStyle(font: fonts.regular, fontSize: 10),
                   ),
+                  if (details.notes.isNotEmpty) ...[
+                    pw.SizedBox(height: 12),
+                    pdfSectionHeading('NOTES', fonts),
+                    pw.Text(
+                      details.notes,
+                      style: pw.TextStyle(font: fonts.regular, fontSize: 10),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -12,16 +12,34 @@ env:
 jobs:
   prep:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       version: ${{ steps.version.outputs.version }}
+      build: ${{ steps.version.outputs.build }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version from pubspec.yaml
+      - name: Bump build number in pubspec.yaml
         id: version
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: *//' | cut -d '+' -f1)
+          CURRENT=$(grep '^version:' pubspec.yaml | sed 's/version: *//')
+          VERSION=$(echo "$CURRENT" | cut -d '+' -f1)
+          BUILD=$(echo "$CURRENT" | cut -d '+' -f2)
+          NEW_BUILD=$((BUILD + 1))
+
+          sed -i "s/^version: .*/version: ${VERSION}+${NEW_BUILD}/" pubspec.yaml
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "build=$NEW_BUILD" >> "$GITHUB_OUTPUT"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pubspec.yaml
+          git commit -m "chore: bump build number to ${VERSION}+${NEW_BUILD} [skip ci]"
+          git push origin HEAD:${{ github.ref_name }}
 
   build-android:
     needs: prep
@@ -51,17 +69,17 @@ jobs:
 
       - run: flutter pub get
 
-      - run: flutter build apk --release
+      - run: flutter build apk --release --build-name=${{ needs.prep.outputs.version }} --build-number=${{ needs.prep.outputs.build }}
 
       - name: Rename APK
         run: |
           cp build/app/outputs/flutter-apk/app-release.apk \
-            "build/app/outputs/flutter-apk/ej-geek-beta-${{ needs.prep.outputs.version }}.apk"
+            "build/app/outputs/flutter-apk/ej-geek-beta-${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }}.apk"
 
       - uses: actions/upload-artifact@v4
         with:
           name: android-apk
-          path: build/app/outputs/flutter-apk/ej-geek-beta-${{ needs.prep.outputs.version }}.apk
+          path: build/app/outputs/flutter-apk/ej-geek-beta-${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }}.apk
           retention-days: 7
 
   build-ios:
@@ -88,17 +106,17 @@ jobs:
       #      provisioning profile under ~/Library/MobileDevice/Provisioning Profiles
       #   3. Add ios/ExportOptions.plist
       #   4. Replace the build step below with `flutter build ipa --export-options-plist=ios/ExportOptions.plist`
-      - run: flutter build ios --release --no-codesign
+      - run: flutter build ios --release --no-codesign --build-name=${{ needs.prep.outputs.version }} --build-number=${{ needs.prep.outputs.build }}
 
       - name: Zip unsigned app
         run: |
           cd build/ios/iphoneos
-          zip -r "ej-geek-beta-${{ needs.prep.outputs.version }}-ios.zip" Runner.app
+          zip -r "ej-geek-beta-${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }}-ios.zip" Runner.app
 
       - uses: actions/upload-artifact@v4
         with:
           name: ios-unsigned-app
-          path: build/ios/iphoneos/ej-geek-beta-${{ needs.prep.outputs.version }}-ios.zip
+          path: build/ios/iphoneos/ej-geek-beta-${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }}-ios.zip
           retention-days: 7
 
   release:
@@ -113,13 +131,13 @@ jobs:
 
       - name: Compute release tag
         id: tag
-        run: echo "tag=dev-build-${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+        run: echo "tag=dev-build-${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }}" >> "$GITHUB_OUTPUT"
 
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag.outputs.tag }}
-          name: Dev build #${{ github.run_number }} (${{ github.sha }})
+          name: Dev build ${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }} (${{ github.sha }})
           target_commitish: ${{ github.sha }}
           files: |
-            artifacts/android-apk/ej-geek-beta-${{ needs.prep.outputs.version }}.apk
-            artifacts/ios-unsigned-app/ej-geek-beta-${{ needs.prep.outputs.version }}-ios.zip
+            artifacts/android-apk/ej-geek-beta-${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }}.apk
+            artifacts/ios-unsigned-app/ej-geek-beta-${{ needs.prep.outputs.version }}+${{ needs.prep.outputs.build }}-ios.zip

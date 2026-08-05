@@ -162,31 +162,6 @@ Future<Uint8List> buildInspectionReportPdf({
             ),
             border: pw.TableBorder.all(color: AppPdfPallete.border),
           ),
-          if (section.comment.isNotEmpty) ...[
-            pw.SizedBox(height: 12),
-            pw.Text(
-              'Comments:',
-              style: pw.TextStyle(
-                font: fonts.bold,
-                fontSize: 11,
-                color: AppPdfPallete.textPrimary,
-              ),
-            ),
-            pw.SizedBox(height: 4),
-            ...section.comment
-                .split('\n')
-                .where((line) => line.trim().isNotEmpty)
-                .map(
-                  (line) => pw.Text(
-                    '• ${line.trim()}',
-                    style: pw.TextStyle(
-                      font: fonts.regular,
-                      fontSize: 10,
-                      color: AppPdfPallete.textPrimary,
-                    ),
-                  ),
-                ),
-          ],
           if (section.imagePaths.isNotEmpty) ...[
             pw.SizedBox(height: 12),
             pw.Text(
@@ -214,6 +189,31 @@ Future<Uint8List> buildInspectionReportPdf({
                   )
                   .toList(),
             ),
+          ],
+          if (section.comment.isNotEmpty) ...[
+            pw.SizedBox(height: 12),
+            pw.Text(
+              'Comments:',
+              style: pw.TextStyle(
+                font: fonts.bold,
+                fontSize: 11,
+                color: AppPdfPallete.textPrimary,
+              ),
+            ),
+            pw.SizedBox(height: 4),
+            ...section.comment
+                .split('\n')
+                .where((line) => line.trim().isNotEmpty)
+                .map(
+                  (line) => pw.Text(
+                    '• ${line.trim()}',
+                    style: pw.TextStyle(
+                      font: fonts.regular,
+                      fontSize: 10,
+                      color: AppPdfPallete.textPrimary,
+                    ),
+                  ),
+                ),
           ],
         ],
       ),
