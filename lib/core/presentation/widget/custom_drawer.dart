@@ -37,7 +37,11 @@ class CustomDrawer extends StatelessWidget {
                       context: context,
                       builder: (_) => const UnlockCodeDialog(),
                     ),
-                    child: const Text('E&J Geek Invoice'),
+                    child: Image.asset(
+                      'assets/icon/EJG.png',
+                      height: 64,
+                      width: 64,
+                    ),
                   ),
                 ],
               ),
