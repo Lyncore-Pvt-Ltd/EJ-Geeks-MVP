@@ -48,9 +48,7 @@ class AboutInfoDialog extends StatelessWidget {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Close', style: TextStyle(color: Colors.white)),
-              ],
+              children: [Text('Close', style: TextStyle(color: Colors.white))],
             ),
           ),
         ),
