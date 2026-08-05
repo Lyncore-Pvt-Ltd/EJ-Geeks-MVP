@@ -16,9 +16,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 class InvoiceBottomSheet extends StatefulWidget {
-  InvoiceBottomSheet({super.key, String? invoiceId, DateTime? createdAt})
-    : invoiceId = invoiceId ?? const Uuid().v4(),
-      createdAt = createdAt ?? DateTime.now();
+  InvoiceBottomSheet({
+    super.key,
+    String? invoiceId,
+    DateTime? createdAt,
+    this.autoGenerate = false,
+  }) : invoiceId = invoiceId ?? const Uuid().v4(),
+       createdAt = createdAt ?? DateTime.now();
 
   /// Ties this invoice's inspection, images and (later) PDF together under
   /// one id. Reused when reopening an existing invoice's card; otherwise a
@@ -30,10 +34,18 @@ class InvoiceBottomSheet extends StatefulWidget {
   /// existing invoice; defaults to now for a brand new invoice.
   final DateTime createdAt;
 
+  /// When true, fires the same flow as tapping the header's "Generate PDF"
+  /// button once the sheet's initial load finishes, so quick-action entry
+  /// points (e.g. `InvoiceCard`'s menu) can reuse the full generate flow
+  /// (validation, save, regeneration confirmation, success dialog) without
+  /// duplicating it.
+  final bool autoGenerate;
+
   static Future<void> show(
     BuildContext context, {
     String? invoiceId,
     DateTime? createdAt,
+    bool autoGenerate = false,
   }) {
     // Resolve once here rather than inside the widget constructor: the
     // modal route's builder can be re-invoked mid-session (e.g. when the
@@ -51,6 +63,7 @@ class InvoiceBottomSheet extends StatefulWidget {
         child: InvoiceBottomSheet(
           invoiceId: resolvedInvoiceId,
           createdAt: resolvedCreatedAt,
+          autoGenerate: autoGenerate,
         ),
       ),
     );
@@ -69,6 +82,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
   bool _isClosing = false;
   bool _popScheduled = false;
   bool _pendingGenerate = false;
+  bool _autoGenerateTriggered = false;
 
   @override
   void initState() {
@@ -116,6 +130,19 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
     }
     _pendingGenerate = true;
     _inspectionKey.currentState?.save();
+  }
+
+  /// Fires the generate flow once both blocs' initial load has finished,
+  /// for sheets opened with `autoGenerate: true`. Guarded by
+  /// `_autoGenerateTriggered` since either bloc's isLoading transition can
+  /// call this and both may already be loaded by the time the second one
+  /// finishes.
+  void _maybeAutoGenerate(BuildContext context) {
+    if (_autoGenerateTriggered) return;
+    if (context.read<InspectionBloc>().state.isLoading) return;
+    if (context.read<InvoiceDetailsBloc>().state.isLoading) return;
+    _autoGenerateTriggered = true;
+    _onGeneratePressed();
   }
 
   Future<void> _confirmRegeneration(BuildContext context) async {
@@ -215,6 +242,22 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                 previous.saveSuccess != current.saveSuccess ||
                 previous.errorMessage != current.errorMessage,
             listener: (context, state) => _handleInvoiceSaveState(state),
+          ),
+          BlocListener<InvoiceDetailsBloc, InvoiceDetailsState>(
+            listenWhen: (previous, current) =>
+                widget.autoGenerate &&
+                !_autoGenerateTriggered &&
+                previous.isLoading &&
+                !current.isLoading,
+            listener: (context, state) => _maybeAutoGenerate(context),
+          ),
+          BlocListener<InspectionBloc, InspectionState>(
+            listenWhen: (previous, current) =>
+                widget.autoGenerate &&
+                !_autoGenerateTriggered &&
+                previous.isLoading &&
+                !current.isLoading,
+            listener: (context, state) => _maybeAutoGenerate(context),
           ),
           BlocListener<InspectionBloc, InspectionState>(
             listenWhen: (previous, current) =>
