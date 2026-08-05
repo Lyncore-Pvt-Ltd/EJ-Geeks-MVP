@@ -1,11 +1,13 @@
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/core/theme/theme_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../widget/custom_appbar.dart';
 import '../widget/custom_settings_row.dart';
 import '../widget/custom_theme_switch.dart';
+import '../widgets/about/about_info_dialog.dart';
 
 class SettingScreen extends StatelessWidget {
   static MaterialPageRoute<dynamic> route() =>
@@ -146,16 +148,36 @@ class SettingScreen extends StatelessWidget {
                 ),
               ],
             ),
-            child: CustomThemeSwitch(
-              icon: Icons.dark_mode_outlined,
-              title: 'Dark Mode',
-              value: themeController.isDarkMode,
-              onChanged: themeController.toggleDarkMode,
-              isLast: true,
+            child: Column(
+              children: [
+                CustomThemeSwitch(
+                  icon: Icons.dark_mode_outlined,
+                  title: 'Dark Mode',
+                  value: themeController.isDarkMode,
+                  onChanged: themeController.toggleDarkMode,
+                ),
+                const SizedBox(height: 10),
+                CustomSettingsRow(
+                  icon: Icons.info_outline,
+                  title: 'About',
+                  trailing: const Icon(Icons.chevron_right, size: 24),
+                  isLast: true,
+                  onTap: () => _showAboutDialog(context),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showAboutDialog(BuildContext context) async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (!context.mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => AboutInfoDialog(packageInfo: packageInfo),
     );
   }
 }
