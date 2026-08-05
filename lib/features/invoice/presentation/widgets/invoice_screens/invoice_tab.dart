@@ -53,8 +53,8 @@ class InvoiceTabState extends State<InvoiceTab>
   final _discountController = TextEditingController();
 
   final _itemNameController = TextEditingController();
-  final _itemQtyController = TextEditingController();
-  final _itemPriceController = TextEditingController();
+  final _itemQtyController = TextEditingController(text: '1');
+  final _itemPriceController = TextEditingController(text: '0.00');
 
   final _pageController = PageController(viewportFraction: 0.88);
 
@@ -116,8 +116,8 @@ class InvoiceTabState extends State<InvoiceTab>
       ),
     );
     _itemNameController.clear();
-    _itemQtyController.clear();
-    _itemPriceController.clear();
+    _itemQtyController.text = '1';
+    _itemPriceController.text = '0.00';
   }
 
   bool validate() => _formKey.currentState?.validate() ?? true;

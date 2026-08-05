@@ -31,7 +31,8 @@ Future<Uint8List> buildInvoicePdf({
 
   final ownerName = inspection?.vehicleDetails.ownerName ?? '';
   final ownerAddress = inspection?.vehicleDetails.address ?? '';
-  final ownerPhone = inspection?.vehicleDetails.phoneNumber ?? '';
+  final ownerPhoneRaw = inspection?.vehicleDetails.phoneNumber ?? '';
+  final ownerPhone = ownerPhoneRaw.isEmpty ? '' : '+61 $ownerPhoneRaw';
 
   final doc = pw.Document();
 

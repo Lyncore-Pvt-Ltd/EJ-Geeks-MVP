@@ -1,7 +1,7 @@
+import 'package:ej_geek/core/presentation/widget/cents_currency_input_formatter.dart';
 import 'package:ej_geek/core/presentation/widget/quantity_stepper_field.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_text_field.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 /// Name / Quantity / Unit per-price fields shared between the invoice tab's
 /// add-item form and the edit-item dialog.
@@ -39,12 +39,8 @@ class LineItemFormFields extends StatelessWidget {
                 controller: priceController,
                 label: 'Unit per-price',
                 prefixText: 'A\$ ',
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                ],
+                keyboardType: TextInputType.number,
+                inputFormatters: [CentsCurrencyInputFormatter()],
               ),
             ),
           ],

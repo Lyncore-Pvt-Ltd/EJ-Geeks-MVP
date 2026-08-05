@@ -33,7 +33,7 @@ class _EditLineItemDialogState extends State<EditLineItemDialog> {
     text: trimmedAmount(widget.item.quantity),
   );
   late final _priceController = TextEditingController(
-    text: trimmedAmount(widget.item.unitPrice),
+    text: widget.item.unitPrice.toStringAsFixed(2),
   );
 
   String? _errorText;

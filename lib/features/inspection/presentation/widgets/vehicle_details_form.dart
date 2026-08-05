@@ -1,3 +1,4 @@
+import 'package:ej_geek/core/presentation/widget/au_phone_input_formatter.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_text_field.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +67,13 @@ class VehicleDetailsForm extends StatelessWidget {
             validator: _requiredValidator,
           ),
           const SizedBox(height: 10),
-          _field('Phone', phoneController, keyboardType: TextInputType.phone),
+          _field(
+            'Phone',
+            phoneController,
+            keyboardType: TextInputType.phone,
+            prefixText: '+61 ',
+            inputFormatters: [AuPhoneNumberInputFormatter()],
+          ),
           const SizedBox(height: 10),
           _field('Make', makeController),
           const SizedBox(height: 10),
@@ -112,6 +119,7 @@ class VehicleDetailsForm extends StatelessWidget {
     List<TextInputFormatter>? inputFormatters,
     bool growable = false,
     int collapsedLines = 3,
+    String? prefixText,
     String? Function(String?)? validator,
   }) {
     return InspectionTextField(
@@ -122,6 +130,7 @@ class VehicleDetailsForm extends StatelessWidget {
       inputFormatters: inputFormatters,
       growable: growable,
       collapsedLines: collapsedLines,
+      prefixText: prefixText,
       validator: validator,
     );
   }

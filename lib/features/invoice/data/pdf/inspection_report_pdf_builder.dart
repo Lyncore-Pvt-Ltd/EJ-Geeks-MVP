@@ -119,7 +119,13 @@ Future<Uint8List> buildInspectionReportPdf({
                       fonts,
                     ),
                     _detailRow('Address:', vehicle.address, fonts),
-                    _detailRow('Phone:', vehicle.phoneNumber, fonts),
+                    _detailRow(
+                      'Phone:',
+                      vehicle.phoneNumber.isEmpty
+                          ? ''
+                          : '+61 ${vehicle.phoneNumber}',
+                      fonts,
+                    ),
                     _detailRow(
                       'Job No.:',
                       formatInvoiceNumber(inspection.invoiceId),
