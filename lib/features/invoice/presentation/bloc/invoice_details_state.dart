@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/invoice_line_item.dart';
 import '../../domain/entities/invoice_totals.dart';
+import '../../domain/entities/payment_status.dart';
 
 class InvoiceDetailsState extends Equatable {
   final DateTime? issueDate;
@@ -12,6 +13,7 @@ class InvoiceDetailsState extends Equatable {
   final double discountPercent;
   final String appOwnerAddress;
   final bool appOwnerAddressIsSaved;
+  final PaymentStatus paymentStatus;
   final List<InvoiceLineItem> items;
   final InvoiceTotals totals;
   final bool isLoading;
@@ -33,6 +35,7 @@ class InvoiceDetailsState extends Equatable {
     this.discountPercent = 0,
     this.appOwnerAddress = '',
     this.appOwnerAddressIsSaved = false,
+    this.paymentStatus = PaymentStatus.pending,
     this.items = const [],
     this.totals = const InvoiceTotals(),
     this.isLoading = false,
@@ -55,6 +58,7 @@ class InvoiceDetailsState extends Equatable {
     double? discountPercent,
     String? appOwnerAddress,
     bool? appOwnerAddressIsSaved,
+    PaymentStatus? paymentStatus,
     List<InvoiceLineItem>? items,
     InvoiceTotals? totals,
     bool? isLoading,
@@ -77,6 +81,7 @@ class InvoiceDetailsState extends Equatable {
       appOwnerAddress: appOwnerAddress ?? this.appOwnerAddress,
       appOwnerAddressIsSaved:
           appOwnerAddressIsSaved ?? this.appOwnerAddressIsSaved,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
       items: items ?? this.items,
       totals: totals ?? this.totals,
       isLoading: isLoading ?? this.isLoading,
@@ -101,6 +106,7 @@ class InvoiceDetailsState extends Equatable {
     discountPercent,
     appOwnerAddress,
     appOwnerAddressIsSaved,
+    paymentStatus,
     items,
     totals,
     isLoading,

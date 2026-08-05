@@ -4,6 +4,7 @@ import 'package:ej_geek/core/presentation/widget/confirm_dialog.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
 import 'package:ej_geek/features/inspection/presentation/bloc/inspection_state.dart';
+import 'package:ej_geek/features/invoice/domain/entities/payment_status.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_event.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_state.dart';
@@ -451,22 +452,73 @@ class _HeaderActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return activeTabIndex == 0
-        ? BlocBuilder<InspectionBloc, InspectionState>(
-            builder: (context, state) => _buildButtons(
-              isSaving: state.isSaving,
-              saveSuccess: state.saveSuccess,
-            ),
-          )
-        : BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
-            builder: (context, state) => _buildButtons(
-              isSaving: state.isSaving,
-              saveSuccess: state.saveSuccess,
-            ),
-          );
+    return BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
+      buildWhen: (previous, current) =>
+          previous.paymentStatus != current.paymentStatus,
+      builder: (context, detailsState) {
+        final markPaidButton = _buildMarkPaidButton(
+          context,
+          detailsState.paymentStatus,
+        );
+        return activeTabIndex == 0
+            ? BlocBuilder<InspectionBloc, InspectionState>(
+                builder: (context, state) => _buildButtons(
+                  isSaving: state.isSaving,
+                  saveSuccess: state.saveSuccess,
+                  markPaidButton: markPaidButton,
+                ),
+              )
+            : BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
+                builder: (context, state) => _buildButtons(
+                  isSaving: state.isSaving,
+                  saveSuccess: state.saveSuccess,
+                  markPaidButton: markPaidButton,
+                ),
+              );
+      },
+    );
   }
 
-  Widget _buildButtons({required bool isSaving, required bool saveSuccess}) {
+  Future<void> _confirmMarkPaid(
+    BuildContext context,
+    PaymentStatus paymentStatus,
+  ) async {
+    final invoiceDetailsBloc = context.read<InvoiceDetailsBloc>();
+    final isPaid = paymentStatus == PaymentStatus.paid;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => ConfirmDialog(
+        title: isPaid ? 'Undo Payment' : 'Mark as Paid',
+        message: isPaid
+            ? 'Are you sure you want to undo the paid status for this invoice?'
+            : 'Confirm this invoice has been paid? A paid date and time will be recorded.',
+      ),
+    );
+    if (confirmed == true) {
+      invoiceDetailsBloc.add(const PaymentStatusToggled());
+    }
+  }
+
+  Widget _buildMarkPaidButton(BuildContext context, PaymentStatus status) {
+    final iconColor = isDark
+        ? AppPallete.cascadingWhite
+        : AppPallete.tricornBlack;
+    final isPaid = status == PaymentStatus.paid;
+
+    return IconButton(
+      tooltip: isPaid ? 'Undo Payment' : 'Mark Paid',
+      icon: Icon(isPaid ? Icons.undo : Icons.attach_money, color: iconColor),
+      onPressed: isInitialLoading
+          ? null
+          : () => _confirmMarkPaid(context, status),
+    );
+  }
+
+  Widget _buildButtons({
+    required bool isSaving,
+    required bool saveSuccess,
+    required Widget markPaidButton,
+  }) {
     final iconColor = isDark
         ? AppPallete.cascadingWhite
         : AppPallete.tricornBlack;
@@ -511,7 +563,7 @@ class _HeaderActions extends StatelessWidget {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [generateButton, saveButton, closeButton],
+      children: [generateButton, markPaidButton, saveButton, closeButton],
     );
   }
 }

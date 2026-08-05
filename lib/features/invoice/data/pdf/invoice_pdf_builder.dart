@@ -179,16 +179,6 @@ Future<Uint8List> buildInvoicePdf({
           ),
         ),
         pw.SizedBox(height: 16),
-        if (details.paymentStatus == PaymentStatus.paid &&
-            details.paidAt != null)
-          pw.Align(
-            alignment: pw.Alignment.centerLeft,
-            child: pdfPaidStamp(
-              formatInvoiceDateTime(details.paidAt!),
-              fonts,
-            ),
-          ),
-        pw.SizedBox(height: 16),
         pw.Row(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
@@ -221,7 +211,17 @@ Future<Uint8List> buildInvoicePdf({
                 ],
               ),
             ),
-            invoiceIdQrCode(details.invoiceId, size: 64),
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.end,
+              children: [
+                invoiceIdQrCode(details.invoiceId, size: 64),
+                if (details.paymentStatus == PaymentStatus.paid &&
+                    details.paidAt != null) ...[
+                  pw.SizedBox(height: 25),
+                  pdfPaidStamp(formatInvoiceDateTime(details.paidAt!), fonts),
+                ],
+              ],
+            ),
           ],
         ),
       ],

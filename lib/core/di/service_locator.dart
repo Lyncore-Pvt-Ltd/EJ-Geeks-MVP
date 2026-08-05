@@ -120,6 +120,7 @@ void setupServiceLocator() {
       getInspectionByInvoiceId: sl(),
       upsertInvoiceDraft: sl(),
       generateInvoicePdfs: sl(),
+      updateInvoicePaymentStatus: sl(),
     ),
   );
 }
