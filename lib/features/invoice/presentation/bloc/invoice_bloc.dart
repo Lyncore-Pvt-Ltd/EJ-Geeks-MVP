@@ -31,6 +31,8 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     on<InvoicePaymentMarkedPaid>(_onInvoicePaymentMarkedPaid);
     on<InvoicePaymentMarkedUnpaid>(_onInvoicePaymentMarkedUnpaid);
     on<InvoiceDeleted>(_onInvoiceDeleted);
+    on<InvoiceSearchQueryChanged>(_onInvoiceSearchQueryChanged);
+    on<InvoicePaymentFilterChanged>(_onInvoicePaymentFilterChanged);
     add(const InvoiceListRequested());
   }
 
@@ -148,5 +150,24 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     }
 
     add(const InvoiceListRequested());
+  }
+
+  void _onInvoiceSearchQueryChanged(
+    InvoiceSearchQueryChanged event,
+    Emitter<InvoiceState> emit,
+  ) {
+    emit(state.copyWith(searchQuery: event.query));
+  }
+
+  void _onInvoicePaymentFilterChanged(
+    InvoicePaymentFilterChanged event,
+    Emitter<InvoiceState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        paymentFilter: event.filter,
+        clearPaymentFilter: event.filter == null,
+      ),
+    );
   }
 }
