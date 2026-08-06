@@ -2,8 +2,6 @@ import 'package:ej_geek/core/di/service_locator.dart';
 import 'package:ej_geek/core/presentation/pages/splash_screen.dart';
 import 'package:ej_geek/core/theme/theme.dart';
 import 'package:ej_geek/core/theme/theme_controller.dart';
-// TEMPORARY TRIAL LOCK — remove when no longer needed
-import 'package:ej_geek/core/trial/trial_controller.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,15 +11,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   setupServiceLocator();
   final themeController = await ThemeController.create();
-  // TEMPORARY TRIAL LOCK — remove when no longer needed
-  final trialController = await TrialController.create();
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<ThemeController>.value(value: themeController),
-        // TEMPORARY TRIAL LOCK — remove when no longer needed
-        ChangeNotifierProvider<TrialController>.value(value: trialController),
         BlocProvider<InvoiceBloc>.value(value: sl<InvoiceBloc>()),
       ],
       child: const MyApp(),

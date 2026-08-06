@@ -17,11 +17,26 @@ Future<Uint8List> buildInspectionReportPdf({
   required InspectionRecord inspection,
   required InvoiceDetails invoiceDetails,
 }) async {
+  final doc = pw.Document();
+  await addInspectionReportPdfPages(
+    doc,
+    inspection: inspection,
+    invoiceDetails: invoiceDetails,
+  );
+  return doc.save();
+}
+
+/// Adds the inspection report page(s) described in [buildInspectionReportPdf]
+/// to an existing [doc] — extracted so [buildCombinedInvoicePdf] can append
+/// the same pages onto a document shared with the invoice.
+Future<void> addInspectionReportPdfPages(
+  pw.Document doc, {
+  required InspectionRecord inspection,
+  required InvoiceDetails invoiceDetails,
+}) async {
   final fonts = await AppPdfFonts.load();
   final logo = await loadCompanyLogo();
   final vehicle = inspection.vehicleDetails;
-
-  final doc = pw.Document();
 
   final coverImage = inspection.imagePaths.isNotEmpty
       ? pw.MemoryImage(File(inspection.imagePaths.first).readAsBytesSync())
@@ -256,8 +271,6 @@ Future<Uint8List> buildInspectionReportPdf({
       ),
     );
   }
-
-  return doc.save();
 }
 
 pw.Widget _detailRow(String label, String value, AppPdfFonts fonts) {

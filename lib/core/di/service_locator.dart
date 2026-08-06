@@ -14,6 +14,7 @@ import '../../features/invoice/data/datasources/invoice_local_data_source.dart';
 import '../../features/invoice/data/repositories/invoice_repository_impl.dart';
 import '../../features/invoice/domain/repositories/invoice_repository.dart';
 import '../../features/invoice/domain/usecases/delete_invoice.dart';
+import '../../features/invoice/domain/usecases/generate_combined_invoice_pdf.dart';
 import '../../features/invoice/domain/usecases/generate_invoice_pdfs.dart';
 import '../../features/invoice/domain/usecases/get_all_invoices.dart';
 import '../../features/invoice/domain/usecases/get_invoice_details_by_invoice_id.dart';
@@ -88,6 +89,9 @@ void setupServiceLocator() {
   );
   sl.registerLazySingleton<GenerateInvoicePdfs>(
     () => GenerateInvoicePdfs(sl(), sl(), sl()),
+  );
+  sl.registerLazySingleton<GenerateCombinedInvoicePdf>(
+    () => GenerateCombinedInvoicePdf(sl(), sl()),
   );
 
   sl.registerFactoryParam<InspectionBloc, String, DateTime>(

@@ -95,4 +95,13 @@ class AppStoragePaths {
     final folder = await invoiceFolder(invoiceId, createdAt);
     return p.join(folder.path, 'inspection.pdf');
   }
+
+  /// Path for the invoice's combined (invoice + inspection) PDF.
+  static Future<String> combinedPdfPath(
+    String invoiceId,
+    DateTime createdAt,
+  ) async {
+    final folder = await invoiceFolder(invoiceId, createdAt);
+    return p.join(folder.path, 'combined.pdf');
+  }
 }
