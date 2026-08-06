@@ -304,6 +304,7 @@ class InvoiceTabState extends State<InvoiceTab>
                         InspectionTextField(
                           controller: _paymentTermsController,
                           label: 'Payment Terms',
+                          growable: true,
                           readOnly: !_hasLoadedOnce || _isPaymentTermsLocked,
                           onEditTap: _isPaymentTermsLocked
                               ? () => _confirmFieldAction(
