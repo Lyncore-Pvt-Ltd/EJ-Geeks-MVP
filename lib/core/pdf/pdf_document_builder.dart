@@ -106,8 +106,7 @@ pw.Widget pdfSectionHeading(String title, AppPdfFonts fonts) {
   );
 }
 
-pw.Widget pdfDivider() =>
-    pw.Divider(color: AppPdfPallete.border, thickness: 1);
+pw.Widget pdfDivider() => pw.Divider(color: AppPdfPallete.border, thickness: 1);
 
 /// A rotated "PAID" stamp with [paidLabel] (a pre-formatted date/time string)
 /// below it, for overlaying near an invoice's totals once payment is
