@@ -19,6 +19,19 @@ Future<Uint8List> buildInvoicePdf({
   required InvoiceDetailsBundle bundle,
   required InspectionRecord? inspection,
 }) async {
+  final doc = pw.Document();
+  await addInvoicePdfPages(doc, bundle: bundle, inspection: inspection);
+  return doc.save();
+}
+
+/// Adds the invoice page(s) described in [buildInvoicePdf] to an existing
+/// [doc] — extracted so [buildCombinedInvoicePdf] can append the same pages
+/// onto a document shared with the inspection report.
+Future<void> addInvoicePdfPages(
+  pw.Document doc, {
+  required InvoiceDetailsBundle bundle,
+  required InspectionRecord? inspection,
+}) async {
   final fonts = await AppPdfFonts.load();
   final logo = await loadCompanyLogo();
 
@@ -33,8 +46,6 @@ Future<Uint8List> buildInvoicePdf({
   final ownerAddress = inspection?.vehicleDetails.address ?? '';
   final ownerPhoneRaw = inspection?.vehicleDetails.phoneNumber ?? '';
   final ownerPhone = ownerPhoneRaw.isEmpty ? '' : '+61 $ownerPhoneRaw';
-
-  final doc = pw.Document();
 
   doc.addPage(
     pw.MultiPage(
@@ -236,8 +247,6 @@ Future<Uint8List> buildInvoicePdf({
       ],
     ),
   );
-
-  return doc.save();
 }
 
 pw.Widget _metaRow(String label, String value, AppPdfFonts fonts) {
