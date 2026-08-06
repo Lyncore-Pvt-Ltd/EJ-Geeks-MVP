@@ -160,9 +160,7 @@ class _RecentSearchesDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark
-        ? AppPallete.dynamicBlack
-        : AppPallete.whiteout;
+    final surfaceColor = isDark ? AppPallete.dynamicBlack : AppPallete.whiteout;
     final borderColor = isDark
         ? AppPallete.forgedSteel
         : AppPallete.nebulousWhite;
