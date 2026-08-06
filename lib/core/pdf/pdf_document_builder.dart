@@ -19,6 +19,7 @@ pw.Widget pdfLetterheadHeader({
   required String abn,
   required String email,
   required String phone,
+  required String website,
 }) {
   return pw.Row(
     crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -62,6 +63,14 @@ pw.Widget pdfLetterheadHeader({
             ),
           pw.Text(
             email,
+            style: pw.TextStyle(
+              font: fonts.regular,
+              fontSize: 10,
+              color: AppPdfPallete.textSecondary,
+            ),
+          ),
+          pw.Text(
+            website,
             style: pw.TextStyle(
               font: fonts.regular,
               fontSize: 10,
