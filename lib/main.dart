@@ -3,6 +3,7 @@ import 'package:ej_geek/core/presentation/pages/splash_screen.dart';
 import 'package:ej_geek/core/theme/theme.dart';
 import 'package:ej_geek/core/theme/theme_controller.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
+import 'package:ej_geek/features/search/presentation/bloc/search_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider<ThemeController>.value(value: themeController),
         BlocProvider<InvoiceBloc>.value(value: sl<InvoiceBloc>()),
+        BlocProvider<SearchBloc>.value(value: sl<SearchBloc>()),
       ],
       child: const MyApp(),
     ),

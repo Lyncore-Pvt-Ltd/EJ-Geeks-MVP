@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/payment_status.dart';
+
 abstract class InvoiceEvent extends Equatable {
   const InvoiceEvent();
 
@@ -45,6 +47,24 @@ class InvoicePaymentMarkedUnpaid extends InvoiceEvent {
 
   @override
   List<Object?> get props => [invoiceId];
+}
+
+class InvoiceSearchQueryChanged extends InvoiceEvent {
+  final String query;
+
+  const InvoiceSearchQueryChanged(this.query);
+
+  @override
+  List<Object?> get props => [query];
+}
+
+class InvoicePaymentFilterChanged extends InvoiceEvent {
+  final PaymentStatus? filter;
+
+  const InvoicePaymentFilterChanged(this.filter);
+
+  @override
+  List<Object?> get props => [filter];
 }
 
 class InvoiceDeleted extends InvoiceEvent {
