@@ -1,6 +1,8 @@
+import 'package:ej_geek/core/di/service_locator.dart';
 import 'package:ej_geek/core/presentation/widget/dashed_divider.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/inspection/presentation/widgets/inspection_gradient_button.dart';
+import 'package:ej_geek/features/invoice/domain/usecases/generate_combined_invoice_pdf.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_state.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
@@ -21,6 +23,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 class InvoiceSuccessDialog extends StatefulWidget {
   const InvoiceSuccessDialog({
     super.key,
+
     required this.bloc,
     required this.clientName,
     required this.invoiceId,
@@ -133,6 +136,7 @@ class _InvoiceSuccessDialogState extends State<InvoiceSuccessDialog>
                             state: state,
                             clientName: widget.clientName,
                             invoiceId: widget.invoiceId,
+                            invoiceCreatedAt: widget.bloc.invoiceCreatedAt,
                             textColor: textColor,
                             labelColor: labelColor,
                             dividerColor: dividerColor,
@@ -270,6 +274,7 @@ class _SuccessContent extends StatelessWidget {
     required this.state,
     required this.clientName,
     required this.invoiceId,
+    required this.invoiceCreatedAt,
     required this.textColor,
     required this.labelColor,
     required this.dividerColor,
@@ -281,6 +286,7 @@ class _SuccessContent extends StatelessWidget {
   final InvoiceDetailsState state;
   final String clientName;
   final String invoiceId;
+  final DateTime invoiceCreatedAt;
   final Color textColor;
   final Color labelColor;
   final Color dividerColor;
@@ -452,6 +458,15 @@ class _SuccessContent extends StatelessWidget {
                     textColor: textColor,
                     borderColor: dividerColor,
                   ),
+                  const SizedBox(height: 10),
+                ],
+                if (invoicePdfPath != null && inspectionPdfPath != null) ...[
+                  _CombinedPdfButton(
+                    invoiceId: invoiceId,
+                    invoiceCreatedAt: invoiceCreatedAt,
+                    textColor: textColor,
+                    borderColor: dividerColor,
+                  ),
                   const SizedBox(height: 12),
                 ],
                 InspectionGradientButton(label: 'Done', onTap: onDone),
@@ -498,6 +513,77 @@ class _OpenPdfButton extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           foregroundColor: textColor,
           side: BorderSide(color: borderColor),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    );
+  }
+}
+
+/// Builds a single PDF (invoice pages then inspection pages, with the same
+/// PAID stamp the individual invoice PDF shows) on demand and opens it —
+/// unlike [_OpenPdfButton] this needs its own loading state since building
+/// the combined file is an async operation rather than opening an
+/// already-written path.
+class _CombinedPdfButton extends StatefulWidget {
+  const _CombinedPdfButton({
+    required this.invoiceId,
+    required this.invoiceCreatedAt,
+    required this.textColor,
+    required this.borderColor,
+  });
+
+  final String invoiceId;
+  final DateTime invoiceCreatedAt;
+  final Color textColor;
+  final Color borderColor;
+
+  @override
+  State<_CombinedPdfButton> createState() => _CombinedPdfButtonState();
+}
+
+class _CombinedPdfButtonState extends State<_CombinedPdfButton> {
+  bool _isLoading = false;
+
+  Future<void> _onPressed() async {
+    setState(() => _isLoading = true);
+    final result = await sl<GenerateCombinedInvoicePdf>()(
+      GenerateCombinedInvoicePdfParams(
+        invoiceId: widget.invoiceId,
+        invoiceCreatedAt: widget.invoiceCreatedAt,
+      ),
+    );
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    result.fold(
+      (failure) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(failure.message))),
+      (path) => OpenFilex.open(path),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: _isLoading ? null : _onPressed,
+        icon: _isLoading
+            ? SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: widget.textColor,
+                ),
+              )
+            : const Icon(Icons.picture_as_pdf_outlined),
+        label: const Text('View Combined PDF'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: widget.textColor,
+          side: BorderSide(color: widget.borderColor),
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),

@@ -1,9 +1,6 @@
 import 'package:ej_geek/core/presentation/widget/custom_appbar.dart';
 import 'package:ej_geek/core/presentation/widget/custom_bottom_nav_bar.dart';
 import 'package:ej_geek/core/presentation/widget/custom_drawer.dart';
-// TEMPORARY TRIAL LOCK — remove when no longer needed
-import 'package:ej_geek/core/presentation/widget/trial_expired_dialog.dart';
-import 'package:ej_geek/core/trial/trial_controller.dart';
 import 'package:ej_geek/features/dashboard/presentation/pages/home_screen.dart';
 import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:ej_geek/features/invoice/presentation/pages/invoice_screen.dart';
@@ -28,22 +25,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   ];
 
   static const _pages = [HomeScreen(), InvoiceScreen()];
-
-  @override
-  void initState() {
-    super.initState();
-    // TEMPORARY TRIAL LOCK — remove when no longer needed
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (context.read<TrialController>().isExpired) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (_) => const TrialExpiredDialog(),
-        );
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
