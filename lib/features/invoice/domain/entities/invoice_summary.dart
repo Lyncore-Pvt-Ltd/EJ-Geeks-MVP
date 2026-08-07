@@ -15,6 +15,7 @@ class InvoiceSummary extends Equatable {
   final String model;
   final String rego;
   final String year;
+  final String phoneNumber;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -31,6 +32,7 @@ class InvoiceSummary extends Equatable {
     this.model = '',
     this.rego = '',
     this.year = '',
+    this.phoneNumber = '',
     required this.createdAt,
     required this.updatedAt,
     this.totalAmount,
@@ -46,6 +48,7 @@ class InvoiceSummary extends Equatable {
     model,
     rego,
     year,
+    phoneNumber,
     createdAt,
     updatedAt,
     totalAmount,

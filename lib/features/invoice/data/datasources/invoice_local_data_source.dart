@@ -54,10 +54,12 @@ class InvoiceLocalDataSource {
                inspections.model AS model,
                inspections.rego AS rego,
                inspections.year AS year,
+               inspections.phone_number AS phone_number,
                (SELECT SUM(quantity * unit_price) FROM invoice_items
                 WHERE invoice_items.invoice_id = invoices.id) AS net_total
         FROM invoices
         LEFT JOIN inspections ON inspections.invoice_id = invoices.id
+        WHERE inspections.owner_name IS NOT NULL AND TRIM(inspections.owner_name) != ''
         ORDER BY invoices.updated_at DESC
       ''');
 
@@ -86,6 +88,7 @@ class InvoiceLocalDataSource {
               model: row['model'] as String? ?? '',
               rego: row['rego'] as String? ?? '',
               year: row['year'] as String? ?? '',
+              phoneNumber: row['phone_number'] as String? ?? '',
               createdAt: DateTime.parse(row['created_at'] as String),
               updatedAt: DateTime.parse(row['updated_at'] as String),
               totalAmount: totalAmount,

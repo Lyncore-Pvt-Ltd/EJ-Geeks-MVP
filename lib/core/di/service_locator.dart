@@ -26,6 +26,13 @@ import '../../features/invoice/domain/usecases/update_pdf_content_signature.dart
 import '../../features/invoice/domain/usecases/upsert_invoice_draft.dart';
 import '../../features/invoice/presentation/bloc/invoice_bloc.dart';
 import '../../features/invoice/presentation/bloc/invoice_details_bloc.dart';
+import '../../features/search/data/datasources/search_history_local_data_source.dart';
+import '../../features/search/data/repositories/search_history_repository_impl.dart';
+import '../../features/search/domain/repositories/search_history_repository.dart';
+import '../../features/search/domain/usecases/add_recent_search.dart';
+import '../../features/search/domain/usecases/clear_recent_searches.dart';
+import '../../features/search/domain/usecases/get_recent_searches.dart';
+import '../../features/search/presentation/bloc/search_bloc.dart';
 import '../database/app_database.dart';
 
 final GetIt sl = GetIt.instance;
@@ -125,6 +132,28 @@ void setupServiceLocator() {
       upsertInvoiceDraft: sl(),
       generateInvoicePdfs: sl(),
       updateInvoicePaymentStatus: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton<SearchHistoryLocalDataSource>(
+    () => SearchHistoryLocalDataSource(),
+  );
+
+  sl.registerLazySingleton<SearchHistoryRepository>(
+    () => SearchHistoryRepositoryImpl(localDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<GetRecentSearches>(() => GetRecentSearches(sl()));
+  sl.registerLazySingleton<AddRecentSearch>(() => AddRecentSearch(sl()));
+  sl.registerLazySingleton<ClearRecentSearches>(
+    () => ClearRecentSearches(sl()),
+  );
+
+  sl.registerLazySingleton<SearchBloc>(
+    () => SearchBloc(
+      getRecentSearches: sl(),
+      addRecentSearch: sl(),
+      clearRecentSearches: sl(),
     ),
   );
 }
