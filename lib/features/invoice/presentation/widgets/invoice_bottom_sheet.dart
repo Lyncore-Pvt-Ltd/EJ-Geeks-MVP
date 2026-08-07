@@ -8,6 +8,7 @@ import 'package:ej_geek/features/invoice/domain/entities/payment_status.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_event.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_state.dart';
+import 'package:ej_geek/features/invoice/presentation/widgets/invoice_close_confirm.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/inspection_tab.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_tab.dart';
 import 'package:ej_geek/features/invoice/presentation/widgets/invoice_success_dialog.dart';
@@ -168,7 +169,18 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
     );
   }
 
-  void _onClosePressed() {
+  Future<void> _onClosePressed(BuildContext context) async {
+    final isDirty = _inspectionKey.currentState?.hasUnsavedChanges ?? false;
+    if (!isDirty) {
+      Navigator.of(context).pop();
+      return;
+    }
+    final confirmed = await confirmCloseInvoiceSheet(context);
+    if (!context.mounted) return;
+    if (!confirmed) {
+      Navigator.of(context).pop();
+      return;
+    }
     setState(() => _isClosing = true);
     _triggerActiveSave();
   }
@@ -397,7 +409,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                               activeTabIndex: _tabController.index,
                               onGeneratePressed: _onGeneratePressed,
                               onSavePressed: _onSavePressed,
-                              onClosePressed: _onClosePressed,
+                              onClosePressed: () => _onClosePressed(context),
                             );
                           },
                         ),
