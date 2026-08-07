@@ -46,6 +46,8 @@ class InspectionTabState extends State<InspectionTab>
   final _vinController = TextEditingController();
   final _engineNoController = TextEditingController();
 
+  VehicleDetails _lastSavedVehicleDetails = const VehicleDetails();
+
   @override
   void dispose() {
     _ownerNameController.dispose();
@@ -63,19 +65,25 @@ class InspectionTabState extends State<InspectionTab>
 
   bool validate() => _formKey.currentState?.validate() ?? true;
 
+  VehicleDetails get _currentVehicleDetails => VehicleDetails(
+    ownerName: _ownerNameController.text,
+    address: _addressController.text,
+    phoneNumber: _phoneController.text,
+    make: _makeController.text,
+    model: _modelController.text,
+    rego: _regoController.text,
+    year: _yearController.text,
+    odometer: _odometerController.text,
+    vin: _vinController.text,
+    engineNo: _engineNoController.text,
+  );
+
+  bool get hasUnsavedChanges =>
+      _currentVehicleDetails != _lastSavedVehicleDetails;
+
   void save() {
-    final vehicleDetails = VehicleDetails(
-      ownerName: _ownerNameController.text,
-      address: _addressController.text,
-      phoneNumber: _phoneController.text,
-      make: _makeController.text,
-      model: _modelController.text,
-      rego: _regoController.text,
-      year: _yearController.text,
-      odometer: _odometerController.text,
-      vin: _vinController.text,
-      engineNo: _engineNoController.text,
-    );
+    final vehicleDetails = _currentVehicleDetails;
+    _lastSavedVehicleDetails = vehicleDetails;
     context.read<InspectionBloc>().add(InspectionSaved(vehicleDetails));
     ScaffoldMessenger.of(
       context,
@@ -93,6 +101,7 @@ class InspectionTabState extends State<InspectionTab>
     _odometerController.text = vehicleDetails.odometer;
     _vinController.text = vehicleDetails.vin;
     _engineNoController.text = vehicleDetails.engineNo;
+    _lastSavedVehicleDetails = vehicleDetails;
   }
 
   @override

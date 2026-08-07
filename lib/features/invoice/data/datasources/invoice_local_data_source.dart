@@ -59,6 +59,7 @@ class InvoiceLocalDataSource {
                 WHERE invoice_items.invoice_id = invoices.id) AS net_total
         FROM invoices
         LEFT JOIN inspections ON inspections.invoice_id = invoices.id
+        WHERE inspections.owner_name IS NOT NULL AND TRIM(inspections.owner_name) != ''
         ORDER BY invoices.updated_at DESC
       ''');
 
