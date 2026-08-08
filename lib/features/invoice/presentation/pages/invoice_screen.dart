@@ -1,3 +1,4 @@
+import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:ej_geek/features/invoice/domain/entities/payment_status.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_event.dart';
@@ -56,7 +57,11 @@ class InvoiceScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: BlocBuilder<InvoiceBloc, InvoiceState>(
+            child: BlocConsumer<InvoiceBloc, InvoiceState>(
+              listenWhen: (previous, current) =>
+                  previous.invoices != current.invoices,
+              listener: (context, state) =>
+                  context.read<DashboardProvider>().refresh(),
               builder: (context, state) {
                 if (state.isLoading && state.invoices.isEmpty) {
                   return const Center(child: CircularProgressIndicator());

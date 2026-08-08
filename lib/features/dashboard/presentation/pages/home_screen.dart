@@ -19,57 +19,61 @@ class _HomeScreenState extends State<HomeScreen> {
     final dashboard = context.watch<DashboardProvider>();
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Column(
-                children: [
-                  TotalRevenueCard(),
-                  const SizedBox(height: 12),
-                  PendingPaymentsCard(),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: StatCard(
-                      label: 'Invoices',
-                      value: '${dashboard.invoiceCount}',
-                      icon: Icons.receipt_long,
-                      accentColor: AppPallete.deepTeal,
-                      trendPercent: dashboard.invoiceTrend,
+      body: RefreshIndicator(
+        onRefresh: () => context.read<DashboardProvider>().refresh(),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Column(
+                  children: [
+                    TotalRevenueCard(),
+                    const SizedBox(height: 12),
+                    PendingPaymentsCard(),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: StatCard(
+                        label: 'Invoices',
+                        value: '${dashboard.invoiceCount}',
+                        icon: Icons.receipt_long,
+                        accentColor: AppPallete.deepTeal,
+                        trendPercent: dashboard.invoiceTrend,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: StatCard(
-                      label: 'Pending',
-                      value: '${dashboard.pendingCount}',
-                      icon: Icons.pending_actions,
-                      accentColor: AppPallete.amberOrange,
-                      trendPercent: dashboard.pendingTrend,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: StatCard(
+                        label: 'Pending',
+                        value: '${dashboard.pendingCount}',
+                        icon: Icons.pending_actions,
+                        accentColor: AppPallete.amberOrange,
+                        trendPercent: dashboard.pendingTrend,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: StatCard(
-                      label: 'Paid',
-                      value: '${dashboard.paidCount}',
-                      icon: Icons.check_circle,
-                      accentColor: AppPallete.emeraldTeal,
-                      trendPercent: dashboard.paidTrend,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: StatCard(
+                        label: 'Paid',
+                        value: '${dashboard.paidCount}',
+                        icon: Icons.check_circle,
+                        accentColor: AppPallete.emeraldTeal,
+                        trendPercent: dashboard.paidTrend,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const RevenueChartCard(),
-              SizedBox(height: 100 + MediaQuery.of(context).padding.bottom),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const RevenueChartCard(),
+                SizedBox(height: 100 + MediaQuery.of(context).padding.bottom),
+              ],
+            ),
           ),
         ),
       ),
