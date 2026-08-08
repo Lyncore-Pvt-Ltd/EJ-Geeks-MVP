@@ -10,7 +10,8 @@ Future<bool> confirmCloseInvoiceSheet(BuildContext context) async {
     context: context,
     builder: (_) => const ConfirmDialog(
       title: 'Close Invoice?',
-      message: 'Detected some values in field. Do you want to save your '
+      message:
+          'Detected some values in field. Do you want to save your '
           'progress?',
       confirmLabel: 'Save',
     ),
