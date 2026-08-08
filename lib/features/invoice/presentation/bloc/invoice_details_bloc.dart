@@ -100,12 +100,14 @@ class InvoiceDetailsBloc
     String appOwnerAddress;
     bool appOwnerAddressIsSaved;
     String paymentTerms;
+    bool paymentTermsIsSaved;
     if (hasExistingRow) {
       appOwnerAddress = hasSavedAddress
           ? bundle!.details.appOwnerAddress
           : kDefaultAppOwnerAddress;
       appOwnerAddressIsSaved = hasSavedAddress;
       paymentTerms = bundle?.details.paymentTerms ?? '';
+      paymentTermsIsSaved = bundle?.details.paymentTerms.isNotEmpty == true;
     } else {
       final defaultsResult = await _getMostRecentInvoiceDefaults(null);
       final defaults = defaultsResult.fold((_) => null, (d) => d);
@@ -115,6 +117,7 @@ class InvoiceDetailsBloc
           : kDefaultAppOwnerAddress;
       appOwnerAddressIsSaved = carriedAddress?.isNotEmpty == true;
       paymentTerms = defaults?.paymentTerms ?? '';
+      paymentTermsIsSaved = defaults?.paymentTerms?.isNotEmpty == true;
     }
 
     emit(
@@ -124,6 +127,7 @@ class InvoiceDetailsBloc
         issueDate: bundle?.details.issueDate ?? DateTime.now(),
         dueDate: bundle?.details.dueDate,
         paymentTerms: paymentTerms,
+        paymentTermsIsSaved: paymentTermsIsSaved,
         notes: bundle?.details.notes ?? '',
         gstPercent: gstPercent,
         discountPercent: discountPercent,

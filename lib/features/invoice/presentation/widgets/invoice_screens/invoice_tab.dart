@@ -87,7 +87,7 @@ class InvoiceTabState extends State<InvoiceTab>
             ? ''
             : _trimmed(state.discountPercent);
         _isOwnerAddressLocked = state.appOwnerAddressIsSaved;
-        _isPaymentTermsLocked = state.paymentTerms.trim().isNotEmpty;
+        _isPaymentTermsLocked = state.paymentTermsIsSaved;
         _hasLoadedOnce = true;
       }
     }
@@ -210,7 +210,7 @@ class InvoiceTabState extends State<InvoiceTab>
                   ? ''
                   : _trimmed(state.discountPercent);
               _isOwnerAddressLocked = state.appOwnerAddressIsSaved;
-              _isPaymentTermsLocked = state.paymentTerms.trim().isNotEmpty;
+              _isPaymentTermsLocked = state.paymentTermsIsSaved;
               _hasLoadedOnce = true;
             });
           },
