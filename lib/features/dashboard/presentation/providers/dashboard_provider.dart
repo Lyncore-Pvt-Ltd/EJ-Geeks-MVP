@@ -32,26 +32,48 @@ class DashboardProvider extends ChangeNotifier {
   Set<DateTime> pendingPaymentDates = {};
   List<MonthlyRevenue> monthlyRevenue = [];
 
-  // Fired once on construction; all four usecases run as concurrent, lean SQL
-  // aggregate queries (see DashboardLocalDataSource) rather than on every rebuild.
+  // Runs once on construction, and again on demand via [refresh]; all four
+  // usecases run as concurrent, lean SQL aggregate queries (see
+  // DashboardLocalDataSource) rather than on every rebuild.
   Future<void> _loadDashboardData() async {
     await Future.wait([
-      _getDashboardStats(
-        null,
-      ).then((result) => result.fold((_) {}, (data) => stats = data)),
-      _getDailyRevenue(
-        null,
-      ).then((result) => result.fold((_) {}, (data) => dailyRevenue = data)),
+      _getDashboardStats(null).then(
+        (result) => result.fold(
+          (failure) => debugPrint(
+            'DashboardProvider: dashboard stats failed: ${failure.message}',
+          ),
+          (data) => stats = data,
+        ),
+      ),
+      _getDailyRevenue(null).then(
+        (result) => result.fold(
+          (failure) => debugPrint(
+            'DashboardProvider: daily revenue failed: ${failure.message}',
+          ),
+          (data) => dailyRevenue = data,
+        ),
+      ),
       _getPendingPaymentDates(null).then(
-        (result) =>
-            result.fold((_) {}, (data) => pendingPaymentDates = data.toSet()),
+        (result) => result.fold(
+          (failure) => debugPrint(
+            'DashboardProvider: pending payment dates failed: ${failure.message}',
+          ),
+          (data) => pendingPaymentDates = data.toSet(),
+        ),
       ),
       _getMonthlyRevenue(null).then(
-        (result) => result.fold((_) {}, (data) => monthlyRevenue = data),
+        (result) => result.fold(
+          (failure) => debugPrint(
+            'DashboardProvider: monthly revenue failed: ${failure.message}',
+          ),
+          (data) => monthlyRevenue = data,
+        ),
       ),
     ]);
     notifyListeners();
   }
+
+  Future<void> refresh() => _loadDashboardData();
 
   String get revenueLabel => formatAud(stats.totalRevenue);
   String get revenueChangeLabel =>
