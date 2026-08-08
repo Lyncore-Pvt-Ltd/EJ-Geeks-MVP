@@ -18,7 +18,9 @@ class InspectionLocalDataSource {
     try {
       final db = await _appDatabase.database;
       await db.transaction((txn) async {
-        await txn.insert('inspections', {
+        final batch = txn.batch();
+
+        batch.insert('inspections', {
           'id': record.id,
           'invoice_id': record.invoiceId,
           'make': record.vehicleDetails.make,
@@ -34,17 +36,17 @@ class InspectionLocalDataSource {
           'created_at': record.createdAt.toIso8601String(),
         }, conflictAlgorithm: ConflictAlgorithm.replace);
 
-        await txn.delete(
+        batch.delete(
           'inspection_items',
           where: 'inspection_id = ?',
           whereArgs: [record.id],
         );
-        await txn.delete(
+        batch.delete(
           'inspection_section_comments',
           where: 'inspection_id = ?',
           whereArgs: [record.id],
         );
-        await txn.delete(
+        batch.delete(
           'inspection_images',
           where: 'inspection_id = ?',
           whereArgs: [record.id],
@@ -52,7 +54,7 @@ class InspectionLocalDataSource {
 
         for (final section in record.sections) {
           for (final item in section.items) {
-            await txn.insert('inspection_items', {
+            batch.insert('inspection_items', {
               'id': '${record.id}_${section.name}_${item.label}',
               'inspection_id': record.id,
               'section': section.name,
@@ -61,7 +63,7 @@ class InspectionLocalDataSource {
             });
           }
 
-          await txn.insert('inspection_section_comments', {
+          batch.insert('inspection_section_comments', {
             'id': '${record.id}_${section.name}_comment',
             'inspection_id': record.id,
             'section': section.name,
@@ -69,7 +71,7 @@ class InspectionLocalDataSource {
           });
 
           for (var i = 0; i < section.imagePaths.length; i++) {
-            await txn.insert('inspection_images', {
+            batch.insert('inspection_images', {
               'id': '${record.id}_${section.name}_image_$i',
               'inspection_id': record.id,
               'section': section.name,
@@ -80,13 +82,15 @@ class InspectionLocalDataSource {
         }
 
         for (var i = 0; i < record.imagePaths.length; i++) {
-          await txn.insert('inspection_images', {
+          batch.insert('inspection_images', {
             'id': '${record.id}_image_$i',
             'inspection_id': record.id,
             'file_path': record.imagePaths[i],
             'created_at': record.createdAt.toIso8601String(),
           });
         }
+
+        await batch.commit(noResult: true);
       });
     } catch (e) {
       throw CacheException(message: 'Failed to save inspection: $e');
