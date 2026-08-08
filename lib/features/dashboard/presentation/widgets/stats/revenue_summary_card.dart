@@ -1,5 +1,5 @@
-import 'package:ej_geek/core/constants/dashboard_dummy_data.dart';
 import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:ej_geek/features/dashboard/domain/entities/daily_revenue.dart';
 import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +19,7 @@ class TotalRevenueCard extends StatelessWidget {
       headerIcon: Icons.trending_up,
       headerIconColor: AppPallete.emeraldTeal,
       chart: _RevenueBars(
-        monthlyRevenue: dashboard.monthlyRevenue,
+        dailyRevenue: dashboard.dailyRevenue,
         isDark: isDark,
       ),
     );
@@ -43,7 +43,7 @@ class PendingPaymentsCard extends StatelessWidget {
       headerIconColor: AppPallete.amberOrange,
       headerIconOutlined: true,
       chart: _PendingDots(
-        pendingCount: dashboard.pendingCount,
+        pendingDates: dashboard.pendingPaymentDates,
         mutedColor: titleColor,
       ),
     );
@@ -137,33 +137,33 @@ class _SummaryPanel extends StatelessWidget {
 }
 
 class _RevenueBars extends StatelessWidget {
-  final List<MonthlyRevenue> monthlyRevenue;
+  final List<DailyRevenue> dailyRevenue;
   final bool isDark;
 
-  const _RevenueBars({required this.monthlyRevenue, required this.isDark});
+  const _RevenueBars({required this.dailyRevenue, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
-    final bars = monthlyRevenue.length > 6
-        ? monthlyRevenue.sublist(monthlyRevenue.length - 6)
-        : monthlyRevenue;
-    final maxRevenue = bars
-        .map((e) => e.revenue)
-        .reduce((a, b) => a > b ? a : b);
+    final maxRevenue = dailyRevenue.isEmpty
+        ? 0.0
+        : dailyRevenue.map((e) => e.revenue).reduce((a, b) => a > b ? a : b);
+    final now = DateTime.now();
 
     return LayoutBuilder(
       builder: (context, constraints) {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            for (var i = 0; i < bars.length; i++) ...[
+            for (var i = 0; i < dailyRevenue.length; i++) ...[
               if (i > 0) const SizedBox(width: 3),
               Expanded(
                 child: Container(
-                  height:
-                      constraints.maxHeight * (bars[i].revenue / maxRevenue),
+                  height: maxRevenue == 0
+                      ? 0
+                      : constraints.maxHeight *
+                            (dailyRevenue[i].revenue / maxRevenue),
                   decoration: BoxDecoration(
-                    color: i == bars.length - 1
+                    color: DateUtils.isSameDay(dailyRevenue[i].date, now)
                         ? AppPallete.selectionGradient[1]
                         : (isDark ? Colors.white : Colors.black),
                     borderRadius: BorderRadius.circular(2),
@@ -179,15 +179,15 @@ class _RevenueBars extends StatelessWidget {
 }
 
 class _PendingDots extends StatelessWidget {
-  final int pendingCount;
+  final Set<DateTime> pendingDates;
   final Color mutedColor;
 
-  const _PendingDots({required this.pendingCount, required this.mutedColor});
+  const _PendingDots({required this.pendingDates, required this.mutedColor});
 
   @override
   Widget build(BuildContext context) {
-    const totalDots = 30;
-    final highlightedDots = pendingCount.clamp(0, totalDots);
+    final now = DateTime.now();
+    final daysInMonth = DateUtils.getDaysInMonth(now.year, now.month);
 
     return Align(
       alignment: Alignment.bottomLeft,
@@ -195,13 +195,14 @@ class _PendingDots extends StatelessWidget {
         spacing: 4,
         runSpacing: 4,
         children: [
-          for (var i = 0; i < totalDots; i++)
+          for (var day = 1; day <= daysInMonth; day++)
             Container(
               width: 18,
               height: 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: i < highlightedDots
+                color:
+                    pendingDates.contains(DateTime(now.year, now.month, day))
                     ? AppPallete.selectionGradient[1]
                     : mutedColor.withValues(alpha: 0.25),
               ),

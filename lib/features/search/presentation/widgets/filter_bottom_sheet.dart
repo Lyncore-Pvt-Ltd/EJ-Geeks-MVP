@@ -158,7 +158,7 @@ class _FilterTile<T> extends StatelessWidget {
       title: Text(
         option.label,
         style: TextStyle(
-          color: textColor,
+          color: isActive ? AppPallete.emeraldTeal : textColor,
           fontSize: 16,
           fontWeight: FontWeight.w600,
         ),
