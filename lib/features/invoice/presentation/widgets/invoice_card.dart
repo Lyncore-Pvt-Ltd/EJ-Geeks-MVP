@@ -276,6 +276,9 @@ class InvoiceCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final mutedColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
     final dividerColor = isDark ? Colors.white12 : Colors.black12;
+    final phoneNumber = summary.phoneNumber.isNotEmpty
+        ? '+61 ${summary.phoneNumber}'
+        : '';
     final vehicleLine = [
       summary.make,
       summary.model,
@@ -346,6 +349,13 @@ class InvoiceCard extends StatelessWidget {
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (phoneNumber.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            phoneNumber,
+                            style: TextStyle(fontSize: 13, color: mutedColor),
+                          ),
+                        ],
                         if (vehicleLine.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
