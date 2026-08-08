@@ -1,5 +1,12 @@
 import 'package:get_it/get_it.dart';
 
+import '../../features/dashboard/data/datasources/dashboard_local_data_source.dart';
+import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
+import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
+import '../../features/dashboard/domain/usecases/get_daily_revenue.dart';
+import '../../features/dashboard/domain/usecases/get_dashboard_stats.dart';
+import '../../features/dashboard/domain/usecases/get_monthly_revenue.dart';
+import '../../features/dashboard/domain/usecases/get_pending_payment_dates.dart';
 import '../../features/inspection/data/datasources/inspection_image_data_source.dart';
 import '../../features/inspection/data/datasources/inspection_local_data_source.dart';
 import '../../features/inspection/data/repositories/inspection_image_repository_impl.dart';
@@ -100,6 +107,21 @@ void setupServiceLocator() {
   sl.registerLazySingleton<GenerateCombinedInvoicePdf>(
     () => GenerateCombinedInvoicePdf(sl(), sl()),
   );
+
+  sl.registerLazySingleton<DashboardLocalDataSource>(
+    () => DashboardLocalDataSource(appDatabase: sl()),
+  );
+
+  sl.registerLazySingleton<DashboardRepository>(
+    () => DashboardRepositoryImpl(localDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<GetDashboardStats>(() => GetDashboardStats(sl()));
+  sl.registerLazySingleton<GetDailyRevenue>(() => GetDailyRevenue(sl()));
+  sl.registerLazySingleton<GetPendingPaymentDates>(
+    () => GetPendingPaymentDates(sl()),
+  );
+  sl.registerLazySingleton<GetMonthlyRevenue>(() => GetMonthlyRevenue(sl()));
 
   sl.registerFactoryParam<InspectionBloc, String, DateTime>(
     (invoiceId, invoiceCreatedAt) => InspectionBloc(
