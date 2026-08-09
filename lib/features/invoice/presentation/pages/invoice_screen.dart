@@ -1,3 +1,4 @@
+import 'package:ej_geek/core/theme/app_pallete.dart';
 import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:ej_geek/features/invoice/domain/entities/payment_status.dart';
 import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
@@ -8,6 +9,7 @@ import 'package:ej_geek/features/search/presentation/widgets/filter_bottom_sheet
 import 'package:ej_geek/features/search/presentation/widgets/search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 class InvoiceScreen extends StatelessWidget {
   static MaterialPageRoute<dynamic> route() =>
@@ -40,6 +42,8 @@ class InvoiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
       child: Column(
@@ -73,15 +77,25 @@ class InvoiceScreen extends StatelessWidget {
                 if (filteredInvoices.isEmpty) {
                   return const Center(child: Text('No matching invoices'));
                 }
-                return ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 20),
-                  itemCount: filteredInvoices.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: InvoiceCard(summary: filteredInvoices[index]),
-                    );
-                  },
+                return LiquidPullToRefresh(
+                  onRefresh: () async => context.read<InvoiceBloc>().add(
+                    const InvoiceListRequested(),
+                  ),
+                  color: isDark
+                      ? AppPallete.backgroundColor
+                      : AppPallete.backgroundColorLight,
+                  animSpeedFactor: 2,
+                  backgroundColor: AppPallete.selectionGradient[0],
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    itemCount: filteredInvoices.length,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: InvoiceCard(summary: filteredInvoices[index]),
+                      );
+                    },
+                  ),
                 );
               },
             ),
