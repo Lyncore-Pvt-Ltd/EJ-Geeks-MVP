@@ -4,6 +4,7 @@ import 'package:ej_geek/features/dashboard/presentation/widgets/chart/revenue_ch
 import 'package:ej_geek/features/dashboard/presentation/widgets/stats/revenue_summary_card.dart';
 import 'package:ej_geek/features/dashboard/presentation/widgets/stats/stat_card.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,10 +18,16 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final dashboard = context.watch<DashboardProvider>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      body: RefreshIndicator(
+      body: LiquidPullToRefresh(
         onRefresh: () => context.read<DashboardProvider>().refresh(),
+        color: isDark
+            ? AppPallete.backgroundColor
+            : AppPallete.backgroundColorLight,
+        animSpeedFactor: 2,
+        backgroundColor: AppPallete.selectionGradient[0],
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
