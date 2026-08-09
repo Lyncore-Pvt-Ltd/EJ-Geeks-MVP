@@ -18,10 +18,7 @@ class TotalRevenueCard extends StatelessWidget {
       value: dashboard.revenueLabel,
       headerIcon: Icons.trending_up,
       headerIconColor: AppPallete.emeraldTeal,
-      chart: _RevenueBars(
-        dailyRevenue: dashboard.dailyRevenue,
-        isDark: isDark,
-      ),
+      chart: _RevenueBars(dailyRevenue: dashboard.dailyRevenue, isDark: isDark),
     );
   }
 }
@@ -201,8 +198,7 @@ class _PendingDots extends StatelessWidget {
               height: 18,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color:
-                    pendingDates.contains(DateTime(now.year, now.month, day))
+                color: pendingDates.contains(DateTime(now.year, now.month, day))
                     ? AppPallete.selectionGradient[1]
                     : mutedColor.withValues(alpha: 0.25),
               ),

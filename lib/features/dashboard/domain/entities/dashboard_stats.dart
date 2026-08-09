@@ -10,6 +10,7 @@ class DashboardStats extends Equatable {
   final double totalRevenue;
   final double revenueChangePercent;
   final double pendingAmount;
+  final double paidAmount;
 
   const DashboardStats({
     this.invoiceCount = 0,
@@ -21,6 +22,7 @@ class DashboardStats extends Equatable {
     this.totalRevenue = 0,
     this.revenueChangePercent = 0,
     this.pendingAmount = 0,
+    this.paidAmount = 0,
   });
 
   @override
@@ -34,5 +36,6 @@ class DashboardStats extends Equatable {
     totalRevenue,
     revenueChangePercent,
     pendingAmount,
+    paidAmount,
   ];
 }
