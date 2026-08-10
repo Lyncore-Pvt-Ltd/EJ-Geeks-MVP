@@ -15,9 +15,11 @@ class RevenueChartCard extends StatelessWidget {
     final textColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
     final gridColor = isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite;
 
-    final maxRevenue = monthlyRevenue
-        .map((e) => e.revenue)
-        .reduce((a, b) => a > b ? a : b);
+    final maxRevenue = monthlyRevenue.isEmpty
+        ? 0.0
+        : monthlyRevenue
+              .map((e) => e.revenue)
+              .reduce((a, b) => a > b ? a : b);
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 20, 20, 12),

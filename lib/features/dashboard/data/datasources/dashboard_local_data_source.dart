@@ -74,7 +74,8 @@ class DashboardLocalDataSource {
           SUM(total_amount) AS total_revenue,
           SUM(CASE WHEN strftime('%Y-%m', created_at) = ? THEN total_amount ELSE 0 END) AS revenue_this_month,
           SUM(CASE WHEN strftime('%Y-%m', created_at) = ? THEN total_amount ELSE 0 END) AS revenue_last_month,
-          SUM(CASE WHEN payment_status = 'pending' THEN total_amount ELSE 0 END) AS pending_amount
+          SUM(CASE WHEN payment_status = 'pending' THEN total_amount ELSE 0 END) AS pending_amount,
+          SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END) AS paid_amount
         FROM (
           SELECT invoices.*, $_totalAmountExpression AS total_amount
           FROM invoices
@@ -114,6 +115,7 @@ class DashboardLocalDataSource {
           doubleOf('revenue_last_month'),
         ),
         pendingAmount: doubleOf('pending_amount'),
+        paidAmount: doubleOf('paid_amount'),
       );
     } catch (e) {
       throw CacheException(message: 'Failed to load dashboard stats: $e');

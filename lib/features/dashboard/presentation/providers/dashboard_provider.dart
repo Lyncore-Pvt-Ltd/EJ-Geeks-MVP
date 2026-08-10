@@ -1,4 +1,5 @@
 import 'package:ej_geek/core/di/service_locator.dart';
+import 'package:ej_geek/core/home_widget/dashboard_home_widget_sync.dart';
 import 'package:ej_geek/features/dashboard/domain/entities/daily_revenue.dart';
 import 'package:ej_geek/features/dashboard/domain/entities/dashboard_stats.dart';
 import 'package:ej_geek/features/dashboard/domain/entities/monthly_revenue.dart';
@@ -70,6 +71,7 @@ class DashboardProvider extends ChangeNotifier {
         ),
       ),
     ]);
+    await syncDashboardHomeWidget(stats);
     notifyListeners();
   }
 
@@ -79,6 +81,7 @@ class DashboardProvider extends ChangeNotifier {
   String get revenueChangeLabel =>
       '${trimmedAmount(stats.revenueChangePercent)}% than last month';
   String get pendingAmountLabel => formatAud(stats.pendingAmount);
+  String get paidAmountLabel => formatAud(stats.paidAmount);
   int get invoiceCount => stats.invoiceCount;
   int get pendingCount => stats.pendingCount;
   int get paidCount => stats.paidCount;
