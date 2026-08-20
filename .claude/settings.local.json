@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter devices *)",
+      "Bash(flutter analyze *)",
+      "Bash(flutter test *)",
+      "Bash(adb -s emulator-5554 shell input tap 1100 800)",
+      "Bash(adb -s emulator-5554 shell input tap 343 1219)",
+      "Bash(adb -s emulator-5554 exec-out screencap -p)",
+      "Bash(adb -s emulator-5554 shell input tap 513 1826)",
+      "Bash(adb -s emulator-5554 shell uiautomator dump /sdcard/window_dump.xml)",
+      "Bash(adb -s emulator-5554 pull /sdcard/window_dump.xml /tmp/claude-1000/-mnt-personal-GitHub-ej-geek-ej-geek/9e379522-7c00-4c98-86d1-db014d0c9fd5/scratchpad/window_dump.xml)",
+      "Bash(adb -s emulator-5554 shell input tap 512 2830)",
+      "Bash(timeout 240 bash -c '\nLOG=/tmp/claude-1000/-mnt-personal-GitHub-ej-geek-ej-geek/8c3aaa4c-b9af-4a36-8c1d-f593c60eafd2/scratchpad/flutter_run.log\nuntil grep -q \"DashboardProvider:\\\\|An Observatory debugger\\\\|Flutter run key commands\\\\|Exception\\\\|Error\" \"$LOG\" 2>/dev/null; do\n  sleep 5\ndone\ntail -n 100 \"$LOG\"\n')",
+      "Bash(timeout 60 bash -c '\nLOG=/tmp/claude-1000/-mnt-personal-GitHub-ej-geek-ej-geek/8c3aaa4c-b9af-4a36-8c1d-f593c60eafd2/scratchpad/flutter_run.log\nBEFORE=$\\(wc -l < \"$LOG\"\\)\nuntil [ \"$\\(tail -n +$BEFORE \"$LOG\" | grep -c \"DashboardProvider:\"\\)\" -gt 0 ] || [ \"$SECONDS\" -gt 55 ]; do\n  sleep 3\ndone\ntail -n 60 \"$LOG\"\n')",
+      "Bash(adb -s emulator-5554 shell run-as com.example.ej_geek cat databases/ej_geek.db)",
+      "Bash(adb -s emulator-5554 shell am force-stop com.example.ej_geek)",
+      "Bash(adb -s emulator-5554 push /tmp/claude-1000/-mnt-personal-GitHub-ej-geek-ej-geek/8c3aaa4c-b9af-4a36-8c1d-f593c60eafd2/scratchpad/ej_geek_pulled.db /data/local/tmp/ej_geek_seed.db)",
+      "Bash(adb -s emulator-5554 shell \"run-as com.example.ej_geek cp /data/local/tmp/ej_geek_seed.db databases/ej_geek.db\")",
+      "Bash(adb -s emulator-5554 shell run-as com.example.ej_geek rm -f databases/ej_geek.db-journal)",
+      "Bash(adb -s emulator-5554 shell run-as com.example.ej_geek ls -la databases)",
+      "Bash(adb -s emulator-5554 shell date)"
+    ]
+  }
+}

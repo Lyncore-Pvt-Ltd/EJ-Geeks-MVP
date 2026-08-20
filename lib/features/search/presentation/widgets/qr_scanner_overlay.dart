@@ -30,7 +30,10 @@ class QrScannerOverlay extends StatelessWidget {
 }
 
 class _QrScannerOverlayPainter extends CustomPainter {
-  _QrScannerOverlayPainter({required this.cutOutSize, required this.borderColor});
+  _QrScannerOverlayPainter({
+    required this.cutOutSize,
+    required this.borderColor,
+  });
 
   final double? cutOutSize;
   final Color borderColor;
@@ -75,14 +78,31 @@ class _QrScannerOverlayPainter extends CustomPainter {
     final right = cutOutRect.right;
     final bottom = cutOutRect.bottom;
 
-    drawCorner(Offset(left, top), const Offset(_cornerLength, 0), const Offset(0, _cornerLength));
-    drawCorner(Offset(right, top), const Offset(-_cornerLength, 0), const Offset(0, _cornerLength));
-    drawCorner(Offset(left, bottom), const Offset(_cornerLength, 0), const Offset(0, -_cornerLength));
-    drawCorner(Offset(right, bottom), const Offset(-_cornerLength, 0), const Offset(0, -_cornerLength));
+    drawCorner(
+      Offset(left, top),
+      const Offset(_cornerLength, 0),
+      const Offset(0, _cornerLength),
+    );
+    drawCorner(
+      Offset(right, top),
+      const Offset(-_cornerLength, 0),
+      const Offset(0, _cornerLength),
+    );
+    drawCorner(
+      Offset(left, bottom),
+      const Offset(_cornerLength, 0),
+      const Offset(0, -_cornerLength),
+    );
+    drawCorner(
+      Offset(right, bottom),
+      const Offset(-_cornerLength, 0),
+      const Offset(0, -_cornerLength),
+    );
   }
 
   @override
   bool shouldRepaint(covariant _QrScannerOverlayPainter oldDelegate) {
-    return oldDelegate.cutOutSize != cutOutSize || oldDelegate.borderColor != borderColor;
+    return oldDelegate.cutOutSize != cutOutSize ||
+        oldDelegate.borderColor != borderColor;
   }
 }
