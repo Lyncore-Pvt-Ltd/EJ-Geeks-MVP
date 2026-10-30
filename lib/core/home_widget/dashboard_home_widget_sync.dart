@@ -1,5 +1,5 @@
-import 'package:ej_geek/features/dashboard/domain/entities/dashboard_stats.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
+import 'package:auto_flow/features/dashboard/domain/entities/dashboard_stats.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:home_widget/home_widget.dart';
 
 const String dashboardWidgetAndroidProviderName = 'DashboardWidgetProvider';

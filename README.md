@@ -1,6 +1,6 @@
-# E&J Geek Invoice
+# AutoFlow
 
-A Flutter invoicing/accounting app (`ej_geek`). Early stage: a splash screen, a dashboard home screen, and an invoice-creation bottom sheet with Inspection and Invoice tabs.
+A Flutter invoicing/accounting app (`auto_flow`). Early stage: a splash screen, a dashboard home screen, and an invoice-creation bottom sheet with Inspection and Invoice tabs.
 
 ## Features
 

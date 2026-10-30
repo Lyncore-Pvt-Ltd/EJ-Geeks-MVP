@@ -33,6 +33,14 @@ import '../../features/invoice/domain/usecases/update_pdf_content_signature.dart
 import '../../features/invoice/domain/usecases/upsert_invoice_draft.dart';
 import '../../features/invoice/presentation/bloc/invoice_bloc.dart';
 import '../../features/invoice/presentation/bloc/invoice_details_bloc.dart';
+import '../../features/onboarding/data/constants/onboarding_content.dart';
+import '../../features/onboarding/data/datasources/onboarding_local_data_source.dart';
+import '../../features/onboarding/data/repositories/onboarding_repository_impl.dart';
+import '../../features/onboarding/domain/repositories/onboarding_repository.dart';
+import '../../features/onboarding/domain/usecases/complete_onboarding.dart';
+import '../../features/onboarding/domain/usecases/is_onboarding_completed.dart';
+import '../../features/onboarding/presentation/bloc/intro_bloc.dart';
+import '../../features/onboarding/presentation/bloc/login_bloc.dart';
 import '../../features/search/data/datasources/search_history_local_data_source.dart';
 import '../../features/search/data/repositories/search_history_repository_impl.dart';
 import '../../features/search/domain/repositories/search_history_repository.dart';
@@ -89,9 +97,7 @@ void setupServiceLocator() {
     () => UpdateInvoicePaymentStatus(sl()),
   );
   sl.registerLazySingleton<DeleteInvoice>(() => DeleteInvoice(sl()));
-  sl.registerLazySingleton<SaveInvoiceDetails>(
-    () => SaveInvoiceDetails(sl()),
-  );
+  sl.registerLazySingleton<SaveInvoiceDetails>(() => SaveInvoiceDetails(sl()));
   sl.registerLazySingleton<GetInvoiceDetailsByInvoiceId>(
     () => GetInvoiceDetailsByInvoiceId(sl()),
   );
@@ -178,4 +184,27 @@ void setupServiceLocator() {
       clearRecentSearches: sl(),
     ),
   );
+
+  sl.registerLazySingleton<OnboardingLocalDataSource>(
+    () => OnboardingLocalDataSource(),
+  );
+
+  sl.registerLazySingleton<OnboardingRepository>(
+    () => OnboardingRepositoryImpl(localDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<IsOnboardingCompleted>(
+    () => IsOnboardingCompleted(sl()),
+  );
+  sl.registerLazySingleton<CompleteOnboarding>(() => CompleteOnboarding(sl()));
+
+  sl.registerFactoryParam<IntroBloc, int, void>(
+    (initialIndex, _) => IntroBloc(
+      completeOnboarding: sl(),
+      slideCount: kIntroSlides.length,
+      initialIndex: initialIndex,
+    ),
+  );
+
+  sl.registerFactory<LoginBloc>(() => LoginBloc());
 }

@@ -1,4 +1,5 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class AppTheme {
@@ -18,6 +19,7 @@ class AppTheme {
       selectedColor: AppPallete.nebulousWhite,
     ),
     iconTheme: const IconThemeData(color: Colors.black),
+    extensions: const [AutoFlowTokens.light],
   );
   static final darkTheme = ThemeData.dark().copyWith(
     brightness: Brightness.dark,
@@ -38,5 +40,6 @@ class AppTheme {
       selectedColor: AppPallete.warmOnyx,
     ),
     iconTheme: const IconThemeData(color: AppPallete.cascadingWhite),
+    extensions: const [AutoFlowTokens.dark],
   );
 }

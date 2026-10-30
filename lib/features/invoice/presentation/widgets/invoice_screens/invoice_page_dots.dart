@@ -1,4 +1,4 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
 import 'package:flutter/material.dart';
 
 class InvoicePageDots extends StatelessWidget {

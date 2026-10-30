@@ -1,9 +1,9 @@
-import 'package:ej_geek/core/di/service_locator.dart';
-import 'package:ej_geek/core/presentation/pages/splash_screen.dart';
-import 'package:ej_geek/core/theme/theme.dart';
-import 'package:ej_geek/core/theme/theme_controller.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
-import 'package:ej_geek/features/search/presentation/bloc/search_bloc.dart';
+import 'package:auto_flow/core/di/service_locator.dart';
+import 'package:auto_flow/core/presentation/pages/splash_screen.dart';
+import 'package:auto_flow/core/theme/theme.dart';
+import 'package:auto_flow/core/theme/theme_controller.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_bloc.dart';
+import 'package:auto_flow/features/search/presentation/bloc/search_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
     return Consumer<ThemeController>(
       builder: (context, themeController, _) {
         return MaterialApp(
-          title: 'E&J Geek Invoice',
+          title: 'AutoFlow',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,

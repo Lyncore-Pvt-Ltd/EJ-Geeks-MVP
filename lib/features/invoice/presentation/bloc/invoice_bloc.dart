@@ -16,14 +16,11 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
   final DeleteInvoice _deleteInvoice;
 
   InvoiceBloc({
-    required GetAllInvoices getAllInvoices,
+    required this._getAllInvoices,
     required UpdateInvoiceServiceStatus updateInvoiceServiceStatus,
-    required UpdateInvoicePaymentStatus updateInvoicePaymentStatus,
-    required DeleteInvoice deleteInvoice,
-  }) : _getAllInvoices = getAllInvoices,
-       _updateInvoiceServiceStatus = updateInvoiceServiceStatus,
-       _updateInvoicePaymentStatus = updateInvoicePaymentStatus,
-       _deleteInvoice = deleteInvoice,
+    required this._updateInvoicePaymentStatus,
+    required this._deleteInvoice,
+  }) : _updateInvoiceServiceStatus = updateInvoiceServiceStatus,
        super(const InvoiceState()) {
     on<InvoiceListRequested>(_onInvoiceListRequested);
     on<InvoiceServiceCompleted>(_onInvoiceServiceCompleted);

@@ -1,10 +1,10 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/inspection_gradient_button.dart';
-import 'package:ej_geek/features/invoice/domain/entities/invoice_line_item.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_event.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/line_item_form_fields.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/features/inspection/presentation/widgets/inspection_gradient_button.dart';
+import 'package:auto_flow/features/invoice/domain/entities/invoice_line_item.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_bloc.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_event.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/line_item_form_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

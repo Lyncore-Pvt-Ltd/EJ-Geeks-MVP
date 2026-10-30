@@ -1,4 +1,4 @@
-import 'package:ej_geek/core/presentation/pages/settings_screen.dart';
+import 'package:auto_flow/core/presentation/pages/settings_screen.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {

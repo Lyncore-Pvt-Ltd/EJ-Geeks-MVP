@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-"E&J Geek Invoice" — a Flutter invoicing/accounting app (`name: ej_geek` in `pubspec.yaml`). Splash screen, a dashboard home screen (still driven by placeholder data, see "Dashboard" below), and a full invoice feature (list, create/edit, PDF generation) with an embedded Inspection tab (vehicle details + a category checklist) all exist and are persisted locally via SQLite. Inspection was the original reference implementation (see "Inspection feature" below); Invoice now mirrors the same clean-architecture layering (see "Invoice feature" below) and should be treated as an equally valid reference for new features. `lib/features/auth/` is a scaffolded, empty placeholder — there is no auth or remote backend yet.
+"AutoFlow" (formerly "E&J Geek Invoice") — a Flutter workshop inspection/invoicing app (`name: auto_flow` in `pubspec.yaml`; Android `com.example.auto_flow`, iOS `com.example.autoFlow`). The SQLite file is still `ej_geek.db` on purpose so pre-rebrand installs keep their data. Splash screen, a first-launch onboarding flow (see "Onboarding feature" below), a dashboard home screen (still driven by placeholder data, see "Dashboard" below), and a full invoice feature (list, create/edit, PDF generation) with an embedded Inspection tab (vehicle details + a category checklist) all exist and are persisted locally via SQLite. Inspection was the original reference implementation (see "Inspection feature" below); Invoice now mirrors the same clean-architecture layering (see "Invoice feature" below) and should be treated as an equally valid reference for new features. There is no auth or remote backend yet — the onboarding login is UI-only.
 
 ## Commands
 
@@ -81,6 +81,10 @@ Orchestration lives in the usecase `GenerateInvoicePdfs` (`lib/features/invoice/
 ### Dialog action button styling
 
 Custom `AlertDialog`s in this app do not use plain `TextButton`s for their `actions` — every action button is wrapped in a fixed-height (40) `Container` with `BoxDecoration(borderRadius: BorderRadius.circular(5))` giving it a solid pill background, containing a `TextButton` whose child is a `Row` (`mainAxisSize: MainAxisSize.min`) of white `Text` (+ a trailing `Icon` for destructive/confirming actions, e.g. `Icons.delete`). Neutral actions (Cancel/Close) use a dark pill — `isDark ? AppPallete.dynamicBlack : AppPallete.tricornBlack` computed from `Theme.of(context).brightness` — while destructive actions (Delete) use `Colors.red[500]`. See `lib/core/presentation/widget/show_delete_dialog.dart` (`ShowDeleteDialog`) as the reference implementation and `lib/core/presentation/widgets/about/about_info_dialog.dart` (`AboutInfoDialog`)'s Close button for a second example. Follow this pattern for any new dialog's actions rather than a bare `TextButton`.
+
+### Onboarding feature (`lib/features/onboarding/`)
+
+Implements the "AutoFlow Intro and Login v3" design (spec in `DESIGN.md`): 3 swipeable intro slides → Log in → Success. `SplashScreen` asks `IsOnboardingCompleted` (SharedPreferences `onboarding_completed`, via `OnboardingLocalDataSource`/`OnboardingRepository`) and routes to `IntroPage` on first launch, otherwise to `DashboardScreen`; `IntroBloc` (factory param = initial slide index) calls `CompleteOnboarding` on Get started/Skip. `LoginBloc` only validates and simulates latency — no backend. Visuals use `AutoFlowTokens` (`lib/core/theme/autoflow_tokens.dart`, a `ThemeExtension`) and the reusable `Af*` primitives in `presentation/widgets/common/`, not `AppPallete`. Looping illustrations are stateless and driven by a 1.4s tick owned by `IntroPage`'s state (same controller-in-page split as the splash screen). Satoshi TTFs must exist in `assets/fonts/` or the asset bundle (and `flutter test`) fails.
 
 ### Dashboard (`lib/features/dashboard/`)
 

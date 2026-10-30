@@ -1,5 +1,5 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

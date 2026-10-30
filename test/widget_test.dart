@@ -8,8 +8,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:ej_geek/core/theme/theme_controller.dart';
-import 'package:ej_geek/main.dart';
+import 'package:auto_flow/core/theme/theme_controller.dart';
+import 'package:auto_flow/main.dart';
 
 void main() {
   testWidgets('App renders splash screen on startup', (

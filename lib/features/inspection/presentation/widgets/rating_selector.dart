@@ -1,4 +1,4 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/rating_option.dart';

@@ -17,7 +17,7 @@ class AnimatedSplashTitle extends StatelessWidget {
       child: SlideTransition(
         position: slideAnimation,
         child: const Text(
-          'E&J Geek Invoice',
+          'AutoFlow',
           style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,

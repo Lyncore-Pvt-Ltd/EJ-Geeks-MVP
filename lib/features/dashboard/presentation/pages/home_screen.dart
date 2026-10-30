@@ -1,8 +1,8 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
-import 'package:ej_geek/features/dashboard/presentation/widgets/chart/revenue_chart_card.dart';
-import 'package:ej_geek/features/dashboard/presentation/widgets/stats/revenue_summary_card.dart';
-import 'package:ej_geek/features/dashboard/presentation/widgets/stats/stat_card.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:auto_flow/features/dashboard/presentation/widgets/chart/revenue_chart_card.dart';
+import 'package:auto_flow/features/dashboard/presentation/widgets/stats/revenue_summary_card.dart';
+import 'package:auto_flow/features/dashboard/presentation/widgets/stats/stat_card.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:provider/provider.dart';

@@ -1,9 +1,9 @@
-import 'package:ej_geek/core/presentation/widget/custom_appbar.dart';
-import 'package:ej_geek/core/presentation/widget/custom_bottom_nav_bar.dart';
-import 'package:ej_geek/core/presentation/widget/custom_drawer.dart';
-import 'package:ej_geek/features/dashboard/presentation/pages/home_screen.dart';
-import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
-import 'package:ej_geek/features/invoice/presentation/pages/invoice_screen.dart';
+import 'package:auto_flow/core/presentation/widget/custom_appbar.dart';
+import 'package:auto_flow/core/presentation/widget/custom_bottom_nav_bar.dart';
+import 'package:auto_flow/core/presentation/widget/custom_drawer.dart';
+import 'package:auto_flow/features/dashboard/presentation/pages/home_screen.dart';
+import 'package:auto_flow/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:auto_flow/features/invoice/presentation/pages/invoice_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

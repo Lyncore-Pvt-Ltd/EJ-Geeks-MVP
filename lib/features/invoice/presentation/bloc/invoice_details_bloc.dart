@@ -34,20 +34,14 @@ class InvoiceDetailsBloc
   InvoiceDetailsBloc({
     required this.invoiceId,
     required this.invoiceCreatedAt,
-    required SaveInvoiceDetails saveInvoiceDetails,
+    required this._saveInvoiceDetails,
     required GetInvoiceDetailsByInvoiceId getInvoiceDetailsByInvoiceId,
-    required GetMostRecentInvoiceDefaults getMostRecentInvoiceDefaults,
-    required GetInspectionByInvoiceId getInspectionByInvoiceId,
-    required UpsertInvoiceDraft upsertInvoiceDraft,
-    required GenerateInvoicePdfs generateInvoicePdfs,
-    required UpdateInvoicePaymentStatus updateInvoicePaymentStatus,
-  }) : _saveInvoiceDetails = saveInvoiceDetails,
-       _getInvoiceDetailsByInvoiceId = getInvoiceDetailsByInvoiceId,
-       _getMostRecentInvoiceDefaults = getMostRecentInvoiceDefaults,
-       _getInspectionByInvoiceId = getInspectionByInvoiceId,
-       _upsertInvoiceDraft = upsertInvoiceDraft,
-       _generateInvoicePdfs = generateInvoicePdfs,
-       _updateInvoicePaymentStatus = updateInvoicePaymentStatus,
+    required this._getMostRecentInvoiceDefaults,
+    required this._getInspectionByInvoiceId,
+    required this._upsertInvoiceDraft,
+    required this._generateInvoicePdfs,
+    required this._updateInvoicePaymentStatus,
+  }) : _getInvoiceDetailsByInvoiceId = getInvoiceDetailsByInvoiceId,
        super(const InvoiceDetailsState()) {
     on<InvoiceDetailsLoadRequested>(_onLoadRequested);
     on<IssueDateChanged>(_onIssueDateChanged);

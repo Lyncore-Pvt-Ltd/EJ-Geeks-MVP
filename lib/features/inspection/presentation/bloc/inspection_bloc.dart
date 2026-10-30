@@ -35,14 +35,11 @@ class InspectionBloc extends Bloc<InspectionEvent, InspectionState> {
   InspectionBloc({
     required this.invoiceId,
     required this.invoiceCreatedAt,
-    required SaveInspection saveInspection,
+    required this._saveInspection,
     required GetInspectionByInvoiceId getInspectionByInvoiceId,
-    required PickInspectionImage pickInspectionImage,
-    required UpsertInvoiceDraft upsertInvoiceDraft,
-  }) : _saveInspection = saveInspection,
-       _getInspectionByInvoiceId = getInspectionByInvoiceId,
-       _pickInspectionImage = pickInspectionImage,
-       _upsertInvoiceDraft = upsertInvoiceDraft,
+    required this._pickInspectionImage,
+    required this._upsertInvoiceDraft,
+  }) : _getInspectionByInvoiceId = getInspectionByInvoiceId,
        _recordId = const Uuid().v4(),
        super(InspectionState(sections: _buildInitialSections())) {
     on<RatingChanged>(_onRatingChanged);

@@ -1,7 +1,7 @@
-import 'package:ej_geek/core/presentation/widget/show_delete_dialog.dart';
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/invoice/domain/entities/invoice_line_item.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
+import 'package:auto_flow/core/presentation/widget/show_delete_dialog.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/features/invoice/domain/entities/invoice_line_item.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:flutter/material.dart';
 
 class InvoiceLineItemCard extends StatelessWidget {

@@ -1,9 +1,12 @@
-import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_icon.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_subtitle.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_title.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/splash_dots_indicator.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/splash_progress_bar.dart';
-import 'package:ej_geek/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:auto_flow/core/di/service_locator.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/animated_splash_icon.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/animated_splash_subtitle.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/animated_splash_title.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/splash_dots_indicator.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/splash_progress_bar.dart';
+import 'package:auto_flow/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:auto_flow/features/onboarding/domain/usecases/is_onboarding_completed.dart';
+import 'package:auto_flow/features/onboarding/presentation/pages/intro_page.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -124,11 +127,16 @@ class _SplashScreenState extends State<SplashScreen>
     _navigateToHome();
   }
 
-  void _navigateToHome() {
-    if (!_hasNavigated && mounted) {
-      _hasNavigated = true;
-      Navigator.of(context).pushReplacement(DashboardScreen.route());
-    }
+  Future<void> _navigateToHome() async {
+    if (_hasNavigated || !mounted) return;
+    _hasNavigated = true;
+    final result = await sl<IsOnboardingCompleted>()(null);
+    if (!mounted) return;
+    // A failed read falls back to showing the intro rather than blocking.
+    final completed = result.getOrElse(() => false);
+    Navigator.of(
+      context,
+    ).pushReplacement(completed ? DashboardScreen.route() : IntroPage.route());
   }
 
   @override

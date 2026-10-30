@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 class AppStoragePaths {
   AppStoragePaths._();
 
-  static const String appFolderName = 'EJ Geek Invoice';
+  static const String appFolderName = 'AutoFlow';
 
   static Future<Directory> _baseDir() async {
     final root = Platform.isAndroid

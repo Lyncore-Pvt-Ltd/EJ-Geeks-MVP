@@ -1,6 +1,6 @@
-import 'package:ej_geek/core/presentation/widget/au_phone_input_formatter.dart';
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/inspection_text_field.dart';
+import 'package:auto_flow/core/presentation/widget/au_phone_input_formatter.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/features/inspection/presentation/widgets/inspection_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

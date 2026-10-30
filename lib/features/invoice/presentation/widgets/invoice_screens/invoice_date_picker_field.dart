@@ -1,5 +1,5 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/invoice/data/constants/invoice_date_format.dart';
+import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/features/invoice/data/constants/invoice_date_format.dart';
 import 'package:flutter/material.dart';
 
 class InvoiceDatePickerField extends StatelessWidget {
