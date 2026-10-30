@@ -18,8 +18,16 @@ class IntroHeader extends StatelessWidget {
         padding: const EdgeInsets.only(left: 24, right: 8),
         child: Row(
           children: [
-            const AfWordmark(),
-            const Spacer(),
+            const Expanded(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: AfWordmark(),
+                ),
+              ),
+            ),
             Semantics(
               button: true,
               child: AfPressable(

@@ -8,6 +8,7 @@ import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
 import '../bloc/login_state.dart';
 import '../widgets/common/af_icon_button.dart';
+import '../widgets/common/af_layout.dart';
 import '../widgets/common/af_logo_mark.dart';
 import '../widgets/common/af_motion.dart';
 import '../widgets/common/af_primary_button.dart';
@@ -29,7 +30,7 @@ class LoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<LoginBloc>(
       create: (_) => sl<LoginBloc>(),
-      child: const _LoginView(),
+      child: const AfOnboardingFrame(child: _LoginView()),
     );
   }
 }
@@ -83,6 +84,8 @@ class _LoginViewState extends State<_LoginView> {
       listener: (context, state) => _openSuccess(state),
       builder: (context, state) {
         final bloc = context.read<LoginBloc>();
+        final layout = AfLayout.of(context);
+        final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
         return Scaffold(
           body: DecoratedBox(
             decoration: BoxDecoration(gradient: tokens.screen),
@@ -90,37 +93,57 @@ class _LoginViewState extends State<_LoginView> {
               bottom: false,
               child: Column(
                 children: [
-                  Container(
-                    height: 48,
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                    alignment: Alignment.centerLeft,
-                    child: AfIconButton(
-                      icon: Icons.chevron_left_rounded,
-                      semanticLabel: 'Back',
-                      onPressed: _back,
+                  AfContentWidth(
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                      alignment: Alignment.centerLeft,
+                      child: AfIconButton(
+                        icon: Icons.chevron_left_rounded,
+                        semanticLabel: 'Back',
+                        onPressed: _back,
+                      ),
                     ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                      child: _form(context, state, bloc, tokens),
+                      keyboardDismissBehavior:
+                          ScrollViewKeyboardDismissBehavior.onDrag,
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        layout.isCompact ? 8 : 16,
+                        16,
+                        layout.sectionGap,
+                      ),
+                      child: AfContentWidth(
+                        child: _form(context, state, bloc, tokens, layout),
+                      ),
                     ),
                   ),
                   AfReveal(
                     visible: true,
                     delayMs: 200,
                     child: Container(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+                      // With the keyboard up it already covers the system
+                      // inset, so the footer only needs a small gap.
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        16,
+                        16,
+                        keyboardOpen ? 16 : afBottomInset(context),
+                      ),
                       decoration: BoxDecoration(
                         color: tokens.screen.colors.last,
                         boxShadow: AutoFlowTokens.footerShadow,
                       ),
-                      child: AfPrimaryButton(
-                        label: 'Log in',
-                        busyLabel: 'Signing in…',
-                        showArrow: true,
-                        busy: state.status == LoginStatus.submitting,
-                        onPressed: () => bloc.add(const LoginSubmitted()),
+                      child: AfContentWidth(
+                        child: AfPrimaryButton(
+                          label: 'Log in',
+                          busyLabel: 'Signing in…',
+                          showArrow: true,
+                          busy: state.status == LoginStatus.submitting,
+                          onPressed: () => bloc.add(const LoginSubmitted()),
+                        ),
                       ),
                     ),
                   ),
@@ -138,6 +161,7 @@ class _LoginViewState extends State<_LoginView> {
     LoginState state,
     LoginBloc bloc,
     AutoFlowTokens tokens,
+    AfLayout layout,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -145,7 +169,7 @@ class _LoginViewState extends State<_LoginView> {
         AfReveal(
           visible: true,
           child: Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: EdgeInsets.only(top: layout.isCompact ? 0 : 8),
             child: Column(
               children: [
                 const AfLogoMark(size: 56, glow: true),
@@ -155,6 +179,8 @@ class _LoginViewState extends State<_LoginView> {
                   textAlign: TextAlign.center,
                   style: AutoFlowTokens.headline.copyWith(
                     color: tokens.ink,
+                    fontSize: layout.headlineSize,
+                    letterSpacing: -0.03 * layout.headlineSize,
                     height: 1.2,
                   ),
                 ),
@@ -168,7 +194,7 @@ class _LoginViewState extends State<_LoginView> {
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: layout.sectionGap),
         AfReveal(
           visible: true,
           delayMs: 60,
@@ -222,14 +248,16 @@ class _LoginViewState extends State<_LoginView> {
                       const SizedBox(height: 16),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: Row(
+                        // Wraps onto two lines on narrow phones / big text.
+                        child: Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             RememberCheckbox(
                               value: state.remember,
                               onToggle: () =>
                                   bloc.add(const LoginRememberToggled()),
                             ),
-                            const Spacer(),
                             // No password-reset flow exists yet.
                             AfTextLink(label: 'Forgot password?', onTap: () {}),
                           ],
@@ -242,9 +270,9 @@ class _LoginViewState extends State<_LoginView> {
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: layout.sectionGap),
         const AfReveal(visible: true, delayMs: 120, child: OrDivider()),
-        const SizedBox(height: 24),
+        SizedBox(height: layout.sectionGap),
         AfReveal(
           visible: true,
           delayMs: 150,
@@ -256,12 +284,13 @@ class _LoginViewState extends State<_LoginView> {
             onPressed: () => bloc.add(const LoginMagicLinkRequested()),
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: layout.sectionGap),
         AfReveal(
           visible: true,
           delayMs: 180,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Text(
                 'New to AutoFlow? ',

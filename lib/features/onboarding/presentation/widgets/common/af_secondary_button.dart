@@ -39,25 +39,38 @@ class AfSecondaryButton extends StatelessWidget {
           ),
           child: DefaultTextStyle(
             style: AutoFlowTokens.title.copyWith(color: tokens.ink),
-            child: AfBusyLabel(
-              busy: busy,
-              idle: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 18, color: tokens.ink),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(label),
-                ],
-              ),
-              loading: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(busyLabel ?? label),
-                  const SizedBox(width: 8),
-                  AfSpinner(size: 18, color: tokens.ink, track: tokens.line),
-                ],
+            // Long labels shrink rather than overflow on narrow phones.
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: AfBusyLabel(
+                    busy: busy,
+                    idle: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (icon != null) ...[
+                          Icon(icon, size: 18, color: tokens.ink),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(label),
+                      ],
+                    ),
+                    loading: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(busyLabel ?? label),
+                        const SizedBox(width: 8),
+                        AfSpinner(
+                          size: 18,
+                          color: tokens.ink,
+                          track: tokens.line,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

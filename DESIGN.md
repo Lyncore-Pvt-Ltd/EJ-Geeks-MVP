@@ -157,8 +157,17 @@ motion:
 - Every state is designed: default, focus, error, loading, success, empty.
 - Light and dark themes share one set of variables; components only reference variables. (In the source prototype, the light `mute`/`mute2` variables reference themselves. The explicit rgba values above are the intended ones.)
 
+## Responsive rules (phones, portrait)
+- Onboarding is portrait-only. Supported sizes run from 320×568 to 430×932, and tablets get a centred column (max 480px wide).
+- Size buckets: **compact** if width < 360 or height < 700, **large** if width ≥ 412 and height ≥ 860, otherwise **regular**. Headline sizes are 24 / 28 / 30px. The intro panel's max height is 40% of the screen height (min 180) / 340 / 380px.
+- The intro text block gets exactly the height it needs and the panel takes the rest, between 160px and the max. If that still doesn't fit, the text scrolls. Illustrations are fixed-width mock UI that scales down, and they ignore system text size.
+- Footer bottom padding is `max(32px, system inset + 16px)`, which clears the home indicator and the Android 3-button nav bar. With the keyboard open, the login footer padding drops to 16px.
+- On compact screens, gaps between unrelated groups go from 24px to 16px. CTAs and button labels scale down instead of overflowing. Two-item rows (remember/forgot, the trial line) wrap.
+- System text scaling is capped at 1.3× on onboarding screens, so 48px controls keep their height.
+
 ## Flutter implementation
 - Tokens live in `lib/core/theme/autoflow_tokens.dart` as `AutoFlowTokens` (a `ThemeExtension` registered on `AppTheme.lightTheme`/`darkTheme`). Theme-dependent values are read with `AutoFlowTokens.of(context)`, and theme-independent ones (accent, status colours, shadows, celebration gradient, text styles) are statics.
 - Curves: `AutoFlowTokens.easeOut = Cubic(0.23, 1, 0.32, 1)`, `AutoFlowTokens.easeSpring = Cubic(0.34, 1.56, 0.64, 1)`. Reduced motion follows `MediaQuery.disableAnimations` (`afDuration`).
 - Fonts: Satoshi 400/500 is bundled from `assets/fonts/` (fontshare.com). Fragment Mono comes through `google_fonts` (`AutoFlowTokens.mono()`, with tabular figures).
+- Responsive helpers (`AfLayout`, `afBottomInset`, `AfContentWidth`, `AfOnboardingFrame`) are in `lib/features/onboarding/presentation/widgets/common/af_layout.dart`. `test/features/onboarding/onboarding_layout_test.dart` checks every screen at 7 sizes × 2 text scales.
 - The onboarding flow is `lib/features/onboarding/`. Reusable primitives (buttons, text field, chips, dots, logo mark, motion helpers) are in `presentation/widgets/common/`.

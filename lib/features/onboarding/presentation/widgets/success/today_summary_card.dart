@@ -7,8 +7,9 @@ import '../../../../../core/theme/autoflow_tokens.dart';
 /// Frosted card listing today's numbers (label left, mono value right).
 class TodaySummaryCard extends StatelessWidget {
   final List<(String, String)> rows;
+  final double rowHeight;
 
-  const TodaySummaryCard({super.key, required this.rows});
+  const TodaySummaryCard({super.key, required this.rows, this.rowHeight = 48});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,7 @@ class TodaySummaryCard extends StatelessWidget {
             children: [
               for (var i = 0; i < rows.length; i++)
                 Container(
-                  constraints: const BoxConstraints(minHeight: 48),
+                  constraints: BoxConstraints(minHeight: rowHeight),
                   decoration: BoxDecoration(
                     border: i == rows.length - 1
                         ? null

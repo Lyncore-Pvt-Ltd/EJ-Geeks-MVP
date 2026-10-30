@@ -52,10 +52,12 @@ class RememberCheckbox extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              ExcludeSemantics(
-                child: Text(
-                  'Keep me signed in',
-                  style: AutoFlowTokens.caption.copyWith(color: tokens.ink),
+              Flexible(
+                child: ExcludeSemantics(
+                  child: Text(
+                    'Keep me signed in',
+                    style: AutoFlowTokens.caption.copyWith(color: tokens.ink),
+                  ),
                 ),
               ),
             ],

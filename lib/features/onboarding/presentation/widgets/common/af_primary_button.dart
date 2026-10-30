@@ -60,33 +60,42 @@ class AfPrimaryButton extends StatelessWidget {
           ),
           child: DefaultTextStyle(
             style: textStyle,
-            child: AfBusyLabel(
-              busy: busy,
-              idle: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(label),
-                  if (showArrow) ...[
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 18,
-                      color: AutoFlowTokens.onAccent,
+            // Long labels shrink rather than overflow on narrow phones.
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: AfBusyLabel(
+                    busy: busy,
+                    idle: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(label),
+                        if (showArrow) ...[
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 18,
+                            color: AutoFlowTokens.onAccent,
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
-                ],
-              ),
-              loading: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(busyLabel ?? label),
-                  const SizedBox(width: 8),
-                  const AfSpinner(
-                    size: 18,
-                    color: AutoFlowTokens.onAccent,
-                    track: Color(0x40000000),
+                    loading: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(busyLabel ?? label),
+                        const SizedBox(width: 8),
+                        const AfSpinner(
+                          size: 18,
+                          color: AutoFlowTokens.onAccent,
+                          track: Color(0x40000000),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
+                ),
               ),
             ),
           ),

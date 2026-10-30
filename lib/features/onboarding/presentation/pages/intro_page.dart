@@ -9,6 +9,7 @@ import '../../data/constants/onboarding_content.dart';
 import '../bloc/intro_bloc.dart';
 import '../bloc/intro_event.dart';
 import '../bloc/intro_state.dart';
+import '../widgets/common/af_layout.dart';
 import '../widgets/common/af_motion.dart';
 import '../widgets/intro/intro_footer.dart';
 import '../widgets/intro/intro_header.dart';
@@ -27,7 +28,7 @@ class IntroPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider<IntroBloc>(
       create: (_) => sl<IntroBloc>(param1: initialIndex),
-      child: _IntroView(initialIndex: initialIndex),
+      child: AfOnboardingFrame(child: _IntroView(initialIndex: initialIndex)),
     );
   }
 }
@@ -101,33 +102,35 @@ class _IntroViewState extends State<_IntroView> {
             decoration: BoxDecoration(gradient: tokens.screen),
             child: SafeArea(
               bottom: false,
-              child: Column(
-                children: [
-                  IntroHeader(onSkip: () => bloc.add(const IntroSkipped())),
-                  Expanded(
-                    child: PageView.builder(
-                      controller: _pageController,
-                      itemCount: kIntroSlides.length,
-                      onPageChanged: (i) => bloc.add(IntroPageChanged(i)),
-                      itemBuilder: (context, i) => IntroSlideView(
-                        slide: kIntroSlides[i],
-                        index: i,
-                        count: kIntroSlides.length,
-                        active: i == state.index,
-                        tick: i == state.index ? _tick : 0,
+              child: AfContentWidth(
+                child: Column(
+                  children: [
+                    IntroHeader(onSkip: () => bloc.add(const IntroSkipped())),
+                    Expanded(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: kIntroSlides.length,
+                        onPageChanged: (i) => bloc.add(IntroPageChanged(i)),
+                        itemBuilder: (context, i) => IntroSlideView(
+                          slide: kIntroSlides[i],
+                          index: i,
+                          count: kIntroSlides.length,
+                          active: i == state.index,
+                          tick: i == state.index ? _tick : 0,
+                        ),
                       ),
                     ),
-                  ),
-                  // The footer's 32px bottom padding already clears the
-                  // home indicator, so no bottom SafeArea here.
-                  IntroFooter(
-                    count: kIntroSlides.length,
-                    index: state.index,
-                    starting: state.isStarting,
-                    onDotSelected: (i) => bloc.add(IntroDotTapped(i)),
-                    onNext: () => bloc.add(const IntroNextPressed()),
-                  ),
-                ],
+                    // No bottom SafeArea: the footer pads itself to clear the
+                    // nav bar / home indicator (afBottomInset).
+                    IntroFooter(
+                      count: kIntroSlides.length,
+                      index: state.index,
+                      starting: state.isStarting,
+                      onDotSelected: (i) => bloc.add(IntroDotTapped(i)),
+                      onNext: () => bloc.add(const IntroNextPressed()),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -12,8 +12,8 @@ const List<IntroSlide> kIntroSlides = [
   ),
   IntroSlide(
     headline:
-        'Eliminate Paperwork and Upgrade to Mobile-First Digital Vehicle '
-        'Inspections',
+        'Eliminate Paperwork and Upgrade to\n'
+        'Mobile-First Digital Vehicle Inspections',
     body:
         'AutoFlow empowers technicians in the bay to perform comprehensive, '
         'standardized vehicle assessments in minutes directly from a mobile '
@@ -21,7 +21,7 @@ const List<IntroSlide> kIntroSlides = [
     illustration: IntroIllustration.inspection,
   ),
   IntroSlide(
-    headline: 'Show, Don’t Just Tell — High-Resolution Inspection Photos',
+    headline: 'Show, Don’t Just Tell\nHigh-Resolution Inspection Photos',
     body:
         'Customers trust what they can see. AutoFlow makes it seamless for '
         'mechanics to upload visual evidence directly from the workshop bay.',

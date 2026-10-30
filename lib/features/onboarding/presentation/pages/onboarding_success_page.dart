@@ -4,6 +4,7 @@ import '../../../../core/theme/autoflow_tokens.dart';
 import '../../../dashboard/presentation/pages/dashboard_screen.dart';
 import '../../data/constants/onboarding_content.dart';
 import '../bloc/login_state.dart';
+import '../widgets/common/af_layout.dart';
 import '../widgets/common/af_motion.dart';
 import '../widgets/common/af_primary_button.dart';
 import '../widgets/login/af_text_link.dart';
@@ -60,97 +61,116 @@ class _OnboardingSuccessPageState extends State<OnboardingSuccessPage> {
 
   @override
   Widget build(BuildContext context) {
-    const headlineStyle = TextStyle(
-      fontFamily: AutoFlowTokens.fontFamily,
-      fontSize: 28,
-      fontWeight: FontWeight.w500,
-      height: 1.1,
-      letterSpacing: -0.84,
+    final layout = AfLayout.of(context);
+    final headlineStyle = AutoFlowTokens.headline.copyWith(
+      fontSize: layout.headlineSize,
+      letterSpacing: -0.03 * layout.headlineSize,
       color: Colors.white,
     );
+    return AfOnboardingFrame(child: _scaffold(layout, headlineStyle));
+  }
+
+  Widget _scaffold(AfLayout layout, TextStyle headlineStyle) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: DecoratedBox(
         decoration: const BoxDecoration(gradient: AutoFlowTokens.celebration),
         child: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: AfContentWidth(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      // Vertical room so the tick's sparks and glow aren't
+                      // clipped by the scroll view.
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: layout.isCompact ? 32 : 48,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Center(child: SuccessTick()),
+                          SizedBox(height: layout.isCompact ? 12 : 16),
+                          AfReveal(
+                            visible: true,
+                            delayMs: 250,
+                            child: Text(
+                              _isMagic ? 'Check your inbox.' : 'Welcome back.',
+                              textAlign: TextAlign.center,
+                              style: headlineStyle,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          AfReveal(
+                            visible: true,
+                            delayMs: 320,
+                            child: Text(
+                              _isMagic
+                                  ? 'We sent a magic link to ${widget.email}.'
+                                  : 'Here’s your workshop at a glance.',
+                              textAlign: TextAlign.center,
+                              style: AutoFlowTokens.body.copyWith(
+                                color: const Color(0xFFE5E5E5),
+                              ),
+                            ),
+                          ),
+                          if (!_isMagic) ...[
+                            SizedBox(height: layout.sectionGap),
+                            AfReveal(
+                              visible: true,
+                              delayMs: 400,
+                              child: TodaySummaryCard(
+                                rows: kTodaySummary,
+                                rowHeight: layout.isCompact ? 44 : 48,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                AfReveal(
+                  visible: true,
+                  delayMs: 480,
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      layout.isCompact ? 8 : 16,
+                      16,
+                      afBottomInset(context),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Center(child: SuccessTick()),
-                        const SizedBox(height: 16),
-                        AfReveal(
-                          visible: true,
-                          delayMs: 250,
-                          child: Text(
-                            _isMagic ? 'Check your inbox.' : 'Welcome back.',
-                            textAlign: TextAlign.center,
-                            style: headlineStyle,
-                          ),
+                        AfPrimaryButton(
+                          label: _isMagic
+                              ? 'Open mail app'
+                              : 'Go to today’s jobs',
+                          busyLabel: _isMagic
+                              ? 'Opening mail…'
+                              : 'Loading jobs…',
+                          busy: _busy,
+                          borderColor: const Color(0x1FFFFFFF),
+                          onPressed: _onCta,
                         ),
                         const SizedBox(height: 8),
-                        AfReveal(
-                          visible: true,
-                          delayMs: 320,
-                          child: Text(
-                            _isMagic
-                                ? 'We sent a magic link to ${widget.email}.'
-                                : 'Here’s your workshop at a glance.',
-                            textAlign: TextAlign.center,
-                            style: AutoFlowTokens.body.copyWith(
-                              color: const Color(0xFFE5E5E5),
-                            ),
+                        Center(
+                          child: AfTextLink(
+                            label: 'Replay intro',
+                            color: const Color(0xB8E5E5E5),
+                            onTap: _replayIntro,
                           ),
                         ),
-                        if (!_isMagic) ...[
-                          const SizedBox(height: 24),
-                          const AfReveal(
-                            visible: true,
-                            delayMs: 400,
-                            child: TodaySummaryCard(rows: kTodaySummary),
-                          ),
-                        ],
                       ],
                     ),
                   ),
                 ),
-              ),
-              AfReveal(
-                visible: true,
-                delayMs: 480,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AfPrimaryButton(
-                        label: _isMagic
-                            ? 'Open mail app'
-                            : 'Go to today’s jobs',
-                        busyLabel: _isMagic ? 'Opening mail…' : 'Loading jobs…',
-                        busy: _busy,
-                        borderColor: const Color(0x1FFFFFFF),
-                        onPressed: _onCta,
-                      ),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: AfTextLink(
-                          label: 'Replay intro',
-                          color: const Color(0xB8E5E5E5),
-                          onTap: _replayIntro,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
