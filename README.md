@@ -1,4 +1,4 @@
-# E&J Geek Invoice
+# E&amp;J Geek Invoice -Local Dev
 
 A Flutter invoicing/accounting app (`ej_geek`). Early stage: a splash screen, a dashboard home screen, and an invoice-creation bottom sheet with Inspection and Invoice tabs.
 
@@ -8,7 +8,7 @@ A Flutter invoicing/accounting app (`ej_geek`). Early stage: a splash screen, a 
 - **Invoice bottom sheet** — a segmented Inspection / Invoice tab flow for creating an invoice. Each invoice-creation session is tied together by a client-generated `invoiceId` (no backend id system yet).
 - **Inspection** — the app's first fully data-backed feature and the reference implementation for how new features are built:
   - Vehicle details (make, model, rego, year, odometer, VIN, engine no.)
-  - A 5-section pass/fail checklist (Interior, Exterior, Engine Bay, Tyres/Wheels & Brakes, Road Test), each item rated Good / Fair / Repair / N/A / N/C, plus a per-section comment
+  - A 5-section pass/fail checklist (Interior, Exterior, Engine Bay, Tyres/Wheels &amp; Brakes, Road Test), each item rated Good / Fair / Repair / N/A / N/C, plus a per-section comment
   - A photo picker (camera or gallery), images downscaled on capture
   - Saved locally via SQLite; reopening the tab for an invoice that already has a saved inspection restores its vehicle details, checklist, and photos instead of starting blank
   - PDF export is not implemented yet
