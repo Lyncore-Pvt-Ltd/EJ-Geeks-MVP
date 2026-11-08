@@ -46,6 +46,8 @@ class InspectionImagePicker extends StatelessWidget {
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: AutoFlowTokens.scrim,
+      sheetAnimationStyle: afSheetAnimation(context),
       builder: (sheetContext) => SafeArea(
         child: Container(
           margin: const EdgeInsets.fromLTRB(
@@ -171,8 +173,9 @@ class InspectionImagePicker extends StatelessWidget {
                           button: true,
                           label: 'Remove photo',
                           excludeSemantics: true,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
+                          child: AfPressable(
+                            pressedScale: 0.9,
+                            focusRadius: AfRadius.chipAll,
                             onTap: () => context.read<InspectionBloc>().add(
                               ImageRemoved(path, sectionName: sectionName),
                             ),

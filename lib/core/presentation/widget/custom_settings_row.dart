@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
@@ -20,15 +21,16 @@ class CustomSettingsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AutoFlowTokens.of(context);
-    return Material(
-      color: tokens.card,
-      shape: RoundedRectangleBorder(
-        borderRadius: AfRadius.cardAll,
-        side: BorderSide(color: tokens.line),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
+    return AfPressable(
+      onTap: onTap,
+      pressedScale: 0.98,
+      focusRadius: AfRadius.cardAll,
+      child: Container(
+        decoration: BoxDecoration(
+          color: tokens.card,
+          borderRadius: AfRadius.cardAll,
+          border: Border.all(color: tokens.line),
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: AfSpace.m16,

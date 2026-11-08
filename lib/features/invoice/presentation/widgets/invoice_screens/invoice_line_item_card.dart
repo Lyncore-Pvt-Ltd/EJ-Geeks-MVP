@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_toolbar_icon_button.dart';
 import 'package:auto_flow/core/presentation/widget/show_delete_dialog.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/invoice/domain/entities/invoice_line_item.dart';
@@ -49,19 +50,18 @@ class InvoiceLineItemCard extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text('Description', style: labelStyle)),
-              IconButton(
+              AfToolbarIconButton(
                 onPressed: onEdit,
                 tooltip: 'Edit item',
-                iconSize: 20,
-                color: tokens.ink,
-                icon: const Icon(Icons.edit_outlined),
+                size: 20,
+                icon: Icons.edit_outlined,
               ),
-              IconButton(
+              AfToolbarIconButton(
                 onPressed: () => _confirmDelete(context),
                 tooltip: 'Delete item',
-                iconSize: 20,
+                size: 20,
                 color: AutoFlowTokens.errorFg,
-                icon: const Icon(Icons.delete_outline),
+                icon: Icons.delete_outline,
               ),
             ],
           ),

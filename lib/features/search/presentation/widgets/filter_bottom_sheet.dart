@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/presentation/widgets/af/af_motion.dart';
 import '../../../../core/theme/autoflow_tokens.dart';
 
 /// A single selectable option in a [FilterBottomSheet].
@@ -44,6 +45,8 @@ class FilterBottomSheet<T> extends StatelessWidget {
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: AutoFlowTokens.scrim,
+      sheetAnimationStyle: afSheetAnimation(context),
       builder: (_) => FilterBottomSheet<T>(
         title: title,
         options: options,

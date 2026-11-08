@@ -11,12 +11,16 @@ class AfInlineIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final double size;
 
+  /// Idle icon colour (defaults to mute). Pressed always turns ink.
+  final Color? color;
+
   const AfInlineIconButton({
     super.key,
     required this.icon,
     required this.semanticLabel,
     required this.onPressed,
     this.size = 20,
+    this.color,
   });
 
   @override
@@ -36,7 +40,9 @@ class AfInlineIconButton extends StatelessWidget {
           height: 48,
           child: Center(
             child: TweenAnimationBuilder<Color?>(
-              tween: ColorTween(end: pressed ? tokens.ink : tokens.mute),
+              tween: ColorTween(
+                end: pressed ? tokens.ink : (color ?? tokens.mute),
+              ),
               duration: afDuration(context, 160),
               curve: AutoFlowTokens.easeOut,
               builder: (context, color, _) =>

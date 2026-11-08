@@ -170,6 +170,7 @@ class _SuccessContent extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AfPopIn(
+          curve: AutoFlowTokens.easeOut,
           child: Container(
             width: 56,
             height: 56,
@@ -307,17 +308,22 @@ class _SuccessContent extends StatelessWidget {
         const SizedBox(height: AfSpace.s8),
         AfPrimaryButton(label: 'Done', onPressed: onDone),
         const SizedBox(height: AfSpace.s8),
-        TextButton(
-          onPressed: onSendNew,
-          style: TextButton.styleFrom(
-            minimumSize: const Size(AfSpace.minTap, AfSpace.minTap),
-            foregroundColor: tokens.ink,
-          ),
-          child: Text(
-            'Send new invoice',
-            style: AutoFlowTokens.body.copyWith(
-              color: tokens.ink,
-              fontWeight: FontWeight.w500,
+        Semantics(
+          button: true,
+          child: AfPressable(
+            onTap: onSendNew,
+            pressedScale: 0.96,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: AfSpace.minTap),
+              child: Center(
+                child: Text(
+                  'Send new invoice',
+                  style: AutoFlowTokens.body.copyWith(
+                    color: tokens.ink,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
             ),
           ),
         ),

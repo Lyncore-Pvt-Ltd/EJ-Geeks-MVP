@@ -93,6 +93,11 @@ class AppTheme {
       colorScheme: colorScheme,
       fontFamily: AutoFlowTokens.fontFamily,
       textTheme: textTheme,
+      // No Material ink: tappables give feedback through AfPressable's
+      // press scale + colour change instead (flutter-motion-design rule 4).
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: Colors.transparent,
+      hoverColor: Colors.transparent,
       scaffoldBackgroundColor: ground,
       canvasColor: ground,
       dividerColor: t.line,
@@ -155,6 +160,7 @@ class AppTheme {
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: t.card,
         modalBackgroundColor: t.card,
+        modalBarrierColor: AutoFlowTokens.scrim,
         surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(borderRadius: AfRadius.sheetTop),
         dragHandleColor: t.line,
@@ -209,6 +215,19 @@ class AppTheme {
         linearTrackColor: t.line,
         circularTrackColor: Colors.transparent,
         refreshBackgroundColor: t.card,
+      ),
+      // Save success uses the AfSaveStatus pill; SnackBars are left for
+      // errors not tied to one field, styled as a floating card.
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: t.card,
+        elevation: 0,
+        contentTextStyle: body.copyWith(color: t.ink),
+        actionTextColor: AutoFlowTokens.errorFg,
+        shape: RoundedRectangleBorder(
+          borderRadius: AfRadius.controlAll,
+          side: BorderSide(color: t.line),
+        ),
       ),
       dividerTheme: DividerThemeData(color: t.line, thickness: 1),
       drawerTheme: DrawerThemeData(

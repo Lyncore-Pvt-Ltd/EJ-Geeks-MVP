@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/presentation/widgets/af/af_inline_icon_button.dart';
+import '../../../../core/presentation/widgets/af/af_motion.dart';
 import '../../../../core/theme/autoflow_tokens.dart';
 import '../bloc/search_bloc.dart';
 import '../bloc/search_event.dart';
@@ -137,18 +139,26 @@ class _AppSearchBarState extends State<AppSearchBar> {
               color: tokens.mute2,
               height: 1.2,
             ),
-            prefixIcon: IconButton(
-              icon: Icon(Icons.qr_code_scanner_rounded, color: tokens.mute2),
-              iconSize: 20,
-              tooltip: 'Scan invoice QR code',
-              onPressed: _scanQr,
+            prefixIcon: Tooltip(
+              message: 'Scan invoice QR code',
+              excludeFromSemantics: true,
+              child: AfInlineIconButton(
+                icon: Icons.qr_code_scanner_rounded,
+                semanticLabel: 'Scan invoice QR code',
+                color: tokens.mute2,
+                onPressed: _scanQr,
+              ),
             ),
             prefixIconConstraints: iconConstraints,
-            suffixIcon: IconButton(
-              icon: Icon(Icons.tune_rounded, color: tokens.mute2),
-              iconSize: 20,
-              tooltip: 'Filter',
-              onPressed: widget.onFilterTap,
+            suffixIcon: Tooltip(
+              message: 'Filter',
+              excludeFromSemantics: true,
+              child: AfInlineIconButton(
+                icon: Icons.tune_rounded,
+                semanticLabel: 'Filter',
+                color: tokens.mute2,
+                onPressed: widget.onFilterTap,
+              ),
             ),
             suffixIconConstraints: iconConstraints,
             filled: true,
@@ -221,30 +231,36 @@ class _RecentSearchesDropdown extends StatelessWidget {
                               color: mutedColor,
                             ),
                           ),
-                          TextButton(
-                            onPressed: () => context.read<SearchBloc>().add(
-                              const SearchHistoryCleared(),
-                            ),
-                            style: TextButton.styleFrom(
-                              minimumSize: const Size(
-                                AfSpace.minTap,
-                                AfSpace.minTap,
+                          Semantics(
+                            button: true,
+                            child: AfPressable(
+                              onTap: () => context.read<SearchBloc>().add(
+                                const SearchHistoryCleared(),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AfSpace.s12,
-                              ),
-                              foregroundColor: tokens.ink,
-                              shape: const RoundedRectangleBorder(
-                                borderRadius: AfRadius.smallAll,
-                              ),
-                            ),
-                            child: Text(
-                              'Clear search history',
-                              style: AutoFlowTokens.caption.copyWith(
-                                fontWeight: FontWeight.w500,
-                                color: tokens.ink,
-                                decoration: TextDecoration.underline,
-                                decorationColor: tokens.ink,
+                              pressedScale: 0.96,
+                              focusRadius: AfRadius.smallAll,
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  minWidth: AfSpace.minTap,
+                                  minHeight: AfSpace.minTap,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AfSpace.s12,
+                                  ),
+                                  child: Center(
+                                    widthFactor: 1,
+                                    child: Text(
+                                      'Clear search history',
+                                      style: AutoFlowTokens.caption.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                        color: tokens.ink,
+                                        decoration: TextDecoration.underline,
+                                        decorationColor: tokens.ink,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),

@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import 'package:auto_flow/core/presentation/widgets/af/af_spinner.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/dashboard/presentation/providers/dashboard_provider.dart';
@@ -11,10 +12,20 @@ import 'package:auto_flow/features/search/presentation/widgets/search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class InvoiceScreen extends StatelessWidget {
+class InvoiceScreen extends StatefulWidget {
   static MaterialPageRoute<dynamic> route() =>
       MaterialPageRoute(builder: (_) => const InvoiceScreen());
   const InvoiceScreen({super.key});
+
+  @override
+  State<InvoiceScreen> createState() => _InvoiceScreenState();
+}
+
+class _InvoiceScreenState extends State<InvoiceScreen> {
+  /// Only rows built on the list's first frame get the staggered entrance;
+  /// rows mounted later (scrolling, filtering, refresh) appear directly.
+  static const _staggeredRows = 6;
+  bool _listEntered = false;
 
   void _showPaymentFilterSheet(BuildContext context) {
     final invoiceBloc = context.read<InvoiceBloc>();
@@ -106,9 +117,18 @@ class InvoiceScreen extends StatelessWidget {
                     ),
                     itemCount: filteredInvoices.length,
                     itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: AfSpace.s12),
-                        child: InvoiceCard(summary: filteredInvoices[index]),
+                      if (!_listEntered) {
+                        WidgetsBinding.instance.addPostFrameCallback(
+                          (_) => _listEntered = true,
+                        );
+                      }
+                      return AfStaggerIn(
+                        index: index,
+                        enabled: !_listEntered && index < _staggeredRows,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: AfSpace.s12),
+                          child: InvoiceCard(summary: filteredInvoices[index]),
+                        ),
                       );
                     },
                   ),

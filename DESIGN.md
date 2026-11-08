@@ -84,11 +84,15 @@ elevation:
 
 motion:
   ease-out: "cubic-bezier(0.23,1,0.32,1)"     # default for enter, move, press
-  ease-spring: "cubic-bezier(0.34,1.56,0.64,1)" # pops: chips, badges, success tick, hot-tile dot
-  press: "scale(0.97), 160ms"                 # every button; inline icon buttons 0.9
+  ease-spring: "cubic-bezier(0.34,1.56,0.64,1)" # onboarding celebration pops only (splash icon, onboarding chips, success tick, hot-tile dot); everyday screens use ease-out
+  drawer: "cubic-bezier(0.32,0.72,0,1)"       # bottom sheets
+  sheet: "open 400ms / close 250ms on drawer; navy scrim rgba(20,33,61,0.5)"
+  press: "scale(0.97), 160ms"                 # every button; inline icon buttons 0.9; toolbar icons 0.94; cards/rows 0.98. No Material ink anywhere
   enter: "opacity 0→1 + translateY 8–12px, 300–450ms, 60–70ms stagger"
+  screen-enter: "blocks stagger in: delay 120 + 60×i ms, rise 12px, 400ms ease-out; once per screen visit, never on refresh"
   busy-swap: "label ↔ loading: opacity + blur 2px + translateY ∓6px, 200ms ease-out"
-  error: "error line slides in from -4px, 200ms; form shakes -6/5/-3px, 360ms"
+  error: "error line fades + slides from -20% of its height, 200ms; a new message re-animates; form shakes -6/5/-3px, 360ms"
+  save-status: "24px pill, Saving… (hot + spinner) ↔ Saved (success + check), 200ms crossfade, hides after 1.5s; replaces success SnackBars"
   loops: "1.4s tick drives intro illustrations; glows breathe 3–4s; spinners 600–700ms"
   reduced-motion: all durations collapse to 1ms (spinners keep turning)
 ---

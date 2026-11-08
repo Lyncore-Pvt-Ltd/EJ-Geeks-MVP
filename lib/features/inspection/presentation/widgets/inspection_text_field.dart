@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_inline_icon_button.dart';
 import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
@@ -84,13 +85,14 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
     required VoidCallback? onPressed,
     required Color color,
   }) {
-    return IconButton(
-      icon: Icon(icon, size: 20, color: color),
-      tooltip: tooltip,
-      onPressed: onPressed,
-      constraints: const BoxConstraints(
-        minWidth: AfSpace.controlHeight,
-        minHeight: AfSpace.controlHeight,
+    return Tooltip(
+      message: tooltip,
+      excludeFromSemantics: true,
+      child: AfInlineIconButton(
+        icon: icon,
+        semanticLabel: tooltip,
+        onPressed: onPressed,
+        color: color,
       ),
     );
   }

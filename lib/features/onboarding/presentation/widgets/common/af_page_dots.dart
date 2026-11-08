@@ -30,8 +30,10 @@ class AfPageDots extends StatelessWidget {
             label: 'Go to slide ${i + 1}',
             onTap: () => onSelected(i),
             excludeSemantics: true,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
+            // No press scale: the dot stretching is the feedback.
+            child: AfPressable(
+              pressedScale: 1,
+              focusRadius: AfRadius.chipAll,
               onTap: () => onSelected(i),
               child: Container(
                 height: 44,

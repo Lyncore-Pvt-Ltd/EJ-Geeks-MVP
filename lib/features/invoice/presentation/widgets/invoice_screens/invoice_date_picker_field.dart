@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/invoice/data/constants/invoice_date_format.dart';
 import 'package:flutter/material.dart';
@@ -54,15 +55,20 @@ class InvoiceDatePickerField extends StatelessWidget {
           button: true,
           label: '$label, $dateText',
           excludeSemantics: true,
-          child: Material(
-            color: tokens.card,
-            shape: RoundedRectangleBorder(
-              borderRadius: AfRadius.controlAll,
-              side: BorderSide(color: tokens.line),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => _pickDate(context),
+          child: AfPressable.builder(
+            onTap: () => _pickDate(context),
+            pressedScale: 0.98,
+            builder: (context, pressed) => AnimatedContainer(
+              duration: afDuration(context, 150),
+              curve: AutoFlowTokens.easeOut,
+              decoration: BoxDecoration(
+                color: tokens.card,
+                borderRadius: AfRadius.controlAll,
+                // Pressing previews the focused-field border.
+                border: Border.all(
+                  color: pressed ? AutoFlowTokens.accent : tokens.line,
+                ),
+              ),
               child: SizedBox(
                 height: AfSpace.controlHeight,
                 child: Padding(

@@ -10,6 +10,18 @@ Duration afDuration(BuildContext context, int milliseconds) =>
     ? Duration.zero
     : Duration(milliseconds: milliseconds);
 
+/// Open 400ms / close 250ms on [AutoFlowTokens.drawer]; no animation under
+/// reduced motion. Pass as `showModalBottomSheet(sheetAnimationStyle: ...)`.
+AnimationStyle afSheetAnimation(BuildContext context) =>
+    MediaQuery.of(context).disableAnimations
+    ? AnimationStyle.noAnimation
+    : const AnimationStyle(
+        duration: Duration(milliseconds: 400),
+        reverseDuration: Duration(milliseconds: 250),
+        curve: AutoFlowTokens.drawer,
+        reverseCurve: AutoFlowTokens.drawer,
+      );
+
 /// Scales its child to 0.97 while pressed (every AutoFlow button does this).
 ///
 /// The pressed state is set on pointer-down (not after the tap recogniser's
@@ -22,6 +34,7 @@ class AfPressable extends StatefulWidget {
   final Widget? child;
   final Widget Function(BuildContext context, bool pressed)? builder;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
   final double pressedScale;
 
   /// Corner radius of the keyboard focus ring (drawn just outside the child).
@@ -31,6 +44,7 @@ class AfPressable extends StatefulWidget {
     super.key,
     required Widget this.child,
     this.onTap,
+    this.onLongPress,
     this.pressedScale = 0.97,
     this.focusRadius = AfRadius.controlAll,
   }) : builder = null;
@@ -39,6 +53,7 @@ class AfPressable extends StatefulWidget {
     super.key,
     required Widget Function(BuildContext context, bool pressed) this.builder,
     this.onTap,
+    this.onLongPress,
     this.pressedScale = 0.97,
     this.focusRadius = AfRadius.controlAll,
   }) : child = null;
@@ -92,6 +107,7 @@ class _AfPressableState extends State<AfPressable> {
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: widget.onTap,
+          onLongPress: enabled ? widget.onLongPress : null,
           // A drag/scroll that wins the arena releases the press early.
           onTapCancel: enabled ? () => _set(false) : null,
           child: AnimatedScale(
@@ -316,6 +332,48 @@ class AfReveal extends StatelessWidget {
         ),
       ),
       child: child,
+    );
+  }
+}
+
+/// Staggered screen entrance: waits `120 + 60 × index` ms, then fades and
+/// rises 12px over 400ms. Typical order: header 0, content 1, 2, …
+///
+/// Plays once when first built (and again whenever [play] flips to true).
+/// It doesn't replay on ordinary rebuilds, so Bloc/Provider updates and
+/// pull-to-refresh are safe. [enabled] is read only when the widget mounts:
+/// pass `false` for items that mount later (e.g. list rows scrolled back into
+/// view) so they appear without an entrance, while keeping the same widget
+/// tree shape.
+class AfStaggerIn extends StatefulWidget {
+  final int index;
+  final bool play;
+  final bool enabled;
+  final Widget child;
+
+  const AfStaggerIn({
+    super.key,
+    required this.index,
+    required this.child,
+    this.play = true,
+    this.enabled = true,
+  });
+
+  @override
+  State<AfStaggerIn> createState() => _AfStaggerInState();
+}
+
+class _AfStaggerInState extends State<AfStaggerIn> {
+  late final bool _animate = widget.enabled;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_animate) return widget.child;
+    return AfReveal(
+      visible: widget.play,
+      delayMs: 120 + 60 * widget.index,
+      dy: 12,
+      child: widget.child,
     );
   }
 }

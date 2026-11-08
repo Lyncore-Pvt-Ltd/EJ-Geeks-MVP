@@ -2,6 +2,9 @@ import 'package:animated_segmented_tab_control/animated_segmented_tab_control.da
 import 'package:auto_flow/core/di/service_locator.dart';
 import 'package:auto_flow/core/presentation/widget/confirm_dialog.dart';
 import 'package:auto_flow/core/presentation/widgets/af/af_spinner.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_save_status.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_toolbar_icon_button.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/inspection/presentation/bloc/inspection_bloc.dart';
 import 'package:auto_flow/features/inspection/presentation/bloc/inspection_state.dart';
@@ -59,7 +62,8 @@ class InvoiceBottomSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.5),
+      barrierColor: AutoFlowTokens.scrim,
+      sheetAnimationStyle: afSheetAnimation(context),
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.9,
         child: InvoiceBottomSheet(
@@ -449,18 +453,63 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                   ),
                   const SizedBox(height: AfSpace.s12),
                   Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
+                    child: Stack(
                       children: [
-                        InspectionTab(
-                          key: _inspectionKey,
-                          invoiceId: widget.invoiceId,
-                          onGenerateRequested: _onGeneratePressed,
+                        Positioned.fill(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              InspectionTab(
+                                key: _inspectionKey,
+                                invoiceId: widget.invoiceId,
+                                onGenerateRequested: _onGeneratePressed,
+                              ),
+                              InvoiceTab(
+                                key: _invoiceKey,
+                                invoiceId: widget.invoiceId,
+                                onGenerateRequested: _onGeneratePressed,
+                              ),
+                            ],
+                          ),
                         ),
-                        InvoiceTab(
-                          key: _invoiceKey,
-                          invoiceId: widget.invoiceId,
-                          onGenerateRequested: _onGeneratePressed,
+                        // "Saving… → Saved" for the active tab, floating so
+                        // it's visible whichever control started the save
+                        // (header Save, Draft, Generate).
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: AfSpace.m16,
+                          child: IgnorePointer(
+                            child: Center(
+                              child: Builder(
+                                builder: (context) {
+                                  final (saving, succeeded) =
+                                      _tabController.index == 0
+                                      ? context.select<InspectionBloc,
+                                            (bool, bool)>(
+                                          (b) => (
+                                            b.state.isSaving,
+                                            b.state.saveSuccess,
+                                          ),
+                                        )
+                                      : context.select<InvoiceDetailsBloc,
+                                            (bool, bool)>(
+                                          (b) => (
+                                            b.state.isSaving,
+                                            b.state.saveSuccess,
+                                          ),
+                                        );
+                                  return AfSaveStatus(
+                                    // A fresh pill per tab, so switching
+                                    // tabs doesn't carry the other's state.
+                                    key: ValueKey(_tabController.index),
+                                    saving: saving,
+                                    saveSucceeded: succeeded,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -547,10 +596,10 @@ class _HeaderActions extends StatelessWidget {
     final iconColor = AutoFlowTokens.of(context).ink;
     final isPaid = status == PaymentStatus.paid;
 
-    return IconButton(
+    return AfToolbarIconButton(
       tooltip: isPaid ? 'Undo Payment' : 'Mark Paid',
       color: iconColor,
-      icon: Icon(isPaid ? Icons.undo : Icons.attach_money),
+      icon: isPaid ? Icons.undo : Icons.attach_money,
       onPressed: isInitialLoading
           ? null
           : () => _confirmMarkPaid(context, status),
@@ -565,20 +614,27 @@ class _HeaderActions extends StatelessWidget {
   }) {
     final tokens = AutoFlowTokens.of(context);
     final iconColor = tokens.ink;
-    final spinner = AfSpinner(size: 20, color: iconColor, track: tokens.line);
+    final spinner = AfSpinner(
+      key: const ValueKey('spinner'),
+      size: 20,
+      color: iconColor,
+      track: tokens.line,
+    );
 
-    final generateButton = IconButton(
+    final generateButton = AfToolbarIconButton(
       tooltip: 'Generate PDF',
       color: iconColor,
-      icon: const Icon(Icons.picture_as_pdf_outlined),
+      icon: Icons.picture_as_pdf_outlined,
       onPressed: isInitialLoading ? null : onGeneratePressed,
     );
 
-    final saveButton = IconButton(
+    final saveButton = AfToolbarIconButton.custom(
       tooltip: isSaving && !isClosing ? 'Saving' : 'Save',
       color: iconColor,
-      icon: isSaving && !isClosing ? spinner : const Icon(Icons.save),
       onPressed: (isSaving || isInitialLoading) ? null : onSavePressed,
+      child: isSaving && !isClosing
+          ? spinner
+          : const Icon(Icons.save, key: ValueKey('save')),
     );
 
     final Widget closeIcon;
@@ -587,18 +643,22 @@ class _HeaderActions extends StatelessWidget {
       closeIcon = spinner;
       closeTooltip = 'Saving before closing';
     } else if (isClosing && saveSuccess) {
-      closeIcon = const Icon(Icons.check, color: AutoFlowTokens.successFg);
+      closeIcon = const Icon(
+        Icons.check,
+        key: ValueKey('saved'),
+        color: AutoFlowTokens.successFg,
+      );
       closeTooltip = 'Saved';
     } else {
-      closeIcon = const Icon(Icons.close);
+      closeIcon = const Icon(Icons.close, key: ValueKey('close'));
       closeTooltip = 'Close';
     }
 
-    final closeButton = IconButton(
+    final closeButton = AfToolbarIconButton.custom(
       tooltip: closeTooltip,
       color: iconColor,
-      icon: closeIcon,
       onPressed: (isClosing || isInitialLoading) ? null : onClosePressed,
+      child: closeIcon,
     );
 
     return Row(

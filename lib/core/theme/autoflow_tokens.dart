@@ -44,7 +44,17 @@ class AutoFlowTokens extends ThemeExtension<AutoFlowTokens> {
   static const Color errorBg = Color(0xFFFFECE9);
 
   static const Curve easeOut = Cubic(0.23, 1, 0.32, 1);
+
+  /// Overshooting pop. Onboarding celebration moments only (splash icon,
+  /// success tick, hot-tile dot, onboarding chips) — everyday screens use
+  /// [easeOut].
   static const Curve easeSpring = Cubic(0.34, 1.56, 0.64, 1);
+
+  /// Sheets (and anything that slides in like a drawer).
+  static const Curve drawer = Cubic(0.32, 0.72, 0, 1);
+
+  /// Modal barrier behind sheets and dialogs (navy ink at 50%).
+  static const Color scrim = Color(0x8014213D);
 
   /// `radial-gradient(120% 45% at 50% 0%, ...)`: an ellipse 120% of the
   /// width across and 45% of the height down, centred on the top edge.

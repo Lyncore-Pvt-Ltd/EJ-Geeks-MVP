@@ -178,11 +178,8 @@ class InvoiceTabState extends State<InvoiceTab>
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-            } else if (state.saveSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Invoice draft saved')),
-              );
             }
+            // Save success shows in the sheet's AfSaveStatus pill.
             if (state.saveSuccess || state.sendSuccess) {
               setState(() {
                 if (_appOwnerAddressController.text.trim().isNotEmpty) {

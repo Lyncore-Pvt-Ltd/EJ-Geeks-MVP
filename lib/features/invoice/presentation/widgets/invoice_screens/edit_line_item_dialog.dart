@@ -1,4 +1,5 @@
 import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_toolbar_icon_button.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/invoice/domain/entities/invoice_line_item.dart';
 import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_bloc.dart';
@@ -105,11 +106,10 @@ class _EditLineItemDialogState extends State<EditLineItemDialog> {
                     style: AutoFlowTokens.title.copyWith(color: tokens.ink),
                   ),
                 ),
-                IconButton(
+                AfToolbarIconButton(
                   tooltip: 'Close',
-                  color: tokens.ink,
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_outlined),
+                  icon: Icons.close_outlined,
                 ),
               ],
             ),

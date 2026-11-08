@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/core/theme/theme_controller.dart';
 import 'package:flutter/material.dart';
@@ -22,11 +23,11 @@ class SettingScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AfSpace.l24),
         child: Column(
           children: [
-            _buildProfileHeader(context),
+            AfStaggerIn(index: 0, child: _buildProfileHeader(context)),
             const SizedBox(height: AfSpace.sectionGap),
-            _buildSettingsSection(context),
+            AfStaggerIn(index: 1, child: _buildSettingsSection(context)),
             const SizedBox(height: AfSpace.sectionGap),
-            _buildAppSettingsSection(context),
+            AfStaggerIn(index: 2, child: _buildAppSettingsSection(context)),
           ],
         ),
       ),

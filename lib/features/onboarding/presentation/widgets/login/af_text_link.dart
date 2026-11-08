@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/presentation/widgets/af/af_motion.dart';
 import '../../../../../core/theme/autoflow_tokens.dart';
 
 /// Underlined 13px link with a 44px-tall tap target.
@@ -22,9 +23,10 @@ class AfTextLink extends StatelessWidget {
     final resolved = color ?? AutoFlowTokens.of(context).ink;
     return Semantics(
       link: true,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+      child: AfPressable(
         onTap: onTap,
+        pressedScale: 0.96,
+        focusRadius: AfRadius.smallAll,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 44),
           child: Align(

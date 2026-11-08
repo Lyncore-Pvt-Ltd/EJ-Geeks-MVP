@@ -1,6 +1,8 @@
 import 'package:auto_flow/core/presentation/widget/confirm_dialog.dart';
 import 'package:auto_flow/core/presentation/widget/show_delete_dialog.dart';
 import 'package:auto_flow/core/presentation/widgets/af/af_status_chip.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_toolbar_icon_button.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/invoice/data/constants/invoice_date_format.dart';
 import 'package:auto_flow/features/invoice/domain/entities/invoice_summary.dart';
@@ -99,6 +101,8 @@ class InvoiceCard extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: AutoFlowTokens.scrim,
+      sheetAnimationStyle: afSheetAnimation(context),
       builder: (sheetContext) => SafeArea(
         child: Container(
           margin: const EdgeInsets.fromLTRB(
@@ -252,16 +256,18 @@ class InvoiceCard extends StatelessWidget {
           borderRadius: AfRadius.cardAll,
           boxShadow: AutoFlowTokens.cardShadow,
         ),
-        child: Material(
-          color: tokens.card,
-          clipBehavior: Clip.antiAlias,
-          shape: RoundedRectangleBorder(
-            borderRadius: AfRadius.cardAll,
-            side: BorderSide(color: tokens.line),
-          ),
-          child: InkWell(
-            onTap: () => _openInvoice(context),
-            onLongPress: () => _showActionSheet(context),
+        child: AfPressable(
+          onTap: () => _openInvoice(context),
+          onLongPress: () => _showActionSheet(context),
+          pressedScale: 0.98,
+          focusRadius: AfRadius.cardAll,
+          child: Container(
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: tokens.card,
+              borderRadius: AfRadius.cardAll,
+              border: Border.all(color: tokens.line),
+            ),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AfSpace.m16,
@@ -385,31 +391,28 @@ class InvoiceCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      IconButton(
+                      AfToolbarIconButton(
                         tooltip: isCompleted
                             ? 'Undo Complete Service'
                             : 'Complete Service',
-                        color: tokens.ink,
                         onPressed: () => context.read<InvoiceBloc>().add(
                           isCompleted
                               ? InvoiceServiceReverted(summary.id)
                               : InvoiceServiceCompleted(summary.id),
                         ),
-                        icon: Icon(
-                          isCompleted ? Icons.undo : Icons.check_circle_outline,
-                        ),
+                        icon: isCompleted
+                            ? Icons.undo
+                            : Icons.check_circle_outline,
                       ),
-                      IconButton(
+                      AfToolbarIconButton(
                         tooltip: isPaid ? 'Undo Payment' : 'Mark Paid',
-                        color: tokens.ink,
                         onPressed: () => _confirmMarkPaid(context),
-                        icon: Icon(isPaid ? Icons.undo : Icons.attach_money),
+                        icon: isPaid ? Icons.undo : Icons.attach_money,
                       ),
-                      IconButton(
+                      AfToolbarIconButton(
                         tooltip: 'Generate PDF',
-                        color: tokens.ink,
                         onPressed: () => _generatePdf(context),
-                        icon: const Icon(Icons.picture_as_pdf_outlined),
+                        icon: Icons.picture_as_pdf_outlined,
                       ),
                     ],
                   ),

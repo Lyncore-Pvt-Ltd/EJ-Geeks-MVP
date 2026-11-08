@@ -113,44 +113,75 @@ class AfTextField extends StatelessWidget {
             ),
           ),
         ),
+        // The error line slides/fades in; a new message re-animates (keyed
+        // by text) and clearing it fades out while the height collapses.
         AnimatedSize(
           duration: afDuration(context, 200),
           curve: AutoFlowTokens.easeOut,
           alignment: Alignment.topCenter,
-          child: hasError
-              ? AfReveal(
-                  visible: true,
-                  dy: -4,
-                  duration: const Duration(milliseconds: 200),
-                  // Announced as it appears; also read as the field's hint.
-                  child: Semantics(
-                    liveRegion: true,
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16, top: 8),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.error_outline_rounded,
-                            size: 14,
-                            color: AutoFlowTokens.errorFg,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              errorText!,
-                              style: AutoFlowTokens.caption.copyWith(
-                                color: AutoFlowTokens.errorFg,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+          child: AnimatedSwitcher(
+            duration: afDuration(context, 200),
+            switchInCurve: AutoFlowTokens.easeOut,
+            switchOutCurve: AutoFlowTokens.easeOut,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, -0.2),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            ),
+            layoutBuilder: (current, previous) => Stack(
+              alignment: Alignment.topLeft,
+              children: [...previous, ?current],
+            ),
+            child: hasError
+                ? _ErrorLine(key: ValueKey(errorText), text: errorText!)
+                : const SizedBox(
+                    key: ValueKey('no-error'),
+                    width: double.infinity,
                   ),
-                )
-              : const SizedBox(width: double.infinity),
+          ),
         ),
       ],
+    );
+  }
+}
+
+/// Alert icon + message under a field; announced as it appears (it's also
+/// read as the field's hint).
+class _ErrorLine extends StatelessWidget {
+  final String text;
+
+  const _ErrorLine({super.key, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      liveRegion: true,
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, top: 8),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 14,
+              color: AutoFlowTokens.errorFg,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                text,
+                style: AutoFlowTokens.caption.copyWith(
+                  color: AutoFlowTokens.errorFg,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

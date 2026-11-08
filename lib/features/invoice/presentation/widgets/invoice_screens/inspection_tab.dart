@@ -85,10 +85,8 @@ class InspectionTabState extends State<InspectionTab>
   void save() {
     final vehicleDetails = _currentVehicleDetails;
     _lastSavedVehicleDetails = vehicleDetails;
+    // Progress/success shows in the sheet's floating AfSaveStatus pill.
     context.read<InspectionBloc>().add(InspectionSaved(vehicleDetails));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Inspection saved')));
   }
 
   void _populateFrom(VehicleDetails vehicleDetails) {
@@ -117,18 +115,15 @@ class InspectionTabState extends State<InspectionTab>
     return MultiBlocListener(
       listeners: [
         BlocListener<InspectionBloc, InspectionState>(
+          // Success shows in the sheet's AfSaveStatus pill; only errors
+          // still need a SnackBar.
           listenWhen: (previous, current) =>
-              previous.errorMessage != current.errorMessage ||
-              previous.saveSuccess != current.saveSuccess,
+              previous.errorMessage != current.errorMessage,
           listener: (context, state) {
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-            } else if (state.saveSuccess) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Inspection saved')));
             }
           },
         ),
