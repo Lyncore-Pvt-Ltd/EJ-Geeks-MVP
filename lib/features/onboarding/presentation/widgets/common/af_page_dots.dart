@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
-import 'af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 
-/// 8px page dots; the active one stretches to 24px. Each dot sits in a 44px
-/// tall tap target.
+/// 8px page dots; the active one stretches to 24px. Each dot sits in a 44×44
+/// tap target.
 class AfPageDots extends StatelessWidget {
   final int count;
   final int index;
@@ -28,12 +28,14 @@ class AfPageDots extends StatelessWidget {
             button: true,
             selected: i == index,
             label: 'Go to slide ${i + 1}',
+            onTap: () => onSelected(i),
+            excludeSemantics: true,
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () => onSelected(i),
               child: Container(
                 height: 44,
-                constraints: const BoxConstraints(minWidth: 24),
+                constraints: const BoxConstraints(minWidth: 44),
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 alignment: Alignment.center,
                 child: AnimatedContainer(

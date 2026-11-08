@@ -7,13 +7,14 @@ import '../../data/constants/onboarding_content.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
 import '../bloc/login_state.dart';
-import '../widgets/common/af_icon_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_icon_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_inline_icon_button.dart';
 import '../widgets/common/af_layout.dart';
 import '../widgets/common/af_logo_mark.dart';
-import '../widgets/common/af_motion.dart';
-import '../widgets/common/af_primary_button.dart';
-import '../widgets/common/af_secondary_button.dart';
-import '../widgets/common/af_text_field.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_secondary_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_text_field.dart';
 import '../widgets/login/af_text_link.dart';
 import '../widgets/login/or_divider.dart';
 import '../widgets/login/remember_checkbox.dart';
@@ -53,6 +54,18 @@ class _LoginViewState extends State<_LoginView> {
     super.dispose();
   }
 
+  void _dismissKeyboard() => FocusManager.instance.primaryFocus?.unfocus();
+
+  void _submit(LoginBloc bloc) {
+    _dismissKeyboard();
+    bloc.add(const LoginSubmitted());
+  }
+
+  void _requestMagicLink(LoginBloc bloc) {
+    _dismissKeyboard();
+    bloc.add(const LoginMagicLinkRequested());
+  }
+
   void _back() {
     final navigator = Navigator.of(context);
     if (navigator.canPop()) {
@@ -87,67 +100,75 @@ class _LoginViewState extends State<_LoginView> {
         final layout = AfLayout.of(context);
         final keyboardOpen = MediaQuery.viewInsetsOf(context).bottom > 0;
         return Scaffold(
-          body: DecoratedBox(
-            decoration: BoxDecoration(gradient: tokens.screen),
-            child: SafeArea(
-              bottom: false,
-              child: Column(
-                children: [
-                  AfContentWidth(
-                    child: Container(
-                      height: 48,
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-                      alignment: Alignment.centerLeft,
-                      child: AfIconButton(
-                        icon: Icons.chevron_left_rounded,
-                        semanticLabel: 'Back',
-                        onPressed: _back,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      keyboardDismissBehavior:
-                          ScrollViewKeyboardDismissBehavior.onDrag,
-                      padding: EdgeInsets.fromLTRB(
-                        16,
-                        layout.isCompact ? 8 : 16,
-                        16,
-                        layout.sectionGap,
-                      ),
-                      child: AfContentWidth(
-                        child: _form(context, state, bloc, tokens, layout),
-                      ),
-                    ),
-                  ),
-                  AfReveal(
-                    visible: true,
-                    delayMs: 200,
-                    child: Container(
-                      // With the keyboard up it already covers the system
-                      // inset, so the footer only needs a small gap.
-                      padding: EdgeInsets.fromLTRB(
-                        16,
-                        16,
-                        16,
-                        keyboardOpen ? 16 : afBottomInset(context),
-                      ),
-                      decoration: BoxDecoration(
-                        color: tokens.screen.colors.last,
-                        boxShadow: AutoFlowTokens.footerShadow,
-                      ),
-                      child: AfContentWidth(
-                        child: AfPrimaryButton(
-                          label: 'Log in',
-                          busyLabel: 'Signing in…',
-                          showArrow: true,
-                          busy: state.status == LoginStatus.submitting,
-                          onPressed: () => bloc.add(const LoginSubmitted()),
+          // Tapping anywhere outside a field closes the keyboard. Taps on
+          // controls still win the gesture arena (they're deeper).
+          body: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: _dismissKeyboard,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: tokens.screenFor(MediaQuery.sizeOf(context).height),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  children: [
+                    AfContentWidth(
+                      child: Container(
+                        height: 48,
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+                        alignment: Alignment.centerLeft,
+                        child: AfIconButton(
+                          icon: Icons.chevron_left_rounded,
+                          semanticLabel: 'Back',
+                          onPressed: _back,
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: SingleChildScrollView(
+                        keyboardDismissBehavior:
+                            ScrollViewKeyboardDismissBehavior.onDrag,
+                        padding: EdgeInsets.fromLTRB(
+                          16,
+                          layout.isCompact ? 8 : 16,
+                          16,
+                          layout.sectionGap,
+                        ),
+                        child: AfContentWidth(
+                          child: _form(context, state, bloc, tokens, layout),
+                        ),
+                      ),
+                    ),
+                    AfReveal(
+                      visible: true,
+                      delayMs: 200,
+                      child: Container(
+                        // With the keyboard up it already covers the system
+                        // inset, so the footer only needs a small gap.
+                        padding: EdgeInsets.fromLTRB(
+                          16,
+                          16,
+                          16,
+                          keyboardOpen ? 16 : afBottomInset(context),
+                        ),
+                        decoration: BoxDecoration(
+                          color: tokens.screen.colors.last,
+                          boxShadow: AutoFlowTokens.footerShadow,
+                        ),
+                        child: AfContentWidth(
+                          child: AfPrimaryButton(
+                            label: 'Log in',
+                            busyLabel: 'Signing in…',
+                            showArrow: true,
+                            busy: state.status == LoginStatus.submitting,
+                            onPressed: () => _submit(bloc),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -174,14 +195,17 @@ class _LoginViewState extends State<_LoginView> {
               children: [
                 const AfLogoMark(size: 56, glow: true),
                 const SizedBox(height: 12),
-                Text(
-                  'Welcome back',
-                  textAlign: TextAlign.center,
-                  style: AutoFlowTokens.headline.copyWith(
-                    color: tokens.ink,
-                    fontSize: layout.headlineSize,
-                    letterSpacing: -0.03 * layout.headlineSize,
-                    height: 1.2,
+                Semantics(
+                  header: true,
+                  child: Text(
+                    'Welcome back',
+                    textAlign: TextAlign.center,
+                    style: AutoFlowTokens.headline.copyWith(
+                      color: tokens.ink,
+                      fontSize: layout.headlineSize,
+                      letterSpacing: -0.03 * layout.headlineSize,
+                      height: 1.2,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -203,6 +227,7 @@ class _LoginViewState extends State<_LoginView> {
             child: AnimatedOpacity(
               opacity: state.isBusy ? 0.55 : 1,
               duration: afDuration(context, 200),
+              curve: AutoFlowTokens.easeOut,
               child: AbsorbPointer(
                 absorbing: state.isBusy,
                 child: AutofillGroup(
@@ -217,6 +242,8 @@ class _LoginViewState extends State<_LoginView> {
                         keyboardType: TextInputType.emailAddress,
                         textInputAction: TextInputAction.next,
                         autofillHints: const [AutofillHints.email],
+                        autocorrect: false,
+                        enableSuggestions: false,
                         onChanged: (v) => bloc.add(LoginEmailChanged(v)),
                       ),
                       const SizedBox(height: 16),
@@ -229,20 +256,17 @@ class _LoginViewState extends State<_LoginView> {
                         textInputAction: TextInputAction.done,
                         autofillHints: const [AutofillHints.password],
                         onChanged: (v) => bloc.add(LoginPasswordChanged(v)),
-                        onSubmitted: (_) => bloc.add(const LoginSubmitted()),
-                        trailing: IconButton(
-                          tooltip: state.showPassword
+                        onSubmitted: (_) => _submit(bloc),
+                        // Inline eye toggle (no ripple): press 0.9, mute → ink.
+                        trailing: AfInlineIconButton(
+                          semanticLabel: state.showPassword
                               ? 'Hide password'
                               : 'Show password',
+                          icon: state.showPassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
                           onPressed: () =>
                               bloc.add(const LoginPasswordVisibilityToggled()),
-                          icon: Icon(
-                            state.showPassword
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            size: 20,
-                            color: tokens.mute,
-                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -281,7 +305,7 @@ class _LoginViewState extends State<_LoginView> {
             busyLabel: 'Sending link…',
             icon: Icons.mail_outline_rounded,
             busy: state.status == LoginStatus.sendingLink,
-            onPressed: () => bloc.add(const LoginMagicLinkRequested()),
+            onPressed: () => _requestMagicLink(bloc),
           ),
         ),
         SizedBox(height: layout.sectionGap),

@@ -13,6 +13,12 @@
       "skillPath": "skills/animation-vocabulary/SKILL.md",
       "computedHash": "0058036865ecbb864fd0c4132efcc62425355d6e99c7e6ef6a936742d62a5dea"
     },
+    "app-store-screenshots": {
+      "source": "ceorkm/aso-shots",
+      "sourceType": "github",
+      "skillPath": "skills/app-store-screenshots/SKILL.md",
+      "computedHash": "43bae4ebbf8566eede96813cc8832d7203802aeae5726daf04fd9c84e33e8a88"
+    },
     "apple-design": {
       "source": "emilkowalski/skills",
       "sourceType": "github",

@@ -20,7 +20,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _selectedIndex = 0;
 
   static const _tabs = [
-    NavBarTab(icon: Icons.home, text: 'Home'),
+    NavBarTab(icon: Icons.home_rounded, text: 'Home'),
     NavBarTab(icon: Icons.receipt_long_rounded, text: 'Invoices'),
   ];
 

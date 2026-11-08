@@ -1,4 +1,4 @@
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,6 +9,9 @@ import 'inspection_image_picker.dart';
 import 'inspection_text_field.dart';
 import 'rating_selector.dart';
 
+/// One checklist section, drawn as a DESIGN.md card: title + mono rated
+/// counter, item rows split by 1px line rules (none after the last), then
+/// photos and the section comment.
 class InspectionSectionCard extends StatelessWidget {
   const InspectionSectionCard({super.key, required this.section});
 
@@ -16,68 +19,85 @@ class InspectionSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = AutoFlowTokens.of(context);
     final bloc = context.read<InspectionBloc>();
+    final items = section.items;
+    final rated = items.where((item) => item.rating != null).length;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.only(bottom: AfSpace.m16),
+      padding: const EdgeInsets.all(AfSpace.m16),
       decoration: BoxDecoration(
-        color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite,
-        ),
+        color: tokens.card,
+        borderRadius: AfRadius.cardAll,
+        border: Border.all(color: tokens.line),
+        boxShadow: AutoFlowTokens.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            section.name,
-            style: TextStyle(
-              fontSize: 16,
-
-              fontWeight: FontWeight.w600,
-              color: isDark
-                  ? AppPallete.cascadingWhite
-                  : AppPallete.tricornBlack,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    section.name,
+                    style: AutoFlowTokens.title.copyWith(color: tokens.ink),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AfSpace.s8),
+              Semantics(
+                label: '$rated of ${items.length} items rated',
+                excludeSemantics: true,
+                child: Text(
+                  '$rated / ${items.length}',
+                  style: AutoFlowTokens.mono(
+                    color: rated == items.length && items.isNotEmpty
+                        ? AutoFlowTokens.successFg
+                        : tokens.mute,
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 8),
-          for (final item in section.items)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+          const SizedBox(height: AfSpace.s8),
+          for (var i = 0; i < items.length; i++)
+            Container(
+              padding: const EdgeInsets.only(top: AfSpace.s12),
+              decoration: i == items.length - 1
+                  ? null
+                  : BoxDecoration(
+                      border: Border(bottom: BorderSide(color: tokens.line)),
+                    ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: isDark
-                          ? AppPallete.cascadingWhite
-                          : AppPallete.tricornBlack,
-                    ),
+                    items[i].label,
+                    style: AutoFlowTokens.body.copyWith(color: tokens.ink),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AfSpace.xs4),
                   RatingSelector(
-                    selected: item.rating,
+                    selected: items[i].rating,
                     onChanged: (rating) => bloc.add(
                       RatingChanged(
                         sectionName: section.name,
-                        itemLabel: item.label,
+                        itemLabel: items[i].label,
                         rating: rating,
                       ),
                     ),
                   ),
+                  const SizedBox(height: AfSpace.xs4),
                 ],
               ),
             ),
+          const SizedBox(height: AfSpace.m16),
           if (section.name != 'Road Test') ...[
             InspectionImagePicker(sectionName: section.name),
-            const SizedBox(height: 8),
+            const SizedBox(height: AfSpace.m16),
           ],
-          const SizedBox(height: 4),
           InspectionTextField(
             key: ValueKey('comment_${section.name}'),
             initialValue: section.comment,

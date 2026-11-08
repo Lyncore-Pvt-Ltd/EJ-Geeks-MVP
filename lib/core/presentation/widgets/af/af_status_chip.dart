@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 
 /// Pill chip with a 6px leading dot.
 class AfStatusChip extends StatelessWidget {
@@ -33,7 +33,7 @@ class AfStatusChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(9999),
+        borderRadius: AfRadius.chipAll,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

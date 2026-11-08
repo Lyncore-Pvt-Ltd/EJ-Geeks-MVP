@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
 import '../../../data/constants/onboarding_content.dart';
-import '../common/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 
 const _highlightIcons = [
   Icons.assignment_turned_in_outlined,
@@ -30,9 +30,15 @@ class HighlightsIllustration extends StatelessWidget {
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
         children: [
-          const Positioned(
+          Positioned(
             top: -24,
-            child: AfGlow(width: 160, height: 96, blur: 40, opacity: 0.3),
+            child: AfGlow(
+              width: 160,
+              height: 96,
+              blur: 40,
+              opacity: 0.3,
+              active: active,
+            ),
           ),
           Column(
             children: [

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'af_motion.dart';
 
 /// 44×44 bordered icon button (e.g. Back).
@@ -22,14 +22,19 @@ class AfIconButton extends StatelessWidget {
     return Semantics(
       button: true,
       label: semanticLabel,
-      child: AfPressable(
+      onTap: onPressed,
+      excludeSemantics: true,
+      child: AfPressable.builder(
         onTap: onPressed,
-        child: Container(
+        builder: (context, pressed) => AnimatedContainer(
+          duration: afDuration(context, 160),
+          curve: AutoFlowTokens.easeOut,
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: tokens.card,
-            borderRadius: BorderRadius.circular(10),
+            // Press fills with the line colour.
+            color: pressed ? tokens.line : tokens.card,
+            borderRadius: AfRadius.controlAll,
             border: Border.all(color: tokens.line),
           ),
           child: Icon(icon, size: 20, color: tokens.ink),

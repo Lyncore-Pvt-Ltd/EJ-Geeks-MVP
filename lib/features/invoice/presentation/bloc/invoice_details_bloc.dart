@@ -304,9 +304,8 @@ class InvoiceDetailsBloc
     );
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(isSaving: false, errorMessage: failure.message),
-      ),
+      (failure) =>
+          emit(state.copyWith(isSaving: false, errorMessage: failure.message)),
       (_) => emit(
         state.copyWith(
           isSaving: false,
@@ -318,22 +317,10 @@ class InvoiceDetailsBloc
     );
   }
 
-  /// Ensures the progress dialog stays visible for at least this long,
-  /// even if the save/PDF-build work underneath finishes almost instantly.
-  static const _minGenerateDuration = Duration(milliseconds: 700);
-
-  Future<void> _awaitMinDuration(DateTime start) async {
-    final elapsed = DateTime.now().difference(start);
-    if (elapsed < _minGenerateDuration) {
-      await Future.delayed(_minGenerateDuration - elapsed);
-    }
-  }
-
   Future<void> _onGenerateRequested(
     InvoiceGenerateRequested event,
     Emitter<InvoiceDetailsState> emit,
   ) async {
-    final start = DateTime.now();
     emit(
       state.copyWith(isSending: true, errorMessage: null, sendSuccess: false),
     );
@@ -341,7 +328,6 @@ class InvoiceDetailsBloc
     final draftResult = await _upsertInvoiceDraft(invoiceId);
     final draftError = draftResult.fold((f) => f.message, (_) => null);
     if (draftError != null) {
-      await _awaitMinDuration(start);
       emit(state.copyWith(isSending: false, errorMessage: draftError));
       return;
     }
@@ -362,7 +348,6 @@ class InvoiceDetailsBloc
     );
     final saveError = saveResult.fold((f) => f.message, (_) => null);
     if (saveError != null) {
-      await _awaitMinDuration(start);
       emit(state.copyWith(isSending: false, errorMessage: saveError));
       return;
     }
@@ -375,12 +360,9 @@ class InvoiceDetailsBloc
       ),
     );
 
-    await _awaitMinDuration(start);
-
     generateResult.fold(
-      (failure) => emit(
-        state.copyWith(isSending: false, errorMessage: failure.message),
-      ),
+      (failure) =>
+          emit(state.copyWith(isSending: false, errorMessage: failure.message)),
       (result) => switch (result) {
         GeneratedInvoicePdfs() => emit(
           state.copyWith(

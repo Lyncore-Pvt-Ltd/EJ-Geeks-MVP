@@ -82,10 +82,14 @@ class DashboardLocalDataSource {
         )
         ''',
         [
-          thisMonthKey, lastMonthKey,
-          thisMonthKey, lastMonthKey,
-          thisMonthKey, lastMonthKey,
-          thisMonthKey, lastMonthKey,
+          thisMonthKey,
+          lastMonthKey,
+          thisMonthKey,
+          lastMonthKey,
+          thisMonthKey,
+          lastMonthKey,
+          thisMonthKey,
+          lastMonthKey,
         ],
       );
 
@@ -174,9 +178,7 @@ class DashboardLocalDataSource {
 
       return rows.map((row) => DateTime.parse(row['day'] as String)).toList();
     } catch (e) {
-      throw CacheException(
-        message: 'Failed to load pending payment dates: $e',
-      );
+      throw CacheException(message: 'Failed to load pending payment dates: $e');
     }
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
-import '../common/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 
 /// 20px checkbox (ink fill when checked, tick scales in) + "Keep me signed in".
 class RememberCheckbox extends StatelessWidget {
@@ -20,7 +20,10 @@ class RememberCheckbox extends StatelessWidget {
     return Semantics(
       checked: value,
       label: 'Keep me signed in',
+      onTap: onToggle,
+      excludeSemantics: true,
       child: AfPressable(
+        focusRadius: AfRadius.keyAll,
         onTap: onToggle,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 44),
@@ -29,6 +32,7 @@ class RememberCheckbox extends StatelessWidget {
             children: [
               AnimatedContainer(
                 duration: afDuration(context, 160),
+                curve: AutoFlowTokens.easeOut,
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
@@ -39,6 +43,7 @@ class RememberCheckbox extends StatelessWidget {
                 child: AnimatedOpacity(
                   opacity: value ? 1 : 0,
                   duration: afDuration(context, 150),
+                  curve: AutoFlowTokens.easeOut,
                   child: AnimatedScale(
                     scale: value ? 1 : 0.5,
                     duration: afDuration(context, 200),

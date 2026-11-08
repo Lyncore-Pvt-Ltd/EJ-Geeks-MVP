@@ -1,6 +1,9 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_secondary_button.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
-import '../../theme/app_pallete.dart';
+import 'dialog_actions.dart';
 
 /// Generic yes/no confirmation prompt. Shown via
 /// `showDialog<bool>(context: context, builder: (_) => ConfirmDialog(...))` —
@@ -21,50 +24,33 @@ class ConfirmDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final darkPillColor = isDark
-        ? AppPallete.dynamicBlack
-        : AppPallete.tricornBlack;
+    final tokens = AutoFlowTokens.of(context);
 
     return AlertDialog(
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDark ? AppPallete.cascadingWhite : AppPallete.tricornBlack,
-          fontWeight: FontWeight.bold,
+      title: Semantics(
+        header: true,
+        child: Text(
+          title,
+          style: AutoFlowTokens.title.copyWith(color: tokens.ink),
         ),
       ),
-      content: Text(message, style: const TextStyle(fontSize: 16)),
+      content: Text(
+        message,
+        style: AutoFlowTokens.body.copyWith(color: tokens.mute2),
+      ),
+      actionsPadding: kDialogActionsPadding,
       actions: [
-        Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: darkPillColor,
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(
-              cancelLabel,
-              style: const TextStyle(color: Colors.white),
+        DialogActions(
+          children: [
+            AfSecondaryButton(
+              label: cancelLabel,
+              onPressed: () => Navigator.pop(context, false),
             ),
-          ),
-        ),
-        Container(
-          height: 40,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: AppPallete.selectionGradient,
+            AfPrimaryButton(
+              label: confirmLabel,
+              onPressed: () => Navigator.pop(context, true),
             ),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              confirmLabel,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
+          ],
         ),
       ],
     );

@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedSplashSubtitle extends StatelessWidget {
@@ -16,15 +17,10 @@ class AnimatedSplashSubtitle extends StatelessWidget {
       opacity: fadeAnimation,
       child: SlideTransition(
         position: slideAnimation,
-        child: const Text(
+        child: Text(
           'Invoicing made effortless',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.white70,
-            fontWeight: FontWeight.w300,
-            letterSpacing: 0.5,
-          ),
+          style: AutoFlowTokens.body.copyWith(color: AutoFlowTokens.dark.mute2),
         ),
       ),
     );

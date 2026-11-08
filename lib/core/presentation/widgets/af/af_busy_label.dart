@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'af_motion.dart';
 
 /// Cross-fades a button's [idle] label with its [loading] label: 200ms, with
@@ -45,19 +45,23 @@ class AfBusyLabel extends StatelessWidget {
     final hidden = 1 - visibility;
     return IgnorePointer(
       ignoring: visibility < 0.5,
-      child: Opacity(
-        opacity: visibility.clamp(0, 1),
-        child: Transform.translate(
-          offset: Offset(0, (shiftUp ? -6 : 6) * hidden),
-          child: hidden > 0.01
-              ? ImageFiltered(
-                  imageFilter: ImageFilter.blur(
-                    sigmaX: 2 * hidden,
-                    sigmaY: 2 * hidden,
-                  ),
-                  child: child,
-                )
-              : child,
+      // Only the visible label is read out.
+      child: ExcludeSemantics(
+        excluding: visibility < 0.5,
+        child: Opacity(
+          opacity: visibility.clamp(0, 1),
+          child: Transform.translate(
+            offset: Offset(0, (shiftUp ? -6 : 6) * hidden),
+            child: hidden > 0.01
+                ? ImageFiltered(
+                    imageFilter: ImageFilter.blur(
+                      sigmaX: 2 * hidden,
+                      sigmaY: 2 * hidden,
+                    ),
+                    child: child,
+                  )
+                : child,
+          ),
         ),
       ),
     );

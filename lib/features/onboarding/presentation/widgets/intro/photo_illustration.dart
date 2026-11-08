@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
-import '../common/af_motion.dart';
-import '../common/af_pop_in.dart';
-import '../common/af_spinner.dart';
-import '../common/af_status_chip.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_pop_in.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_spinner.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_status_chip.dart';
 
 const _photoCount = 4;
 
@@ -32,7 +32,7 @@ class PhotoIllustration extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _Viewfinder(),
+          _Viewfinder(active: active),
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -142,7 +142,9 @@ class PhotoIllustration extends StatelessWidget {
 }
 
 class _Viewfinder extends StatelessWidget {
-  const _Viewfinder();
+  final bool active;
+
+  const _Viewfinder({required this.active});
 
   @override
   Widget build(BuildContext context) {
@@ -223,9 +225,9 @@ class _Viewfinder extends StatelessWidget {
           bracket(top: 40, right: 40),
           bracket(bottom: 12, left: 40),
           bracket(bottom: 12, right: 40),
-          const Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: _PulsingShutter(),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: _PulsingShutter(active: active),
           ),
         ],
       ),
@@ -234,7 +236,10 @@ class _Viewfinder extends StatelessWidget {
 }
 
 class _PulsingShutter extends StatefulWidget {
-  const _PulsingShutter();
+  /// The pulse only runs on the visible slide.
+  final bool active;
+
+  const _PulsingShutter({required this.active});
 
   @override
   State<_PulsingShutter> createState() => _PulsingShutterState();
@@ -250,8 +255,19 @@ class _PulsingShutterState extends State<_PulsingShutter>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (MediaQuery.of(context).disableAnimations) {
-      _controller.stop();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PulsingShutter oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.active != widget.active) _sync();
+  }
+
+  void _sync() {
+    if (!widget.active || MediaQuery.of(context).disableAnimations) {
+      // Rest with the ring hidden rather than frozen mid-pulse.
+      _controller.value = 1;
     } else if (!_controller.isAnimating) {
       _controller.repeat();
     }

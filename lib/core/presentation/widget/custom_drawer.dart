@@ -1,4 +1,5 @@
 import 'package:auto_flow/core/presentation/pages/settings_screen.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -6,139 +7,60 @@ class CustomDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AutoFlowTokens.of(context);
+    final itemStyle = AutoFlowTokens.title.copyWith(color: tokens.ink);
+
+    Widget item(IconData icon, String label, VoidCallback onTap) => ListTile(
+      leading: Icon(icon, color: tokens.ink),
+      title: Text(label, style: itemStyle),
+      minTileHeight: AfSpace.controlHeight,
+      shape: const RoundedRectangleBorder(borderRadius: AfRadius.controlAll),
+      onTap: onTap,
+    );
+
     return Drawer(
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+      backgroundColor: tokens.card,
+      surfaceTintColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(),
       child: Column(
         children: [
           DrawerHeader(
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: tokens.line)),
+            ),
             child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // SvgPicture.asset(
-                  //   'assets/Emblem_of_Sri_Lanka.svg',
-                  //   height: 80,
-                  //   width: 80,
-                  //   placeholderBuilder: (context) => const SizedBox(
-                  //     height: 80,
-                  //     width: 80,
-                  //     child: Center(
-                  //       child: CircularProgressIndicator(strokeWidth: 2),
-                  //     ),
-                  //   ),
-                  // ),
-                  const SizedBox(height: 12),
-                  Image.asset('assets/icon/EJG.png', height: 64, width: 64),
-                ],
-              ),
+              child: Image.asset('assets/icon/EJG.png', height: 64, width: 64),
             ),
           ),
           Expanded(
             child: ListView(
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(horizontal: AfSpace.s8),
               children: [
-                ListTile(
-                  leading: const Icon(Icons.home),
-                  title: const Text('Home'),
-                  onTap: () {
-                    // Handle Home tap
-                  },
+                item(Icons.home_outlined, 'Home', () {
+                  // Handle Home tap
+                }),
+                item(
+                  Icons.settings_outlined,
+                  'Settings',
+                  () => Navigator.push(context, SettingScreen.route()),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.settings),
-                  title: const Text('Settings'),
-                  onTap: () {
-                    Navigator.push(context, SettingScreen.route());
-                  },
-                ),
-                // ExpansionTile(
-                //   leading: const Icon(Icons.settings),
-                //   title: const Text('Offices'),
-                //   shape: const Border(),
-                //   children: [
-                //     ListTile(
-                //       contentPadding: const EdgeInsets.only(left: 25),
-                //       leading: const Icon(Icons.personal_injury_outlined),
-                //       title: const Text('Ministry of Education Office'),
-                //       onTap: () {
-                //         // Handle General settings tap
-                //       },
-                //     ),
-                //     ListTile(
-                //       contentPadding: const EdgeInsets.only(left: 25),
-                //       leading: const Icon(Icons.privacy_tip),
-                //       title: const Text('Provincial Ministry of Education'),
-                //       onTap: () {
-                //         // Handle Privacy settings tap
-                //       },
-                //     ),
-                //     ListTile(
-                //       contentPadding: const EdgeInsets.only(left: 25),
-                //       leading: const Icon(Icons.notifications),
-                //       title: const Text('Provincial Department of Education'),
-                //       onTap: () {
-                //         // Handle Notifications settings tap
-                //       },
-                //     ),
-                //     ListTile(
-                //       contentPadding: const EdgeInsets.only(left: 25),
-                //       leading: const Icon(Icons.notifications),
-                //       title: const Text('Zonal Education Office'),
-                //       onTap: () {
-                //         // Handle Notifications settings tap
-                //       },
-                //     ),
-                //     ListTile(
-                //       contentPadding: const EdgeInsets.only(left: 25),
-                //       leading: const Icon(Icons.notifications),
-                //       title: const Text('Divisional Education Office'),
-                //       onTap: () {
-                //         // Handle Notifications settings tap
-                //       },
-                //     ),
-                //   ],
-                // ),
-                // ExpansionTile(
-                //   leading: const Icon(Icons.contact_mail),
-                //   title: const Text('Employees'),
-                //   shape: const Border(),
-                //   children: [
-                //     ListTile(
-                //       contentPadding: const EdgeInsets.only(left: 72),
-                //       title: const Text('Teachers'),
-                //       onTap: () {
-                //         // Handle Email tap
-                //       },
-                //     ),
-                //     ListTile(
-                //       contentPadding: const EdgeInsets.only(left: 72),
-                //       title: const Text('Principal'),
-                //       onTap: () {
-                //         // Handle Phone tap
-                //       },
-                //     ),
-                //   ],
-                // ),
               ],
             ),
           ),
-
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () {},
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AfSpace.s8),
+            child: item(Icons.logout, 'Logout', () {}),
           ),
-
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AfSpace.m16),
             child: Text(
               '© All Rights Reserved. LYNCORE Pvt. Ltd 2026',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              style: AutoFlowTokens.caption.copyWith(color: tokens.mute),
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AfSpace.l24),
         ],
       ),
     );

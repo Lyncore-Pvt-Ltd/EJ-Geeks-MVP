@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
-import 'af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 
 /// Navy rounded "af" tile, optionally with a breathing orange glow behind.
 class AfLogoMark extends StatelessWidget {

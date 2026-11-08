@@ -1,15 +1,14 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_secondary_button.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
-import '../../theme/app_pallete.dart';
+import 'dialog_actions.dart';
 
 class DeleteDialogResult {
   final bool confirmed;
   final bool deleteFiles;
 
-  const DeleteDialogResult({
-    required this.confirmed,
-    this.deleteFiles = false,
-  });
+  const DeleteDialogResult({required this.confirmed, this.deleteFiles = false});
 }
 
 class ShowDeleteDialog extends StatefulWidget {
@@ -38,24 +37,24 @@ class _ShowDeleteDialogState extends State<ShowDeleteDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final darkPillColor = isDark
-        ? AppPallete.dynamicBlack
-        : AppPallete.tricornBlack;
+    final tokens = AutoFlowTokens.of(context);
 
     return AlertDialog(
-      title: Text(
-        widget.title,
-        style: TextStyle(
-          color: isDark ? AppPallete.cascadingWhite : AppPallete.tricornBlack,
-          fontWeight: FontWeight.bold,
+      title: Semantics(
+        header: true,
+        child: Text(
+          widget.title,
+          style: AutoFlowTokens.title.copyWith(color: tokens.ink),
         ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(widget.message, style: const TextStyle(fontSize: 16)),
+          Text(
+            widget.message,
+            style: AutoFlowTokens.body.copyWith(color: tokens.mute2),
+          ),
           if (widget.showDeleteFilesOption)
             CheckboxListTile(
               value: _deleteFiles,
@@ -63,56 +62,33 @@ class _ShowDeleteDialogState extends State<ShowDeleteDialog> {
                   setState(() => _deleteFiles = value ?? false),
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
-              title: const Text(
+              title: Text(
                 'Also delete images & PDF files',
-                style: TextStyle(fontSize: 14),
+                style: AutoFlowTokens.body.copyWith(color: tokens.ink),
               ),
             ),
         ],
       ),
+      actionsPadding: kDialogActionsPadding,
       actions: [
-        Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: darkPillColor,
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: TextButton(
-            onPressed: () => Navigator.pop(
-              context,
-              const DeleteDialogResult(confirmed: false),
+        DialogActions(
+          children: [
+            AfSecondaryButton(
+              label: 'Cancel',
+              onPressed: () => Navigator.pop(
+                context,
+                const DeleteDialogResult(confirmed: false),
+              ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Cancel', style: TextStyle(color: Colors.white)),
-              ],
+            DestructiveButton(
+              label: 'Delete',
+              icon: Icons.delete_outline,
+              onPressed: () => Navigator.pop(
+                context,
+                DeleteDialogResult(confirmed: true, deleteFiles: _deleteFiles),
+              ),
             ),
-          ),
-        ),
-
-        Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: Colors.red[500],
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: TextButton(
-            onPressed: () => Navigator.pop(
-              context,
-              DeleteDialogResult(confirmed: true, deleteFiles: _deleteFiles),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Delete', style: TextStyle(color: Colors.white)),
-                const SizedBox(width: 5),
-                const Icon(Icons.delete, size: 16, color: Colors.white),
-              ],
-            ),
-          ),
+          ],
         ),
       ],
     );

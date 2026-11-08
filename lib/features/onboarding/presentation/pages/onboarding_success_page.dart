@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
 import '../../../../core/theme/autoflow_tokens.dart';
 import '../../../dashboard/presentation/pages/dashboard_screen.dart';
 import '../../data/constants/onboarding_content.dart';
 import '../bloc/login_state.dart';
 import '../widgets/common/af_layout.dart';
-import '../widgets/common/af_motion.dart';
-import '../widgets/common/af_primary_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
 import '../widgets/login/af_text_link.dart';
 import '../widgets/success/success_tick.dart';
 import '../widgets/success/today_summary_card.dart';
@@ -35,17 +36,34 @@ class OnboardingSuccessPage extends StatefulWidget {
 }
 
 class _OnboardingSuccessPageState extends State<OnboardingSuccessPage> {
-  static const _ctaLatency = Duration(milliseconds: 1100);
-
-  bool _busy = false;
+  /// Guards against a double tap while the route transition runs.
+  bool _navigating = false;
 
   bool get _isMagic => widget.method == LoginMethod.magicLink;
 
-  Future<void> _onCta() async {
-    if (_busy) return;
-    setState(() => _busy = true);
-    await Future.delayed(_ctaLatency);
-    if (!mounted) return;
+  String get _headline => _isMagic ? 'Check your inbox.' : 'Welcome back.';
+
+  String get _subline => _isMagic
+      ? 'We sent a magic link to ${widget.email}.'
+      : 'Here’s your workshop at a glance.';
+
+  @override
+  void initState() {
+    super.initState();
+    // Screen readers hear the outcome without hunting for it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      SemanticsService.sendAnnouncement(
+        View.of(context),
+        '$_headline $_subline',
+        Directionality.of(context),
+      );
+    });
+  }
+
+  void _onCta() {
+    if (_navigating) return;
+    _navigating = true;
     final navigator = Navigator.of(context);
     if (_isMagic) {
       // No mail-app integration yet: return to the login form.
@@ -97,10 +115,13 @@ class _OnboardingSuccessPageState extends State<OnboardingSuccessPage> {
                           AfReveal(
                             visible: true,
                             delayMs: 250,
-                            child: Text(
-                              _isMagic ? 'Check your inbox.' : 'Welcome back.',
-                              textAlign: TextAlign.center,
-                              style: headlineStyle,
+                            child: Semantics(
+                              header: true,
+                              child: Text(
+                                _headline,
+                                textAlign: TextAlign.center,
+                                style: headlineStyle,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -108,9 +129,7 @@ class _OnboardingSuccessPageState extends State<OnboardingSuccessPage> {
                             visible: true,
                             delayMs: 320,
                             child: Text(
-                              _isMagic
-                                  ? 'We sent a magic link to ${widget.email}.'
-                                  : 'Here’s your workshop at a glance.',
+                              _subline,
                               textAlign: TextAlign.center,
                               style: AutoFlowTokens.body.copyWith(
                                 color: const Color(0xFFE5E5E5),
@@ -150,10 +169,6 @@ class _OnboardingSuccessPageState extends State<OnboardingSuccessPage> {
                           label: _isMagic
                               ? 'Open mail app'
                               : 'Go to today’s jobs',
-                          busyLabel: _isMagic
-                              ? 'Opening mail…'
-                              : 'Loading jobs…',
-                          busy: _busy,
                           borderColor: const Color(0x1FFFFFFF),
                           onPressed: _onCta,
                         ),

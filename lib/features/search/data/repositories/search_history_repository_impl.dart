@@ -8,9 +8,8 @@ import '../datasources/search_history_local_data_source.dart';
 class SearchHistoryRepositoryImpl implements SearchHistoryRepository {
   final SearchHistoryLocalDataSource _localDataSource;
 
-  SearchHistoryRepositoryImpl({
-    SearchHistoryLocalDataSource? localDataSource,
-  }) : _localDataSource = localDataSource ?? SearchHistoryLocalDataSource();
+  SearchHistoryRepositoryImpl({SearchHistoryLocalDataSource? localDataSource})
+    : _localDataSource = localDataSource ?? SearchHistoryLocalDataSource();
 
   @override
   Future<Either<Failure, List<String>>> getRecentSearches() async {

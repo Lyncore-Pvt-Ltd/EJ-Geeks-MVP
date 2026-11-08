@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 import 'custom_settings_row.dart';
@@ -20,11 +21,21 @@ class CustomThemeSwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AutoFlowTokens.of(context);
     return CustomSettingsRow(
       icon: icon,
       title: title,
       isLast: isLast,
-      trailing: Switch.adaptive(value: value, onChanged: onChanged),
+      // The whole row toggles, not just the switch thumb.
+      onTap: () => onChanged(!value),
+      trailing: Switch.adaptive(
+        value: value,
+        onChanged: onChanged,
+        activeTrackColor: AutoFlowTokens.accent,
+        inactiveTrackColor: tokens.soft,
+        inactiveThumbColor: tokens.mute,
+        trackOutlineColor: WidgetStatePropertyAll(tokens.line),
+      ),
     );
   }
 }

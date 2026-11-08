@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 
 /// Collapses a duration to zero when the OS asks for reduced motion.
 Duration afDuration(BuildContext context, int milliseconds) =>
@@ -11,17 +11,37 @@ Duration afDuration(BuildContext context, int milliseconds) =>
     : Duration(milliseconds: milliseconds);
 
 /// Scales its child to 0.97 while pressed (every AutoFlow button does this).
+///
+/// The pressed state is set on pointer-down (not after the tap recogniser's
+/// delay), so even quick taps show the scale. It is focusable and activates
+/// with Enter/Space, drawing an accent focus ring while keyboard-focused.
+///
+/// Use [AfPressable.builder] when the child needs to restyle itself while
+/// pressed (e.g. a deeper fill).
 class AfPressable extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
+  final Widget Function(BuildContext context, bool pressed)? builder;
   final VoidCallback? onTap;
   final double pressedScale;
 
+  /// Corner radius of the keyboard focus ring (drawn just outside the child).
+  final BorderRadius focusRadius;
+
   const AfPressable({
     super.key,
-    required this.child,
+    required Widget this.child,
     this.onTap,
     this.pressedScale = 0.97,
-  });
+    this.focusRadius = AfRadius.controlAll,
+  }) : builder = null;
+
+  const AfPressable.builder({
+    super.key,
+    required Widget Function(BuildContext context, bool pressed) this.builder,
+    this.onTap,
+    this.pressedScale = 0.97,
+    this.focusRadius = AfRadius.controlAll,
+  }) : child = null;
 
   @override
   State<AfPressable> createState() => _AfPressableState();
@@ -29,25 +49,85 @@ class AfPressable extends StatefulWidget {
 
 class _AfPressableState extends State<AfPressable> {
   bool _pressed = false;
+  bool _focused = false;
+
+  late final Map<Type, Action<Intent>> _actions = {
+    ActivateIntent: CallbackAction<ActivateIntent>(
+      onInvoke: (_) => _activate(),
+    ),
+    ButtonActivateIntent: CallbackAction<ButtonActivateIntent>(
+      onInvoke: (_) => _activate(),
+    ),
+  };
 
   void _set(bool value) {
-    if (_pressed != value) setState(() => _pressed = value);
+    if (_pressed != value && mounted) setState(() => _pressed = value);
+  }
+
+  void _activate() => widget.onTap?.call();
+
+  @override
+  void didUpdateWidget(covariant AfPressable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.onTap == null) _pressed = false;
   }
 
   @override
   Widget build(BuildContext context) {
     final enabled = widget.onTap != null;
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: widget.onTap,
-      onTapDown: enabled ? (_) => _set(true) : null,
-      onTapUp: enabled ? (_) => _set(false) : null,
-      onTapCancel: enabled ? () => _set(false) : null,
-      child: AnimatedScale(
-        scale: _pressed ? widget.pressedScale : 1,
-        duration: afDuration(context, 160),
-        curve: AutoFlowTokens.easeOut,
-        child: widget.child,
+    final pressed = enabled && _pressed;
+    final content = widget.builder?.call(context, pressed) ?? widget.child!;
+    return FocusableActionDetector(
+      enabled: enabled,
+      actions: _actions,
+      mouseCursor: enabled ? SystemMouseCursors.click : MouseCursor.defer,
+      onShowFocusHighlight: (value) {
+        if (_focused != value) setState(() => _focused = value);
+      },
+      child: Listener(
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: enabled ? (_) => _set(true) : null,
+        onPointerUp: (_) => _set(false),
+        onPointerCancel: (_) => _set(false),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          // A drag/scroll that wins the arena releases the press early.
+          onTapCancel: enabled ? () => _set(false) : null,
+          child: AnimatedScale(
+            scale: pressed ? widget.pressedScale : 1,
+            duration: afDuration(context, 160),
+            curve: AutoFlowTokens.easeOut,
+            child: Stack(
+              // Passthrough keeps the child's layout exactly as without
+              // the ring (e.g. full-width buttons stay full width).
+              fit: StackFit.passthrough,
+              clipBehavior: Clip.none,
+              children: [
+                content,
+                if (_focused && enabled)
+                  Positioned(
+                    left: -4,
+                    top: -4,
+                    right: -4,
+                    bottom: -4,
+                    child: IgnorePointer(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              widget.focusRadius + BorderRadius.circular(4),
+                          border: Border.all(
+                            color: AutoFlowTokens.accent,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -113,6 +193,9 @@ class AfGlow extends StatefulWidget {
   final double opacity;
   final Duration period;
 
+  /// When false the breathing loop pauses (e.g. on an off-screen slide).
+  final bool active;
+
   const AfGlow({
     super.key,
     required this.width,
@@ -120,6 +203,7 @@ class AfGlow extends StatefulWidget {
     required this.blur,
     required this.opacity,
     this.period = const Duration(seconds: 4),
+    this.active = true,
   });
 
   @override
@@ -135,7 +219,17 @@ class _AfGlowState extends State<AfGlow> with SingleTickerProviderStateMixin {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (MediaQuery.of(context).disableAnimations) {
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(covariant AfGlow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.active != widget.active) _sync();
+  }
+
+  void _sync() {
+    if (!widget.active || MediaQuery.of(context).disableAnimations) {
       _controller.stop();
     } else if (!_controller.isAnimating) {
       _controller.repeat(reverse: true);
@@ -171,7 +265,7 @@ class _AfGlowState extends State<AfGlow> with SingleTickerProviderStateMixin {
             height: widget.height,
             decoration: BoxDecoration(
               color: AutoFlowTokens.accent,
-              borderRadius: BorderRadius.circular(9999),
+              borderRadius: AfRadius.chipAll,
             ),
           ),
         ),
@@ -181,11 +275,13 @@ class _AfGlowState extends State<AfGlow> with SingleTickerProviderStateMixin {
 }
 
 /// Fades + slides its child in from [dy] whenever [visible] flips on, after
-/// [delay]. Used for the staggered entrances.
+/// [delayMs]. Used for the staggered entrances. [duration] is the length of
+/// the fade/slide itself, not counting the delay.
 class AfReveal extends StatelessWidget {
   final bool visible;
   final int delayMs;
   final double dy;
+  final Duration duration;
   final Widget child;
 
   const AfReveal({
@@ -194,19 +290,21 @@ class AfReveal extends StatelessWidget {
     required this.child,
     this.delayMs = 0,
     this.dy = 8,
+    this.duration = const Duration(milliseconds: 400),
   });
 
   @override
   Widget build(BuildContext context) {
     final reduced = MediaQuery.of(context).disableAnimations;
+    final total = duration.inMilliseconds + delayMs;
     return TweenAnimationBuilder<double>(
       key: ValueKey(visible),
       tween: Tween(begin: visible ? 0 : 1, end: visible ? 1 : 0),
       duration: reduced || !visible
           ? Duration.zero
-          : Duration(milliseconds: 400 + delayMs),
+          : Duration(milliseconds: total),
       curve: Interval(
-        visible && !reduced ? delayMs / (400 + delayMs) : 0,
+        visible && !reduced && total > 0 ? delayMs / total : 0,
         1,
         curve: AutoFlowTokens.easeOut,
       ),

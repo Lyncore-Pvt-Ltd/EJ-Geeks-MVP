@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+export 'af_dimens.dart';
+
 /// AutoFlow design tokens (see DESIGN.md). Theme-dependent values live on the
 /// extension instance; theme-independent ones are static.
 @immutable
@@ -44,12 +46,48 @@ class AutoFlowTokens extends ThemeExtension<AutoFlowTokens> {
   static const Curve easeOut = Cubic(0.23, 1, 0.32, 1);
   static const Curve easeSpring = Cubic(0.34, 1.56, 0.64, 1);
 
+  /// `radial-gradient(120% 45% at 50% 0%, ...)`: an ellipse 120% of the
+  /// width across and 45% of the height down, centred on the top edge.
   static const RadialGradient celebration = RadialGradient(
     center: Alignment.topCenter,
-    radius: 1.2,
+    // Radius 1 = the shortest side; the transform stretches it per axis.
+    radius: 1,
     colors: [accent, navyInk, Color(0xFF000000)],
     stops: [0, 0.5, 1],
+    transform: AfEllipticalGradientTransform(
+      widthFactor: 1.2,
+      heightFactor: 0.45,
+    ),
   );
+
+  /// Height (px) at which the [page] gradient reaches its end colour.
+  static const double pageGradientExtent = 420;
+
+  /// Height (px) at which the [screen] gradient reaches its end colour.
+  static const double screenGradientExtent = 320;
+
+  /// [page] with its end stop fixed at 420px for a box [height] px tall
+  /// (DESIGN.md: `linear-gradient(180deg, a 0%, b 420px)`).
+  LinearGradient pageFor(double height) =>
+      _fixedExtent(page, pageGradientExtent, height);
+
+  /// [screen] with its end stop fixed at 320px for a box [height] px tall.
+  LinearGradient screenFor(double height) =>
+      _fixedExtent(screen, screenGradientExtent, height);
+
+  static LinearGradient _fixedExtent(
+    LinearGradient base,
+    double extent,
+    double height,
+  ) {
+    final stop = height <= 0 ? 1.0 : (extent / height).clamp(0.0, 1.0);
+    return LinearGradient(
+      begin: base.begin,
+      end: base.end,
+      colors: [base.colors.first, base.colors.last],
+      stops: [0, stop],
+    );
+  }
 
   static const List<BoxShadow> cardShadow = [
     BoxShadow(
@@ -217,5 +255,36 @@ class AutoFlowTokens extends ThemeExtension<AutoFlowTokens> {
       screen: LinearGradient.lerp(screen, other.screen, t)!,
       panel: LinearGradient.lerp(panel, other.panel, t)!,
     );
+  }
+}
+
+/// Turns a circular [RadialGradient] (radius 1 = the shortest side, centred
+/// at its `center`) into an ellipse whose radii are [widthFactor] × the box
+/// width and [heightFactor] × the box height, like CSS `radial-gradient(W% H%)`.
+/// Assumes the gradient's centre is [Alignment.topCenter].
+class AfEllipticalGradientTransform extends GradientTransform {
+  final double widthFactor;
+  final double heightFactor;
+
+  const AfEllipticalGradientTransform({
+    required this.widthFactor,
+    required this.heightFactor,
+  });
+
+  @override
+  Matrix4 transform(Rect bounds, {TextDirection? textDirection}) {
+    final shortest = bounds.shortestSide;
+    if (shortest <= 0) return Matrix4.identity();
+    final cx = bounds.center.dx;
+    final cy = bounds.top;
+    return Matrix4.identity()
+      ..translateByDouble(cx, cy, 0, 1)
+      ..scaleByDouble(
+        bounds.width * widthFactor / shortest,
+        bounds.height * heightFactor / shortest,
+        1,
+        1,
+      )
+      ..translateByDouble(-cx, -cy, 0, 1);
   }
 }

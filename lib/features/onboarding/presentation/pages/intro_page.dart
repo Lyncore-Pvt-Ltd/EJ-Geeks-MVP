@@ -10,7 +10,7 @@ import '../bloc/intro_bloc.dart';
 import '../bloc/intro_event.dart';
 import '../bloc/intro_state.dart';
 import '../widgets/common/af_layout.dart';
-import '../widgets/common/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import '../widgets/intro/intro_footer.dart';
 import '../widgets/intro/intro_header.dart';
 import '../widgets/intro/intro_slide_view.dart';
@@ -51,25 +51,48 @@ class _IntroViewState extends State<_IntroView> {
   Timer? _ticker;
 
   /// Drives the looping illustrations; resets whenever the slide changes.
-  int _tick = 0;
+  /// Only the active illustration listens, so a tick doesn't rebuild the
+  /// whole screen.
+  final ValueNotifier<int> _tick = ValueNotifier(0);
 
   @override
-  void initState() {
-    super.initState();
-    _ticker = Timer.periodic(_tickPeriod, (_) {
-      if (mounted) setState(() => _tick++);
-    });
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncTicker();
+  }
+
+  /// Runs the tick only while this screen is visible and motion is allowed.
+  /// TickerMode turns off once another opaque route (Log in) covers this one.
+  void _syncTicker({bool restart = false}) {
+    final shouldRun =
+        TickerMode.valuesOf(context).enabled &&
+        !MediaQuery.disableAnimationsOf(context);
+    if (!shouldRun || restart) {
+      _ticker?.cancel();
+      _ticker = null;
+    }
+    if (shouldRun && _ticker == null) {
+      _ticker = Timer.periodic(_tickPeriod, (_) {
+        if (!mounted) return;
+        // Also skip while a route is pushing over this one.
+        if (ModalRoute.of(context)?.isCurrent == false) return;
+        _tick.value++;
+      });
+    }
   }
 
   @override
   void dispose() {
     _ticker?.cancel();
+    _tick.dispose();
     _pageController.dispose();
     super.dispose();
   }
 
   void _onStateChanged(BuildContext context, IntroState state) {
-    setState(() => _tick = 0);
+    _tick.value = 0;
+    // Give the new slide's first step a full period.
+    _syncTicker(restart: true);
     final current = _pageController.hasClients
         ? _pageController.page?.round()
         : null;
@@ -99,7 +122,9 @@ class _IntroViewState extends State<_IntroView> {
         final bloc = context.read<IntroBloc>();
         return Scaffold(
           body: DecoratedBox(
-            decoration: BoxDecoration(gradient: tokens.screen),
+            decoration: BoxDecoration(
+              gradient: tokens.screenFor(MediaQuery.sizeOf(context).height),
+            ),
             child: SafeArea(
               bottom: false,
               child: AfContentWidth(
@@ -116,7 +141,7 @@ class _IntroViewState extends State<_IntroView> {
                           index: i,
                           count: kIntroSlides.length,
                           active: i == state.index,
-                          tick: i == state.index ? _tick : 0,
+                          tick: _tick,
                         ),
                       ),
                     ),

@@ -13,10 +13,9 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
   SearchBloc({
     required this._getRecentSearches,
-    required AddRecentSearch addRecentSearch,
+    required this._addRecentSearch,
     required this._clearRecentSearches,
-  }) : _addRecentSearch = addRecentSearch,
-       super(const SearchState()) {
+  }) : super(const SearchState()) {
     on<SearchHistoryRequested>(_onSearchHistoryRequested);
     on<SearchTermSubmitted>(_onSearchTermSubmitted);
     on<SearchHistoryCleared>(_onSearchHistoryCleared);

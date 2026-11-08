@@ -1,4 +1,4 @@
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/invoice/data/constants/invoice_date_format.dart';
 import 'package:flutter/material.dart';
 
@@ -26,42 +26,78 @@ class InvoiceDatePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final borderColor = isDark
-        ? AppPallete.warmOnyx
-        : AppPallete.nebulousWhite;
+    final tokens = AutoFlowTokens.of(context);
+    final dateText = date != null ? formatInvoiceDate(date!) : 'Choose date';
 
-    return InkWell(
-      onTap: () => _pickDate(context),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: borderColor),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: TextStyle(fontSize: 12, color: labelColor)),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  date != null ? formatInvoiceDate(date!) : 'Choose date',
-                  style: TextStyle(fontSize: 14, color: textColor),
-                ),
-                Icon(Icons.calendar_today_outlined, size: 16, color: labelColor),
-              ],
+    // Same DESIGN.md text-field spec as InspectionTextField: 13px/500 muted
+    // label above (16px inset), 8px gap, 48px control.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: AfSpace.m16),
+          child: ExcludeSemantics(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AutoFlowTokens.caption.copyWith(
+                fontWeight: FontWeight.w500,
+                color: tokens.mute,
+              ),
             ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: AfSpace.s8),
+        Semantics(
+          button: true,
+          label: '$label, $dateText',
+          excludeSemantics: true,
+          child: Material(
+            color: tokens.card,
+            shape: RoundedRectangleBorder(
+              borderRadius: AfRadius.controlAll,
+              side: BorderSide(color: tokens.line),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: () => _pickDate(context),
+              child: SizedBox(
+                height: AfSpace.controlHeight,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AfSpace.m16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          dateText,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: date != null
+                              ? AutoFlowTokens.mono(
+                                  fontSize: 16,
+                                  color: tokens.ink,
+                                )
+                              : AutoFlowTokens.body.copyWith(
+                                  color: tokens.mute,
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: AfSpace.s8),
+                      Icon(
+                        Icons.calendar_today_outlined,
+                        size: 18,
+                        color: tokens.mute2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

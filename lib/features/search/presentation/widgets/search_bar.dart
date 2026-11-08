@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../core/theme/app_pallete.dart';
+import '../../../../core/theme/autoflow_tokens.dart';
 import '../bloc/search_bloc.dart';
 import '../bloc/search_event.dart';
 import '../bloc/search_state.dart';
@@ -108,37 +107,55 @@ class _AppSearchBarState extends State<AppSearchBar> {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AutoFlowTokens.of(context);
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: AfRadius.controlAll,
+          borderSide: BorderSide(color: color, width: width),
+        );
+    const iconConstraints = BoxConstraints(
+      minWidth: AfSpace.controlHeight,
+      minHeight: AfSpace.controlHeight,
+    );
+
     return CompositedTransformTarget(
       link: _layerLink,
-      child: TextField(
-        controller: _controller,
-        focusNode: _focusNode,
-        onChanged: widget.onQueryChanged,
-        onSubmitted: _submit,
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 8),
-          hintText: widget.hintText,
-          hintStyle: GoogleFonts.inter(color: Colors.grey),
-          prefixIcon: IconButton(
-            icon: const Icon(
-              Icons.qr_code_scanner,
-              color: Color(0xFF07172B),
-              size: 20,
+      child: SizedBox(
+        height: AfSpace.controlHeight,
+        child: TextField(
+          controller: _controller,
+          focusNode: _focusNode,
+          onChanged: widget.onQueryChanged,
+          onSubmitted: _submit,
+          textInputAction: TextInputAction.search,
+          cursorColor: AutoFlowTokens.accent,
+          style: AutoFlowTokens.body.copyWith(color: tokens.ink, height: 1.2),
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.zero,
+            hintText: widget.hintText,
+            hintStyle: AutoFlowTokens.body.copyWith(
+              color: tokens.mute2,
+              height: 1.2,
             ),
-            tooltip: 'Scan invoice QR code',
-            onPressed: _scanQr,
-          ),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.tune, size: 20, color: Color(0xFF07172B)),
-            tooltip: 'Filter',
-            onPressed: widget.onFilterTap,
-          ),
-          filled: true,
-          fillColor: Colors.grey[200],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
+            prefixIcon: IconButton(
+              icon: Icon(Icons.qr_code_scanner_rounded, color: tokens.mute2),
+              iconSize: 20,
+              tooltip: 'Scan invoice QR code',
+              onPressed: _scanQr,
+            ),
+            prefixIconConstraints: iconConstraints,
+            suffixIcon: IconButton(
+              icon: Icon(Icons.tune_rounded, color: tokens.mute2),
+              iconSize: 20,
+              tooltip: 'Filter',
+              onPressed: widget.onFilterTap,
+            ),
+            suffixIconConstraints: iconConstraints,
+            filled: true,
+            fillColor: tokens.soft,
+            border: border(tokens.line),
+            enabledBorder: border(tokens.line),
+            focusedBorder: border(AutoFlowTokens.accent, 1.5),
           ),
         ),
       ),
@@ -159,15 +176,9 @@ class _RecentSearchesDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor = isDark ? AppPallete.dynamicBlack : AppPallete.whiteout;
-    final borderColor = isDark
-        ? AppPallete.forgedSteel
-        : AppPallete.nebulousWhite;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final mutedColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
+    final tokens = AutoFlowTokens.of(context);
+    final textColor = tokens.ink;
+    final mutedColor = tokens.mute2;
 
     return Positioned(
       width: width,
@@ -183,44 +194,57 @@ class _RecentSearchesDropdown extends StatelessWidget {
                 return const SizedBox.shrink();
               }
               return Container(
+                clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: surfaceColor,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: borderColor),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+                  color: tokens.card,
+                  borderRadius: AfRadius.controlAll,
+                  border: Border.all(color: tokens.line),
+                  boxShadow: AutoFlowTokens.cardShadow,
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                      padding: const EdgeInsets.fromLTRB(
+                        AfSpace.m16,
+                        AfSpace.xs4,
+                        AfSpace.xs4,
+                        0,
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             'Recent searches',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                            style: AutoFlowTokens.caption.copyWith(
+                              fontWeight: FontWeight.w500,
                               color: mutedColor,
                             ),
                           ),
-                          GestureDetector(
-                            onTap: () => context.read<SearchBloc>().add(
+                          TextButton(
+                            onPressed: () => context.read<SearchBloc>().add(
                               const SearchHistoryCleared(),
+                            ),
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(
+                                AfSpace.minTap,
+                                AfSpace.minTap,
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AfSpace.s12,
+                              ),
+                              foregroundColor: tokens.ink,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: AfRadius.smallAll,
+                              ),
                             ),
                             child: Text(
                               'Clear search history',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: mutedColor,
+                              style: AutoFlowTokens.caption.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: tokens.ink,
                                 decoration: TextDecoration.underline,
+                                decorationColor: tokens.ink,
                               ),
                             ),
                           ),
@@ -229,8 +253,11 @@ class _RecentSearchesDropdown extends StatelessWidget {
                     ),
                     ...state.recentSearches.map(
                       (term) => ListTile(
-                        dense: true,
-                        visualDensity: VisualDensity.compact,
+                        minTileHeight: AfSpace.minTap,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AfSpace.m16,
+                        ),
+                        horizontalTitleGap: AfSpace.s12,
                         leading: Icon(
                           Icons.history,
                           size: 18,
@@ -238,14 +265,14 @@ class _RecentSearchesDropdown extends StatelessWidget {
                         ),
                         title: Text(
                           term,
-                          style: TextStyle(fontSize: 14, color: textColor),
+                          style: AutoFlowTokens.body.copyWith(color: textColor),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         onTap: () => onSelect(term),
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: AfSpace.xs4),
                   ],
                 ),
               );

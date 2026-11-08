@@ -1,4 +1,5 @@
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class InvoicePageDots extends StatelessWidget {
@@ -13,6 +14,8 @@ class InvoicePageDots extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AutoFlowTokens.of(context);
+    final duration = afDuration(context, 300);
     return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
@@ -24,15 +27,14 @@ class InvoicePageDots extends StatelessWidget {
           children: List.generate(count, (index) {
             final isActive = index == page;
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
+              duration: duration,
+              curve: AutoFlowTokens.easeOut,
               margin: const EdgeInsets.symmetric(horizontal: 2),
               width: isActive ? 16 : 6,
               height: 6,
               decoration: BoxDecoration(
-                color: isActive
-                    ? AppPallete.selectionGradient[1]
-                    : AppPallete.astroscopusGrey,
-                borderRadius: BorderRadius.circular(3),
+                color: isActive ? AutoFlowTokens.accent : tokens.line,
+                borderRadius: AfRadius.chipAll,
               ),
             );
           }),

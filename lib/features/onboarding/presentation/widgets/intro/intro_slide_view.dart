@@ -1,21 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
 import '../../../domain/entities/intro_slide.dart';
 import '../common/af_layout.dart';
-import '../common/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import 'highlights_illustration.dart';
 import 'inspection_illustration.dart';
 import 'photo_illustration.dart';
 
 /// One intro slide: illustration panel above counter, headline and body.
-/// Inactive slides dim to 40% and shrink to 0.94.
+/// Inactive slides dim to 40% and shrink to 0.94 (300ms).
 class IntroSlideView extends StatelessWidget {
   final IntroSlide slide;
   final int index;
   final int count;
   final bool active;
-  final int tick;
+
+  /// The intro's 1.4s tick. Only the active slide's illustration listens to
+  /// it; inactive slides render step 0.
+  final ValueListenable<int> tick;
 
   const IntroSlideView({
     super.key,
@@ -29,6 +33,10 @@ class IntroSlideView extends StatelessWidget {
   static const _minPanelHeight = 160.0;
   static const _panelGap = 16.0;
   static const _minHeadlineSize = 20.0;
+
+  /// Staggers are 80 / 140 / 200ms (DESIGN.md), so the body is fully in by
+  /// 500ms rather than ~600ms.
+  static const _revealDuration = Duration(milliseconds: 300);
 
   String get _counterLabel => '0${index + 1} / 0$count';
 
@@ -121,13 +129,15 @@ class IntroSlideView extends StatelessWidget {
   }
 
   Widget _panel(BuildContext context, AutoFlowTokens tokens) {
+    // Dim and scale share one duration so they read as one move.
+    final duration = afDuration(context, 300);
     return AnimatedOpacity(
       opacity: active ? 1 : 0.4,
-      duration: afDuration(context, 400),
+      duration: duration,
       curve: AutoFlowTokens.easeOut,
       child: AnimatedScale(
         scale: active ? 1 : 0.94,
-        duration: afDuration(context, 500),
+        duration: duration,
         curve: AutoFlowTokens.easeOut,
         child: Container(
           padding: const EdgeInsets.all(16),
@@ -144,7 +154,14 @@ class IntroSlideView extends StatelessWidget {
             // system text size shouldn't reflow it.
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: MediaQuery.withNoTextScaling(child: _illustration()),
+              child: MediaQuery.withNoTextScaling(
+                child: active
+                    ? ValueListenableBuilder<int>(
+                        valueListenable: tick,
+                        builder: (context, t, _) => _illustration(t),
+                      )
+                    : _illustration(0),
+              ),
             ),
           ),
         ),
@@ -164,6 +181,7 @@ class IntroSlideView extends StatelessWidget {
           visible: active,
           delayMs: 80,
           dy: 12,
+          duration: _revealDuration,
           child: Text(
             _counterLabel,
             style: AutoFlowTokens.mono(color: tokens.mute),
@@ -174,20 +192,25 @@ class IntroSlideView extends StatelessWidget {
           visible: active,
           delayMs: 140,
           dy: 12,
-          child: Text(slide.headline, style: headlineStyle),
+          duration: _revealDuration,
+          child: Semantics(
+            header: true,
+            child: Text(slide.headline, style: headlineStyle),
+          ),
         ),
         const SizedBox(height: 8),
         AfReveal(
           visible: active,
           delayMs: 200,
           dy: 12,
+          duration: _revealDuration,
           child: Text(slide.body, style: bodyStyle),
         ),
       ],
     );
   }
 
-  Widget _illustration() {
+  Widget _illustration(int tick) {
     return switch (slide.illustration) {
       IntroIllustration.highlights => HighlightsIllustration(
         active: active,

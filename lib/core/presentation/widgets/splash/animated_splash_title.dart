@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedSplashTitle extends StatelessWidget {
@@ -16,13 +17,10 @@ class AnimatedSplashTitle extends StatelessWidget {
       opacity: fadeAnimation,
       child: SlideTransition(
         position: slideAnimation,
-        child: const Text(
+        child: Text(
           'AutoFlow',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 1,
+          style: AutoFlowTokens.headline.copyWith(
+            color: AutoFlowTokens.dark.ink,
           ),
         ),
       ),

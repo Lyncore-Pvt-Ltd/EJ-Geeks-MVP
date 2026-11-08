@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'af_motion.dart';
 
 /// Springs its child in from [fromScale] when first built (badges, chips).

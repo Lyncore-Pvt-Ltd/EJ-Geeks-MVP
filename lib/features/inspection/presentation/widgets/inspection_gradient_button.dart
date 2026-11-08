@@ -1,6 +1,10 @@
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
 import 'package:flutter/material.dart';
 
+/// Legacy name kept for existing callers. Renders the DESIGN.md primary
+/// button ([AfPrimaryButton]: 48px, radius 10, accent fill). A null [onTap]
+/// shows [AfPrimaryButton]'s built-in disabled look; [isLoading] swaps in
+/// the busy label + spinner.
 class InspectionGradientButton extends StatelessWidget {
   const InspectionGradientButton({
     super.key,
@@ -10,49 +14,14 @@ class InspectionGradientButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: AppPallete.selectionGradient,
-          begin: Alignment.bottomLeft,
-          end: Alignment.topRight,
-        ),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onTap,
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 55),
-          backgroundColor: AppPallete.transparentColor,
-          shadowColor: AppPallete.transparentColor,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-        ),
-        child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppPallete.whiteColor,
-                ),
-              )
-            : Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: AppPallete.whiteColor,
-                ),
-              ),
-      ),
+    return SizedBox(
+      width: double.infinity,
+      child: AfPrimaryButton(label: label, onPressed: onTap, busy: isLoading),
     );
   }
 }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
 import '../common/af_logo_mark.dart';
-import '../common/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 
 class IntroHeader extends StatelessWidget {
   final VoidCallback onSkip;
@@ -15,7 +15,8 @@ class IntroHeader extends StatelessWidget {
     return SizedBox(
       height: 48,
       child: Padding(
-        padding: const EdgeInsets.only(left: 24, right: 8),
+        // 16px screen gutter; Skip's own 16px padding sits inside the 8 on the right.
+        padding: const EdgeInsets.only(left: 16, right: 8),
         child: Row(
           children: [
             const Expanded(
@@ -30,6 +31,9 @@ class IntroHeader extends StatelessWidget {
             ),
             Semantics(
               button: true,
+              label: 'Skip',
+              onTap: onSkip,
+              excludeSemantics: true,
               child: AfPressable(
                 onTap: onSkip,
                 child: Container(

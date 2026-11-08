@@ -1,6 +1,7 @@
 import 'package:auto_flow/core/presentation/widget/confirm_dialog.dart';
 import 'package:auto_flow/core/presentation/widget/show_delete_dialog.dart';
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_status_chip.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/invoice/data/constants/invoice_date_format.dart';
 import 'package:auto_flow/features/invoice/domain/entities/invoice_summary.dart';
 import 'package:auto_flow/features/invoice/domain/entities/payment_status.dart';
@@ -78,13 +79,7 @@ class InvoiceCard extends StatelessWidget {
   }
 
   void _showActionSheet(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final groupColor = isDark ? AppPallete.warmOnyx : Colors.grey[200];
-    final dividerColor = isDark ? Colors.white12 : Colors.black12;
-    final handleColor = isDark ? Colors.white24 : Colors.black26;
+    final tokens = AutoFlowTokens.of(context);
     final isCompleted = summary.serviceStatus == ServiceStatus.completed;
     final isPaid = summary.paymentStatus == PaymentStatus.paid;
     final vehicleLine = [
@@ -99,173 +94,113 @@ class InvoiceCard extends StatelessWidget {
               : vehicleLine)
         : summary.ownerName;
 
+    Widget rule() => Divider(color: tokens.line, height: 1, thickness: 1);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        margin: const EdgeInsets.fromLTRB(10, 0, 10, 24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? AppPallete.invoiceCardGradientDark
-                : AppPallete.invoiceCardGradientLight,
-            begin: Alignment.topLeft,
-            end: Alignment.topRight,
+      builder: (sheetContext) => SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(
+            AfSpace.gutter,
+            0,
+            AfSpace.gutter,
+            AfSpace.l24,
           ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: handleColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Text(
-                sheetTitle,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: textColor,
-                  fontWeight: FontWeight.w700,
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: tokens.card,
+            borderRadius: AfRadius.cardAll,
+            border: Border.all(color: tokens.line),
+            boxShadow: AutoFlowTokens.cardShadow,
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(
+                    top: AfSpace.s12,
+                    bottom: AfSpace.s8,
+                  ),
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: tokens.line,
+                    borderRadius: AfRadius.chipAll,
+                  ),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: groupColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  ListTile(
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      _openInvoice(context);
-                    },
-                    leading: Icon(Icons.edit, color: textColor),
-                    title: Text(
-                      'Edit',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AfSpace.l24,
+                    AfSpace.xs4,
+                    AfSpace.l24,
+                    AfSpace.s12,
                   ),
-                  Divider(
-                    color: dividerColor,
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
+                  child: Text(
+                    sheetTitle,
+                    style: AutoFlowTokens.title.copyWith(color: tokens.ink),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  ListTile(
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      context.read<InvoiceBloc>().add(
-                        isCompleted
-                            ? InvoiceServiceReverted(summary.id)
-                            : InvoiceServiceCompleted(summary.id),
-                      );
-                    },
-                    leading: Icon(
-                      isCompleted ? Icons.undo : Icons.check_circle_outline,
-                      color: textColor,
-                    ),
-                    title: Text(
+                ),
+                rule(),
+                _ActionRow(
+                  icon: Icons.edit,
+                  label: 'Edit',
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _openInvoice(context);
+                  },
+                ),
+                rule(),
+                _ActionRow(
+                  icon: isCompleted ? Icons.undo : Icons.check_circle_outline,
+                  label: isCompleted
+                      ? 'Undo Complete Service'
+                      : 'Complete Service',
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    context.read<InvoiceBloc>().add(
                       isCompleted
-                          ? 'Undo Complete Service'
-                          : 'Complete Service',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Divider(
-                    color: dividerColor,
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
-                  ),
-                  ListTile(
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      _confirmMarkPaid(context);
-                    },
-                    leading: Icon(
-                      isPaid ? Icons.undo : Icons.attach_money,
-                      color: textColor,
-                    ),
-                    title: Text(
-                      isPaid ? 'Undo Payment' : 'Mark Paid',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Divider(
-                    color: dividerColor,
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
-                  ),
-                  ListTile(
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      _generatePdf(context);
-                    },
-                    leading: Icon(
-                      Icons.picture_as_pdf_outlined,
-                      color: textColor,
-                    ),
-                    title: Text(
-                      'Generate PDF',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  Divider(
-                    color: dividerColor,
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
-                  ),
-                  ListTile(
-                    onTap: () {
-                      Navigator.pop(sheetContext);
-                      _confirmDelete(context);
-                    },
-                    leading: const Icon(Icons.delete, color: Colors.red),
-                    title: const Text(
-                      'Delete',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                          ? InvoiceServiceReverted(summary.id)
+                          : InvoiceServiceCompleted(summary.id),
+                    );
+                  },
+                ),
+                rule(),
+                _ActionRow(
+                  icon: isPaid ? Icons.undo : Icons.attach_money,
+                  label: isPaid ? 'Undo Payment' : 'Mark Paid',
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _confirmMarkPaid(context);
+                  },
+                ),
+                rule(),
+                _ActionRow(
+                  icon: Icons.picture_as_pdf_outlined,
+                  label: 'Generate PDF',
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _generatePdf(context);
+                  },
+                ),
+                rule(),
+                _ActionRow(
+                  icon: Icons.delete,
+                  label: 'Delete',
+                  color: AutoFlowTokens.errorFg,
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _confirmDelete(context);
+                  },
+                ),
+                const SizedBox(height: AfSpace.s8),
+              ],
             ),
-            const SizedBox(height: 8),
-          ],
+          ),
         ),
       ),
     );
@@ -273,9 +208,8 @@ class InvoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final mutedColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final dividerColor = isDark ? Colors.white12 : Colors.black12;
+    final tokens = AutoFlowTokens.of(context);
+    final metaStyle = AutoFlowTokens.caption.copyWith(color: tokens.mute);
     final phoneNumber = summary.phoneNumber.isNotEmpty
         ? '+61 ${summary.phoneNumber}'
         : '';
@@ -285,6 +219,8 @@ class InvoiceCard extends StatelessWidget {
       summary.rego,
       summary.year,
     ].where((part) => part.isNotEmpty).join(' · ');
+    final isCompleted = summary.serviceStatus == ServiceStatus.completed;
+    final isPaid = summary.paymentStatus == PaymentStatus.paid;
 
     return Slidable(
       key: ValueKey(summary.id),
@@ -294,162 +230,184 @@ class InvoiceCard extends StatelessWidget {
         children: [
           SlidableAction(
             onPressed: (context) => _showActionSheet(context),
-            backgroundColor: isDark
-                ? AppPallete.warmOnyx
-                : AppPallete.nebulousWhite,
-            foregroundColor: isDark
-                ? AppPallete.cascadingWhite
-                : AppPallete.tricornBlack,
+            backgroundColor: tokens.soft,
+            foregroundColor: tokens.ink,
             icon: Icons.more_horiz,
             label: 'More',
           ),
           SlidableAction(
             onPressed: (context) => _confirmDelete(context),
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
+            backgroundColor: AutoFlowTokens.errorFg,
+            foregroundColor: AutoFlowTokens.errorBg,
+            borderRadius: const BorderRadius.horizontal(
+              right: Radius.circular(AfRadius.card),
+            ),
             icon: Icons.delete,
             label: 'Delete',
           ),
         ],
       ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _openInvoice(context),
-        onLongPress: () => _showActionSheet(context),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite,
-            ),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          borderRadius: AfRadius.cardAll,
+          boxShadow: AutoFlowTokens.cardShadow,
+        ),
+        child: Material(
+          color: tokens.card,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
+            borderRadius: AfRadius.cardAll,
+            side: BorderSide(color: tokens.line),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: InkWell(
+            onTap: () => _openInvoice(context),
+            onLongPress: () => _showActionSheet(context),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AfSpace.m16,
+                AfSpace.m16,
+                AfSpace.s8,
+                AfSpace.xs4,
+              ),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
+                  Padding(
+                    padding: const EdgeInsets.only(right: AfSpace.s8),
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          summary.ownerName.isEmpty
-                              ? 'Unnamed Owner'
-                              : summary.ownerName,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? AppPallete.cascadingWhite
-                                : AppPallete.tricornBlack,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                summary.ownerName.isEmpty
+                                    ? 'Unnamed Owner'
+                                    : summary.ownerName,
+                                style: AutoFlowTokens.title.copyWith(
+                                  color: tokens.ink,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (phoneNumber.isNotEmpty) ...[
+                                const SizedBox(height: AfSpace.xs4),
+                                Text(
+                                  phoneNumber,
+                                  style: AutoFlowTokens.mono(
+                                    color: tokens.mute,
+                                  ),
+                                ),
+                              ],
+                              if (vehicleLine.isNotEmpty) ...[
+                                const SizedBox(height: AfSpace.xs4),
+                                Text(vehicleLine, style: metaStyle),
+                              ],
+                            ],
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                        if (phoneNumber.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            phoneNumber,
-                            style: TextStyle(fontSize: 13, color: mutedColor),
-                          ),
-                        ],
-                        if (vehicleLine.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            vehicleLine,
-                            style: TextStyle(fontSize: 13, color: mutedColor),
-                          ),
-                        ],
+                        const SizedBox(width: AfSpace.s12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '#${summary.id.substring(0, 8)}',
+                              style: AutoFlowTokens.mono(color: tokens.mute),
+                            ),
+                            if (summary.totalAmount != null) ...[
+                              const SizedBox(height: AfSpace.xs4),
+                              Text(
+                                formatAud(summary.totalAmount!),
+                                style: AutoFlowTokens.mono(
+                                  fontSize: 17,
+                                  color: tokens.ink,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                  const SizedBox(height: AfSpace.s12),
+                  Wrap(
+                    spacing: AfSpace.s8,
+                    runSpacing: AfSpace.s8,
                     children: [
-                      Text(
-                        '#${summary.id.substring(0, 8)}',
-                        style: TextStyle(fontSize: 12, color: mutedColor),
-                      ),
-                      if (summary.totalAmount != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          formatAud(summary.totalAmount!),
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppPallete.cascadingWhite
-                                : AppPallete.dynamicBlack,
-                          ),
-                        ),
-                      ],
+                      isCompleted
+                          ? AfStatusChip(
+                              label: summary.serviceStatus.label,
+                              background: AutoFlowTokens.successBg,
+                              foreground: AutoFlowTokens.successFg,
+                            )
+                          : AfStatusChip(
+                              label: summary.serviceStatus.label,
+                              background: AutoFlowTokens.warningBg,
+                              foreground: AutoFlowTokens.warningFg,
+                            ),
+                      isPaid
+                          ? AfStatusChip(
+                              label: summary.paymentStatus.label,
+                              background: AutoFlowTokens.successBg,
+                              foreground: AutoFlowTokens.successFg,
+                            )
+                          : AfStatusChip(
+                              label: summary.paymentStatus.label,
+                              background: AutoFlowTokens.errorBg,
+                              foreground: AutoFlowTokens.errorFg,
+                            ),
                     ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _StatusBadge(
-                    label: summary.serviceStatus.label,
-                    color: summary.serviceStatus == ServiceStatus.completed
-                        ? Colors.green
-                        : Colors.amber,
-                  ),
-                  _StatusBadge(
-                    label: summary.paymentStatus.label,
-                    color: summary.paymentStatus == PaymentStatus.paid
-                        ? Colors.green
-                        : Colors.redAccent,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Divider(color: dividerColor, height: 1),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Updated ${formatInvoiceDateTime(summary.updatedAt)}',
-                    style: TextStyle(fontSize: 12, color: mutedColor),
+                  const SizedBox(height: AfSpace.s12),
+                  Padding(
+                    padding: const EdgeInsets.only(right: AfSpace.s8),
+                    child: Divider(color: tokens.line, height: 1, thickness: 1),
                   ),
                   Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      Expanded(
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
+                              const TextSpan(text: 'Updated '),
+                              TextSpan(
+                                text: formatInvoiceDateTime(summary.updatedAt),
+                                style: AutoFlowTokens.mono(
+                                  fontSize: 13,
+                                  color: tokens.mute,
+                                ),
+                              ),
+                            ],
+                          ),
+                          style: metaStyle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       IconButton(
-                        tooltip:
-                            summary.serviceStatus == ServiceStatus.completed
+                        tooltip: isCompleted
                             ? 'Undo Complete Service'
                             : 'Complete Service',
+                        color: tokens.ink,
                         onPressed: () => context.read<InvoiceBloc>().add(
-                          summary.serviceStatus == ServiceStatus.completed
+                          isCompleted
                               ? InvoiceServiceReverted(summary.id)
                               : InvoiceServiceCompleted(summary.id),
                         ),
                         icon: Icon(
-                          summary.serviceStatus == ServiceStatus.completed
-                              ? Icons.undo
-                              : Icons.check_circle_outline,
+                          isCompleted ? Icons.undo : Icons.check_circle_outline,
                         ),
                       ),
                       IconButton(
-                        tooltip: summary.paymentStatus == PaymentStatus.paid
-                            ? 'Undo Payment'
-                            : 'Mark Paid',
+                        tooltip: isPaid ? 'Undo Payment' : 'Mark Paid',
+                        color: tokens.ink,
                         onPressed: () => _confirmMarkPaid(context),
-                        icon: Icon(
-                          summary.paymentStatus == PaymentStatus.paid
-                              ? Icons.undo
-                              : Icons.attach_money,
-                        ),
+                        icon: Icon(isPaid ? Icons.undo : Icons.attach_money),
                       ),
                       IconButton(
                         tooltip: 'Generate PDF',
+                        color: tokens.ink,
                         onPressed: () => _generatePdf(context),
                         icon: const Icon(Icons.picture_as_pdf_outlined),
                       ),
@@ -457,7 +415,7 @@ class InvoiceCard extends StatelessWidget {
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -465,27 +423,32 @@ class InvoiceCard extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.label, required this.color});
+/// One 48px+ row in the long-press action sheet.
+class _ActionRow extends StatelessWidget {
+  const _ActionRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.color,
+  });
 
+  final IconData icon;
   final String label;
-  final Color color;
+  final VoidCallback onTap;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Text(
+    final fg = color ?? AutoFlowTokens.of(context).ink;
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: AfSpace.l24),
+      leading: Icon(icon, color: fg),
+      title: Text(
         label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: color,
+        style: AutoFlowTokens.body.copyWith(
+          color: fg,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

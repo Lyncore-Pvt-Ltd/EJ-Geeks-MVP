@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -6,26 +7,23 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tokens = AutoFlowTokens.of(context);
     return AppBar(
       title: Text(
         title ?? 'Default Title',
-        style: TextStyle(color: Colors.black),
+        style: AutoFlowTokens.title.copyWith(color: tokens.ink),
       ),
       centerTitle: true,
-
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications),
-          onPressed: () {
-            // Handle notification tap
-          },
-        ),
         Padding(
-          padding: const EdgeInsets.only(right: 8.0),
-          child: CircleAvatar(
-            radius: 15,
-            backgroundColor: Colors.grey[300],
-            child: const Icon(Icons.person, color: Colors.grey),
+          padding: const EdgeInsets.only(right: AfSpace.m16),
+          // Decorative until accounts exist; nothing to announce or tap.
+          child: ExcludeSemantics(
+            child: CircleAvatar(
+              radius: 15,
+              backgroundColor: tokens.soft,
+              child: Icon(Icons.person, size: 18, color: tokens.mute),
+            ),
           ),
         ),
       ],

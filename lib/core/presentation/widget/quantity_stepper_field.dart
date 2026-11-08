@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 
 /// A numeric [TextEditingController]-backed field with +/- step buttons.
 /// Typing a value directly still works — the buttons are a convenience on
@@ -23,22 +24,15 @@ class QuantityStepperField extends StatefulWidget {
 }
 
 class _QuantityStepperFieldState extends State<QuantityStepperField> {
-  final _focusNode = FocusNode();
-  bool _isFocused = false;
-
   @override
   void initState() {
     super.initState();
     widget.controller.addListener(_onControllerChanged);
-    _focusNode.addListener(() {
-      setState(() => _isFocused = _focusNode.hasFocus);
-    });
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_onControllerChanged);
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -59,72 +53,89 @@ class _QuantityStepperFieldState extends State<QuantityStepperField> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final highlightColor = AppPallete.selectionGradient[1];
-    final borderColor = isDark
-        ? AppPallete.warmOnyx
-        : AppPallete.nebulousWhite;
-    final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
+    final tokens = AutoFlowTokens.of(context);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: AfRadius.controlAll,
+          borderSide: BorderSide(color: color, width: width),
+        );
+
+    // Same DESIGN.md text-field spec as InspectionTextField (label above,
+    // 48px field) so the two line up when placed side by side in a Row.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _StepButton(
-          icon: Icons.remove,
-          borderColor: borderColor,
-          onTap: _value <= 0 ? null : () => _setValue(_value - widget.step),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              textSelectionTheme: TextSelectionThemeData(
-                cursorColor: highlightColor,
-                selectionColor: highlightColor.withValues(alpha: 0.4),
-                selectionHandleColor: highlightColor,
-              ),
-            ),
-            child: TextFormField(
-              controller: widget.controller,
-              focusNode: _focusNode,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-              ],
-              cursorColor: highlightColor,
-              style: TextStyle(
-                color: isDark
-                    ? AppPallete.cascadingWhite
-                    : AppPallete.tricornBlack,
-              ),
-              decoration: InputDecoration(
-                labelText: widget.label,
-                isDense: true,
-                labelStyle: TextStyle(
-                  color: _isFocused ? highlightColor : labelColor,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: borderColor),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: highlightColor, width: 1.5),
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+        Padding(
+          padding: const EdgeInsets.only(left: AfSpace.m16),
+          child: ExcludeSemantics(
+            child: Text(
+              widget.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AutoFlowTokens.caption.copyWith(
+                fontWeight: FontWeight.w500,
+                color: tokens.mute,
               ),
             ),
           ),
         ),
-        const SizedBox(width: 8),
-        _StepButton(
-          icon: Icons.add,
-          borderColor: borderColor,
-          onTap: () => _setValue(_value + widget.step),
+        const SizedBox(height: AfSpace.s8),
+        Row(
+          children: [
+            _StepButton(
+              icon: Icons.remove,
+              tooltip: 'Decrease ${widget.label}',
+              onTap: _value <= 0 ? null : () => _setValue(_value - widget.step),
+            ),
+            const SizedBox(width: AfSpace.s8),
+            Expanded(
+              // The visible label above is excluded; announce it here.
+              child: Semantics(
+                label: widget.label,
+                child: TextFormField(
+                  controller: widget.controller,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d*\.?\d{0,2}'),
+                    ),
+                  ],
+                  textAlign: TextAlign.center,
+                  cursorColor: AutoFlowTokens.accent,
+                  style: AutoFlowTokens.mono(
+                    fontSize: 16,
+                    color: tokens.ink,
+                  ).copyWith(height: 1.2),
+                  decoration: InputDecoration(
+                    isDense: true,
+                    filled: true,
+                    fillColor: tokens.card,
+                    // 16px text at 1.2 line height + 14px top/bottom ≈ 48px.
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AfSpace.s8,
+                      vertical: 14,
+                    ),
+                    enabledBorder: border(tokens.line),
+                    disabledBorder: border(tokens.line),
+                    focusedBorder: border(AutoFlowTokens.accent, 1.5),
+                    errorBorder: border(AutoFlowTokens.errorFg),
+                    focusedErrorBorder: border(AutoFlowTokens.errorFg, 1.5),
+                    border: border(tokens.line),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: AfSpace.s8),
+            _StepButton(
+              icon: Icons.add,
+              tooltip: 'Increase ${widget.label}',
+              onTap: () => _setValue(_value + widget.step),
+            ),
+          ],
         ),
       ],
     );
@@ -134,36 +145,43 @@ class _QuantityStepperFieldState extends State<QuantityStepperField> {
 class _StepButton extends StatelessWidget {
   const _StepButton({
     required this.icon,
-    required this.borderColor,
+    required this.tooltip,
     required this.onTap,
   });
 
   final IconData icon;
-  final Color borderColor;
+  final String tooltip;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = AutoFlowTokens.of(context);
     final disabled = onTap == null;
-    final iconColor = disabled
-        ? borderColor
-        : (isDark ? AppPallete.cascadingWhite : AppPallete.tricornBlack);
 
-    return Material(
-      color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          height: 48,
-          width: 40,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: borderColor),
+    return Tooltip(
+      message: tooltip,
+      excludeFromSemantics: true,
+      child: Semantics(
+        button: true,
+        enabled: !disabled,
+        label: tooltip,
+        excludeSemantics: true,
+        child: AfPressable(
+          onTap: onTap,
+          child: Container(
+            height: AfSpace.controlHeight,
+            width: AfSpace.minTap,
+            decoration: BoxDecoration(
+              color: tokens.card,
+              borderRadius: AfRadius.controlAll,
+              border: Border.all(color: tokens.line),
+            ),
+            child: Icon(
+              icon,
+              size: 18,
+              color: disabled ? tokens.line : tokens.ink,
+            ),
           ),
-          child: Icon(icon, size: 18, color: iconColor),
         ),
       ),
     );

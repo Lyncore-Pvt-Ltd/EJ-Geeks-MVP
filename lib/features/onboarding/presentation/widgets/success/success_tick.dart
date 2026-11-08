@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
-import '../common/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 
 /// 72px orange tick that springs in, draws its check and bursts 8 sparks,
 /// over a breathing glow.
@@ -51,56 +51,65 @@ class _SuccessTickState extends State<SuccessTick>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: _size,
-      height: _size,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          final pop = _phase(0, 500, AutoFlowTokens.easeSpring);
-          final draw = _phase(250, 400, AutoFlowTokens.easeOut);
-          return Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              const OverflowBox(
-                maxWidth: _size + 48,
-                maxHeight: _size + 48,
-                child: AfGlow(
-                  width: _size + 48,
-                  height: _size + 48,
-                  blur: 32,
-                  opacity: 0.6,
-                  period: Duration(seconds: 3),
-                ),
-              ),
-              for (var i = 0; i < _sparkCount; i++) _spark(i),
-              Opacity(
-                opacity: pop.clamp(0, 1),
-                child: Transform.scale(
-                  scale: lerpDouble(0.85, 1, pop),
-                  child: Container(
-                    width: _size,
-                    height: _size,
-                    decoration: const BoxDecoration(
-                      color: AutoFlowTokens.accent,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Color(0xB3FCA311),
-                          offset: Offset(0, 16),
-                          blurRadius: 32,
-                          spreadRadius: -12,
-                        ),
-                      ],
-                    ),
-                    child: CustomPaint(painter: _CheckPainter(progress: draw)),
+    return Semantics(
+      image: true,
+      label: 'Success',
+      child: SizedBox(
+        width: _size,
+        height: _size,
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            final pop = _phase(0, 500, AutoFlowTokens.easeSpring);
+            final draw = _phase(250, 400, AutoFlowTokens.easeOut);
+            return Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                const OverflowBox(
+                  maxWidth: _size + 48,
+                  maxHeight: _size + 48,
+                  child: AfGlow(
+                    width: _size + 48,
+                    height: _size + 48,
+                    blur: 32,
+                    opacity: 0.6,
+                    period: Duration(seconds: 3),
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+                for (var i = 0; i < _sparkCount; i++) _spark(i),
+                Opacity(
+                  opacity: pop.clamp(0, 1),
+                  child: Transform.scale(
+                    scale: lerpDouble(0.85, 1, pop),
+                    child: Container(
+                      width: _size,
+                      height: _size,
+                      decoration: const BoxDecoration(
+                        color: AutoFlowTokens.accent,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0xB3FCA311),
+                            offset: Offset(0, 16),
+                            blurRadius: 32,
+                            spreadRadius: -12,
+                          ),
+                        ],
+                      ),
+                      child: CustomPaint(
+                        // inset 0 1px 0 rgba(255,255,255,0.3): Flutter has no
+                        // inset shadow, so paint the 1px top crescent.
+                        foregroundPainter: const _InsetHighlightPainter(),
+                        painter: _CheckPainter(progress: draw),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -164,4 +173,23 @@ class _CheckPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _CheckPainter oldDelegate) =>
       oldDelegate.progress != progress;
+}
+
+/// The tick's inner top highlight: a 1px white (30%) crescent, i.e. the
+/// circle minus itself shifted down by 1px.
+class _InsetHighlightPainter extends CustomPainter {
+  const _InsetHighlightPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final circle = Path()..addOval(Offset.zero & size);
+    final shifted = Path()..addOval(const Offset(0, 1) & size);
+    canvas.drawPath(
+      Path.combine(PathOperation.difference, circle, shifted),
+      Paint()..color = const Color(0x4DFFFFFF),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _InsetHighlightPainter oldDelegate) => false;
 }

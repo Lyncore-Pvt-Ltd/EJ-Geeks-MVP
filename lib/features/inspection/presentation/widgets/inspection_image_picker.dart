@@ -1,6 +1,8 @@
 import 'dart:io';
 
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_spinner.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,92 +20,96 @@ class InspectionImagePicker extends StatelessWidget {
 
   Future<void> _showSourceSheet(BuildContext context) async {
     final bloc = context.read<InspectionBloc>();
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final groupColor = isDark ? AppPallete.warmOnyx : Colors.grey[200];
-    final dividerColor = isDark ? Colors.white12 : Colors.black12;
-    final handleColor = isDark ? Colors.white24 : Colors.black26;
+    final tokens = AutoFlowTokens.of(context);
+
+    Widget option(
+      BuildContext sheetContext,
+      IconData icon,
+      String label,
+      ImageSource value,
+    ) {
+      return ListTile(
+        minTileHeight: AfSpace.controlHeight,
+        shape: const RoundedRectangleBorder(borderRadius: AfRadius.controlAll),
+        onTap: () => Navigator.pop(sheetContext, value),
+        leading: Icon(icon, color: tokens.ink),
+        title: Text(
+          label,
+          style: AutoFlowTokens.body.copyWith(
+            color: tokens.ink,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      );
+    }
 
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        margin: const EdgeInsets.fromLTRB(10, 0, 10, 24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? AppPallete.invoiceCardGradientDark
-                : AppPallete.invoiceCardGradientLight,
-            begin: Alignment.topLeft,
-            end: Alignment.topRight,
+      builder: (sheetContext) => SafeArea(
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(
+            AfSpace.gutter,
+            0,
+            AfSpace.gutter,
+            AfSpace.l24,
           ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 8),
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: handleColor,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: groupColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: [
-                  ListTile(
-                    onTap: () =>
-                        Navigator.pop(sheetContext, ImageSource.camera),
-                    leading: Icon(
-                      Icons.photo_camera_outlined,
-                      color: textColor,
-                    ),
-                    title: Text(
-                      'Take photo',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+          decoration: BoxDecoration(
+            color: tokens.card,
+            borderRadius: AfRadius.cardAll,
+            border: Border.all(color: tokens.line),
+            boxShadow: AutoFlowTokens.cardShadow,
+          ),
+          // Ink from the option tiles paints on this, above the card fill.
+          child: Material(
+            type: MaterialType.transparency,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(
+                    top: AfSpace.s12,
+                    bottom: AfSpace.s8,
+                  ),
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: tokens.line,
+                    borderRadius: AfRadius.chipAll,
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AfSpace.s8,
+                    vertical: AfSpace.xs4,
+                  ),
+                  child: Column(
+                    children: [
+                      option(
+                        sheetContext,
+                        Icons.photo_camera_outlined,
+                        'Take photo',
+                        ImageSource.camera,
                       ),
-                    ),
-                  ),
-                  Divider(
-                    color: dividerColor,
-                    height: 1,
-                    indent: 20,
-                    endIndent: 20,
-                  ),
-                  ListTile(
-                    onTap: () =>
-                        Navigator.pop(sheetContext, ImageSource.gallery),
-                    leading: Icon(
-                      Icons.photo_library_outlined,
-                      color: textColor,
-                    ),
-                    title: Text(
-                      'Choose from phone',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                      Divider(
+                        color: tokens.line,
+                        height: 1,
+                        indent: AfSpace.m16,
+                        endIndent: AfSpace.m16,
                       ),
-                    ),
+                      option(
+                        sheetContext,
+                        Icons.photo_library_outlined,
+                        'Choose from phone',
+                        ImageSource.gallery,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: AfSpace.s8),
+              ],
             ),
-            const SizedBox(height: 8),
-          ],
+          ),
         ),
       ),
     );
@@ -115,7 +121,7 @@ class InspectionImagePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = AutoFlowTokens.of(context);
 
     return BlocSelector<InspectionBloc, InspectionState, (List<String>, bool)>(
       selector: (state) => sectionName == null
@@ -138,35 +144,57 @@ class InspectionImagePicker extends StatelessWidget {
             children: [
               for (final path in imagePaths)
                 Padding(
-                  padding: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.only(right: AfSpace.s8),
                   child: Stack(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.file(
-                          File(path),
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
+                      Container(
+                        width: 80,
+                        height: 80,
+                        foregroundDecoration: BoxDecoration(
+                          borderRadius: AfRadius.cardAll,
+                          border: Border.all(color: tokens.line),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: AfRadius.cardAll,
+                          child: Image.file(
+                            File(path),
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       Positioned(
-                        top: 2,
-                        right: 2,
-                        child: GestureDetector(
-                          onTap: () => context.read<InspectionBloc>().add(
-                            ImageRemoved(path, sectionName: sectionName),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Colors.black54,
-                              shape: BoxShape.circle,
+                        top: 0,
+                        right: 0,
+                        child: Semantics(
+                          button: true,
+                          label: 'Remove photo',
+                          excludeSemantics: true,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () => context.read<InspectionBloc>().add(
+                              ImageRemoved(path, sectionName: sectionName),
                             ),
-                            child: const Icon(
-                              Icons.close,
-                              size: 14,
-                              color: Colors.white,
+                            child: SizedBox(
+                              width: AfSpace.minTap,
+                              height: AfSpace.minTap,
+                              child: Center(
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    color: AutoFlowTokens.navyInk.withValues(
+                                      alpha: 0.72,
+                                    ),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 14,
+                                    color: AutoFlowTokens.light.card,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -174,32 +202,37 @@ class InspectionImagePicker extends StatelessWidget {
                     ],
                   ),
                 ),
-              SizedBox(
-                width: 80,
-                height: 80,
-                child: Material(
-                  color: isDark
-                      ? AppPallete.warmOnyx
-                      : AppPallete.nebulousWhite,
-                  borderRadius: BorderRadius.circular(8),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
+              Semantics(
+                button: true,
+                enabled: !isPickingImage,
+                label: isPickingImage ? 'Adding photo' : 'Add photo',
+                excludeSemantics: true,
+                child: Tooltip(
+                  message: 'Add photo',
+                  child: AfPressable(
                     onTap: isPickingImage
                         ? null
                         : () => _showSourceSheet(context),
-                    child: Center(
-                      child: isPickingImage
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Icon(
-                              Icons.add_a_photo_outlined,
-                              color: isDark
-                                  ? AppPallete.cascadingWhite
-                                  : AppPallete.tricornBlack,
-                            ),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: tokens.soft,
+                        borderRadius: AfRadius.cardAll,
+                        border: Border.all(color: tokens.line),
+                      ),
+                      child: Center(
+                        child: isPickingImage
+                            ? AfSpinner(
+                                size: 20,
+                                color: tokens.ink,
+                                track: tokens.line,
+                              )
+                            : Icon(
+                                Icons.add_a_photo_outlined,
+                                color: tokens.mute2,
+                              ),
+                      ),
                     ),
                   ),
                 ),

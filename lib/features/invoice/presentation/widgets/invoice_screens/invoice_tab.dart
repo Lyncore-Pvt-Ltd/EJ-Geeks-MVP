@@ -1,10 +1,10 @@
 import 'package:auto_flow/core/presentation/widget/confirm_dialog.dart';
-import 'package:auto_flow/core/presentation/widget/gradient_outline_button.dart';
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_secondary_button.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/inspection/domain/entities/vehicle_details.dart';
 import 'package:auto_flow/features/inspection/presentation/bloc/inspection_bloc.dart';
 import 'package:auto_flow/features/inspection/presentation/bloc/inspection_state.dart';
-import 'package:auto_flow/features/inspection/presentation/widgets/inspection_gradient_button.dart';
 import 'package:auto_flow/features/inspection/presentation/widgets/inspection_text_field.dart';
 import 'package:auto_flow/features/invoice/data/constants/invoice_number_formatter.dart';
 import 'package:auto_flow/features/invoice/domain/entities/invoice_line_item.dart';
@@ -221,7 +221,7 @@ class InvoiceTabState extends State<InvoiceTab>
           return CustomScrollView(
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                padding: const EdgeInsets.all(AfSpace.gutter),
                 sliver: SliverToBoxAdapter(
                   child: Form(
                     key: _formKey,
@@ -229,9 +229,9 @@ class InvoiceTabState extends State<InvoiceTab>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _InvoiceNumberHeading(invoiceId: widget.invoiceId),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AfSpace.m16),
                         const _RecipientCard(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AfSpace.m16),
                         InspectionTextField(
                           controller: _appOwnerAddressController,
                           label: 'App Owner Address',
@@ -256,7 +256,7 @@ class InvoiceTabState extends State<InvoiceTab>
                               ? null
                               : _saveAndLockOwnerAddress,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AfSpace.m16),
                         Row(
                           children: [
                             Expanded(
@@ -278,7 +278,7 @@ class InvoiceTabState extends State<InvoiceTab>
                                     },
                                   ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AfSpace.s12),
                             Expanded(
                               child:
                                   BlocSelector<
@@ -300,7 +300,7 @@ class InvoiceTabState extends State<InvoiceTab>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AfSpace.m16),
                         InspectionTextField(
                           controller: _paymentTermsController,
                           label: 'Payment Terms',
@@ -319,14 +319,14 @@ class InvoiceTabState extends State<InvoiceTab>
                               ? null
                               : _saveAndLockPaymentTerms,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: AfSpace.l24),
                         _ItemAddForm(
                           nameController: _itemNameController,
                           qtyController: _itemQtyController,
                           priceController: _itemPriceController,
                           onAdd: () => _addItem(context),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: AfSpace.l24),
                         BlocSelector<
                           InvoiceDetailsBloc,
                           InvoiceDetailsState,
@@ -345,8 +345,9 @@ class InvoiceTabState extends State<InvoiceTab>
                             );
                           },
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: AfSpace.l24),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Expanded(
                               child: InspectionTextField(
@@ -366,7 +367,7 @@ class InvoiceTabState extends State<InvoiceTab>
                                     .add(GstPercentChanged(value)),
                               ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: AfSpace.s12),
                             Expanded(
                               child: InspectionTextField(
                                 controller: _discountController,
@@ -387,15 +388,15 @@ class InvoiceTabState extends State<InvoiceTab>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AfSpace.m16),
                         const _TotalsSummary(),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AfSpace.m16),
                         InspectionTextField(
                           controller: _notesController,
                           label: 'Notes',
                           growable: true,
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: AfSpace.l24),
                         BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
                           buildWhen: (previous, current) =>
                               previous.isSaving != current.isSaving ||
@@ -412,18 +413,22 @@ class InvoiceTabState extends State<InvoiceTab>
                                 state.isLoading ||
                                 inspectionLoading;
                             return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                InspectionGradientButton(
+                                AfPrimaryButton(
                                   label: 'Generate Invoice',
-                                  isLoading: state.isSending,
-                                  onTap: isBusy
-                                      ? () {}
+                                  busyLabel: 'Generating…',
+                                  busy: state.isSending,
+                                  onPressed: isBusy
+                                      ? null
                                       : widget.onGenerateRequested,
                                 ),
-                                const SizedBox(height: 12),
-                                GradientOutlineButton(
+                                const SizedBox(height: AfSpace.s12),
+                                AfSecondaryButton(
                                   label: 'Save invoice draft',
-                                  onTap: isBusy ? () {} : save,
+                                  busyLabel: 'Saving…',
+                                  busy: state.isSaving,
+                                  onPressed: isBusy ? null : save,
                                 ),
                               ],
                             );
@@ -460,29 +465,39 @@ class _InvoiceNumberHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Text(
-      formatInvoiceNumber(invoiceId),
-      style: TextStyle(
-        fontSize: 26,
-        fontWeight: FontWeight.w700,
-        color: isDark ? AppPallete.cascadingWhite : AppPallete.tricornBlack,
-      ),
+    final tokens = AutoFlowTokens.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Invoice number',
+          style: AutoFlowTokens.caption.copyWith(color: tokens.mute),
+        ),
+        const SizedBox(height: AfSpace.xs4),
+        Text(
+          formatInvoiceNumber(invoiceId),
+          style: AutoFlowTokens.mono(fontSize: 17, color: tokens.ink),
+        ),
+      ],
     );
   }
 }
+
+/// Card spec from DESIGN.md: radius 16, 1px line border, card fill, card
+/// elevation.
+BoxDecoration _cardDecoration(AutoFlowTokens tokens) => BoxDecoration(
+  color: tokens.card,
+  borderRadius: AfRadius.cardAll,
+  border: Border.all(color: tokens.line),
+  boxShadow: AutoFlowTokens.cardShadow,
+);
 
 class _RecipientCard extends StatelessWidget {
   const _RecipientCard();
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final borderColor = isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite;
+    final tokens = AutoFlowTokens.of(context);
 
     return BlocSelector<InspectionBloc, InspectionState, VehicleDetails?>(
       selector: (state) => state.vehicleDetails,
@@ -490,33 +505,26 @@ class _RecipientCard extends StatelessWidget {
         final ownerName = vehicleDetails?.ownerName ?? '';
         final address = vehicleDetails?.address ?? '';
         return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor),
-          ),
+          width: double.infinity,
+          padding: const EdgeInsets.all(AfSpace.m16),
+          decoration: _cardDecoration(tokens),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Recipient',
-                style: TextStyle(fontSize: 12, color: labelColor),
+                style: AutoFlowTokens.caption.copyWith(color: tokens.mute),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AfSpace.xs4),
               Text(
                 ownerName.isEmpty ? 'Unnamed Owner' : ownerName,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: textColor,
-                ),
+                style: AutoFlowTokens.title.copyWith(color: tokens.ink),
               ),
               if (address.isNotEmpty) ...[
-                const SizedBox(height: 4),
+                const SizedBox(height: AfSpace.xs4),
                 Text(
                   address,
-                  style: TextStyle(fontSize: 13, color: labelColor),
+                  style: AutoFlowTokens.caption.copyWith(color: tokens.mute2),
                 ),
               ],
             ],
@@ -543,15 +551,19 @@ class _ItemAddForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         LineItemFormFields(
           nameController: nameController,
           qtyController: qtyController,
           priceController: priceController,
         ),
-        const SizedBox(height: 10),
-        GradientOutlineButton(label: 'Add more items', onTap: onAdd),
+        const SizedBox(height: AfSpace.s12),
+        AfSecondaryButton(
+          label: 'Add more items',
+          icon: Icons.add,
+          onPressed: onAdd,
+        ),
       ],
     );
   }
@@ -572,16 +584,12 @@ class _LineItemsCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
+    final tokens = AutoFlowTokens.of(context);
 
     if (items.isEmpty) {
       return Text(
         'No items added yet',
-        style: TextStyle(fontSize: 13, color: labelColor),
+        style: AutoFlowTokens.caption.copyWith(color: tokens.mute),
       );
     }
 
@@ -591,20 +599,24 @@ class _LineItemsCarousel extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Invoice details',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: textColor,
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'Invoice details '),
+                  TextSpan(
+                    text: '${items.length}',
+                    style: AutoFlowTokens.mono(color: tokens.mute),
+                  ),
+                ],
               ),
+              style: AutoFlowTokens.title.copyWith(color: tokens.ink),
             ),
             InvoicePageDots(controller: pageController, count: items.length),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AfSpace.s8),
         SizedBox(
-          height: 210,
+          height: 224,
           child: PageView.builder(
             controller: pageController,
             itemCount: items.length,
@@ -628,45 +640,25 @@ class _TotalsSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final borderColor = isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite;
+    final tokens = AutoFlowTokens.of(context);
 
     return BlocSelector<InvoiceDetailsBloc, InvoiceDetailsState, InvoiceTotals>(
       selector: (state) => state.totals,
       builder: (context, totals) {
         return Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: borderColor),
-          ),
+          padding: const EdgeInsets.all(AfSpace.m16),
+          decoration: _cardDecoration(tokens),
           child: Column(
             children: [
-              _row('Net Total', totals.netTotal, labelColor, textColor),
-              const SizedBox(height: 6),
-              _row('GST Amount', totals.gstAmount, labelColor, textColor),
-              const SizedBox(height: 6),
-              _row(
-                'Discount Amount',
-                totals.discountAmount,
-                labelColor,
-                textColor,
-              ),
-              const SizedBox(height: 10),
-              Divider(color: borderColor, height: 1),
-              const SizedBox(height: 10),
-              _row(
-                'Total Amount',
-                totals.totalAmount,
-                labelColor,
-                textColor,
-                bold: true,
-              ),
+              _row(tokens, 'Net Total', totals.netTotal),
+              const SizedBox(height: AfSpace.s8),
+              _row(tokens, 'GST Amount', totals.gstAmount),
+              const SizedBox(height: AfSpace.s8),
+              _row(tokens, 'Discount Amount', totals.discountAmount),
+              const SizedBox(height: AfSpace.s12),
+              Divider(color: tokens.line, height: 1, thickness: 1),
+              const SizedBox(height: AfSpace.s12),
+              _row(tokens, 'Total Amount', totals.totalAmount, emphasis: true),
             ],
           ),
         );
@@ -675,29 +667,25 @@ class _TotalsSummary extends StatelessWidget {
   }
 
   Widget _row(
+    AutoFlowTokens tokens,
     String label,
-    double value,
-    Color labelColor,
-    Color textColor, {
-    bool bold = false,
+    double value, {
+    bool emphasis = false,
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontSize: bold ? 15 : 13,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w400,
-            color: bold ? textColor : labelColor,
-          ),
+          style: emphasis
+              ? AutoFlowTokens.title.copyWith(color: tokens.ink)
+              : AutoFlowTokens.caption.copyWith(color: tokens.mute),
         ),
         Text(
           formatAud(value),
-          style: TextStyle(
-            fontSize: bold ? 16 : 14,
-            fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
-            color: textColor,
+          style: AutoFlowTokens.mono(
+            fontSize: emphasis ? 17 : 13,
+            color: tokens.ink,
           ),
         ),
       ],

@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class SplashDotsIndicator extends StatelessWidget {
@@ -13,16 +14,16 @@ class SplashDotsIndicator extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildDot(true),
-          const SizedBox(width: 12),
+          const SizedBox(width: AfSpace.s12),
           Container(
             height: 4,
             width: 40,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(2),
+              color: AutoFlowTokens.dark.line,
+              borderRadius: AfRadius.chipAll,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AfSpace.s12),
           _buildDot(false),
         ],
       ),
@@ -34,7 +35,7 @@ class SplashDotsIndicator extends StatelessWidget {
       height: 8,
       width: 8,
       decoration: BoxDecoration(
-        color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.3),
+        color: isActive ? AutoFlowTokens.accent : AutoFlowTokens.dark.line,
         shape: BoxShape.circle,
       ),
     );

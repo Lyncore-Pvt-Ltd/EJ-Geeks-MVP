@@ -2,10 +2,11 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' show Font;
 import 'package:printing/printing.dart';
 
-/// PDF-specific color palette mirroring `AppPallete`'s light theme (PDFs are
-/// printed/viewed on a light background regardless of the app's theme mode)
-/// plus its red-coral accent gradient, translated to `PdfColor` since the
-/// `pdf` package doesn't understand Flutter `Color`.
+/// PDF-specific color palette (PDFs are printed/viewed on a light background
+/// regardless of the app's theme mode), translated to `PdfColor` since the
+/// `pdf` package doesn't understand Flutter `Color`. These values are the
+/// legacy pre-`AutoFlowTokens` palette, kept so generated PDFs look the same;
+/// the app UI itself is themed via `AutoFlowTokens`.
 class AppPdfPallete {
   static const PdfColor textPrimary = PdfColor.fromInt(0xFF2f2f2f); // tricornBlack
   static const PdfColor textSecondary = PdfColor.fromInt(0xFF677782); // hypnotic
@@ -16,8 +17,9 @@ class AppPdfPallete {
   static const PdfColor paidBlue = PdfColor.fromInt(0xFF14305C);
 }
 
-/// Loads the Inter font family (matching `FontFamily.inter` used across the
-/// app) for use in PDF documents. Cache the result per document build.
+/// Loads the Inter font family for use in PDF documents (independent of the
+/// app UI's Satoshi font from `AutoFlowTokens.fontFamily`). Cache the result
+/// per document build.
 class AppPdfFonts {
   final Font regular;
   final Font bold;

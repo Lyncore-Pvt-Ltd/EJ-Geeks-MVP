@@ -1,5 +1,8 @@
-import 'package:auto_flow/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:auto_flow/features/dashboard/presentation/widgets/common/dashboard_card.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -9,124 +12,145 @@ class RevenueChartCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = AutoFlowTokens.of(context);
     final monthlyRevenue = context.watch<DashboardProvider>().monthlyRevenue;
 
-    final textColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final gridColor = isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite;
+    final axisStyle = AutoFlowTokens.mono(fontSize: 10, color: tokens.mute);
 
     final maxRevenue = monthlyRevenue.isEmpty
         ? 0.0
-        : monthlyRevenue
-              .map((e) => e.revenue)
-              .reduce((a, b) => a > b ? a : b);
+        : monthlyRevenue.map((e) => e.revenue).reduce((a, b) => a > b ? a : b);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 20, 20, 12),
-      decoration: BoxDecoration(
-        color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return DashboardCard(
+      padding: const EdgeInsets.fromLTRB(
+        AfSpace.m16,
+        AfSpace.m16,
+        AfSpace.l24,
+        AfSpace.s12,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Revenue by Month',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: isDark
-                  ? AppPallete.cascadingWhite
-                  : AppPallete.tricornBlack,
-            ),
+            'Revenue by month',
+            style: AutoFlowTokens.title.copyWith(color: tokens.ink),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: AfSpace.m16),
           SizedBox(
             height: 200,
-            child: LineChart(
-              LineChartData(
-                minY: 0,
-                maxY: maxRevenue * 1.2,
-                gridData: FlGridData(
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) =>
-                      FlLine(color: gridColor, strokeWidth: 1),
-                ),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+            child: Semantics(
+              label: monthlyRevenue.isEmpty
+                  ? 'Revenue by month: no data'
+                  : 'Revenue by month: ${[for (final m in monthlyRevenue) '${m.month} ${formatAud(m.revenue)}'].join(', ')}',
+              excludeSemantics: true,
+              child: LineChart(
+                duration: afDuration(context, 250),
+                curve: AutoFlowTokens.easeOut,
+                LineChartData(
+                  minY: 0,
+                  maxY: maxRevenue == 0 ? 1 : maxRevenue * 1.2,
+                  gridData: FlGridData(
+                    drawVerticalLine: false,
+                    getDrawingHorizontalLine: (_) =>
+                        FlLine(color: tokens.line, strokeWidth: 1),
                   ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+                  borderData: FlBorderData(
+                    show: true,
+                    border: Border(bottom: BorderSide(color: tokens.line)),
                   ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 44,
-                      getTitlesWidget: (value, meta) => Text(
-                        '${(value / 1000).round()}k',
-                        style: TextStyle(fontSize: 10, color: textColor),
-                      ),
-                    ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        if (index < 0 || index >= monthlyRevenue.length) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 6),
-                          child: Text(
-                            monthlyRevenue[index].month,
-                            style: TextStyle(fontSize: 10, color: textColor),
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipColor: (_) => AutoFlowTokens.navyInk,
+                      tooltipBorderRadius: AfRadius.smallAll,
+                      getTooltipItems: (spots) => [
+                        for (final spot in spots)
+                          LineTooltipItem(
+                            formatAud(spot.y),
+                            AutoFlowTokens.mono(
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                lineBarsData: [
-                  LineChartBarData(
-                    isCurved: true,
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFFFF3D3D),
-                        Color(0xFFFF6060),
-                        Color(0xFFFF8A80),
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
                     ),
-                    barWidth: 3,
-                    dotData: const FlDotData(show: false),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          const Color(0xFFFF6060).withValues(alpha: 0.3),
-                          const Color(0xFFFF6060).withValues(alpha: 0.0),
-                        ],
-                      ),
-                    ),
-                    spots: [
-                      for (var i = 0; i < monthlyRevenue.length; i++)
-                        FlSpot(i.toDouble(), monthlyRevenue[i].revenue),
+                    getTouchedSpotIndicator: (bar, indexes) => [
+                      for (final _ in indexes)
+                        TouchedSpotIndicatorData(
+                          FlLine(color: tokens.mute, strokeWidth: 1),
+                          FlDotData(
+                            getDotPainter: (spot, percent, bar, index) =>
+                                FlDotCirclePainter(
+                                  radius: 4,
+                                  color: AutoFlowTokens.accent,
+                                  strokeWidth: 2,
+                                  strokeColor: tokens.card,
+                                ),
+                          ),
+                        ),
                     ],
                   ),
-                ],
+                  titlesData: FlTitlesData(
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 44,
+                        getTitlesWidget: (value, meta) => Text(
+                          '${(value / 1000).round()}k',
+                          style: axisStyle,
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= monthlyRevenue.length) {
+                            return const SizedBox.shrink();
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 6),
+                            child: Text(
+                              monthlyRevenue[index].month,
+                              style: axisStyle,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      isCurved: true,
+                      preventCurveOverShooting: true,
+                      color: AutoFlowTokens.accent,
+                      barWidth: 2.5,
+                      isStrokeCapRound: true,
+                      dotData: const FlDotData(show: false),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            AutoFlowTokens.accent.withValues(alpha: 0.24),
+                            AutoFlowTokens.accent.withValues(alpha: 0.0),
+                          ],
+                        ),
+                      ),
+                      spots: [
+                        for (var i = 0; i < monthlyRevenue.length; i++)
+                          FlSpot(i.toDouble(), monthlyRevenue[i].revenue),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

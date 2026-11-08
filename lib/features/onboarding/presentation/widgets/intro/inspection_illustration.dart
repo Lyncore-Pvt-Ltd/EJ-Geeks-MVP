@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/autoflow_tokens.dart';
 import '../../../data/constants/onboarding_content.dart';
-import '../common/af_motion.dart';
-import '../common/af_pop_in.dart';
-import '../common/af_status_chip.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_pop_in.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_status_chip.dart';
 
 /// Slide 2: an inspection card whose checklist rows get graded in sequence.
 class InspectionIllustration extends StatelessWidget {
