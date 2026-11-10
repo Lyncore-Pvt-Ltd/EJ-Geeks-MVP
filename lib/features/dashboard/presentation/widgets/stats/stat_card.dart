@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_animated_number.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/dashboard/presentation/widgets/common/dashboard_card.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +7,7 @@ class StatCard extends StatelessWidget {
   static const double height = 116;
 
   final String label;
-  final String value;
+  final int value;
   final IconData icon;
   final Color accentColor;
   final double trendPercent;
@@ -70,9 +71,9 @@ class StatCard extends StatelessWidget {
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    value,
-                    maxLines: 1,
+                  child: AfAnimatedNumber(
+                    value: value.toDouble(),
+                    formatter: (v) => v.round().toString(),
                     style: AutoFlowTokens.mono(fontSize: 20, color: tokens.ink),
                   ),
                 ),

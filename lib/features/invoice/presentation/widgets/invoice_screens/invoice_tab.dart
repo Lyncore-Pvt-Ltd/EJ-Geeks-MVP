@@ -1,4 +1,5 @@
 import 'package:auto_flow/core/presentation/widget/confirm_dialog.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_animated_number.dart';
 import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
 import 'package:auto_flow/core/presentation/widgets/af/af_secondary_button.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
@@ -678,8 +679,10 @@ class _TotalsSummary extends StatelessWidget {
               ? AutoFlowTokens.title.copyWith(color: tokens.ink)
               : AutoFlowTokens.caption.copyWith(color: tokens.mute),
         ),
-        Text(
-          formatAud(value),
+        AfAnimatedNumber(
+          value: value,
+          formatter: formatAud,
+          durationMs: 300,
           style: AutoFlowTokens.mono(
             fontSize: emphasis ? 17 : 13,
             color: tokens.ink,

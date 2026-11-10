@@ -1,7 +1,9 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_animated_number.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:auto_flow/features/dashboard/domain/entities/daily_revenue.dart';
 import 'package:auto_flow/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:auto_flow/features/dashboard/presentation/widgets/common/dashboard_card.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,7 +16,7 @@ class TotalRevenueCard extends StatelessWidget {
 
     return _SummaryPanel(
       title: 'Total Revenue',
-      value: dashboard.revenueLabel,
+      amount: dashboard.stats.totalRevenue,
       headerIcon: Icons.trending_up_rounded,
       chartLabel: 'Daily revenue this month, today highlighted',
       chart: _RevenueBars(dailyRevenue: dashboard.dailyRevenue),
@@ -31,7 +33,7 @@ class PendingPaymentsCard extends StatelessWidget {
 
     return _SummaryPanel(
       title: 'Pending Payments',
-      value: dashboard.pendingAmountLabel,
+      amount: dashboard.stats.pendingAmount,
       headerIcon: Icons.access_time_rounded,
       chartLabel:
           '${dashboard.pendingPaymentDates.length} days this month with '
@@ -45,14 +47,14 @@ class _SummaryPanel extends StatelessWidget {
   static const double height = 170;
 
   final String title;
-  final String value;
+  final double amount;
   final Widget chart;
   final String chartLabel;
   final IconData headerIcon;
 
   const _SummaryPanel({
     required this.title,
-    required this.value,
+    required this.amount,
     required this.chart,
     required this.chartLabel,
     required this.headerIcon,
@@ -91,10 +93,10 @@ class _SummaryPanel extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(
-              value,
-              maxLines: 1,
-              semanticsLabel: '$title: $value',
+            child: AfAnimatedNumber(
+              value: amount,
+              formatter: formatAud,
+              semanticsPrefix: title,
               style: AutoFlowTokens.mono(fontSize: 22, color: tokens.ink),
             ),
           ),

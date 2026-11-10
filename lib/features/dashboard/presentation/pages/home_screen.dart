@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: StatCard(
                           label: 'Invoices',
-                          value: '${dashboard.invoiceCount}',
+                          value: dashboard.invoiceCount,
                           icon: Icons.receipt_long_rounded,
                           accentColor: tokens.ink,
                           trendPercent: dashboard.invoiceTrend,
@@ -59,7 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: StatCard(
                           label: 'Pending',
-                          value: '${dashboard.pendingCount}',
+                          value: dashboard.pendingCount,
                           icon: Icons.pending_actions_rounded,
                           accentColor: AutoFlowTokens.accent,
                           trendPercent: dashboard.pendingTrend,
@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: StatCard(
                           label: 'Paid',
-                          value: '${dashboard.paidCount}',
+                          value: dashboard.paidCount,
                           icon: Icons.check_circle_rounded,
                           accentColor: tokens.ink,
                           trendPercent: dashboard.paidTrend,

@@ -47,13 +47,19 @@
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/improve-animations/SKILL.md",
-      "computedHash": "524ea241e41d58bbdd8e288700fe24f5725e2a2f3ae7186ad7cebf9055058356"
+      "computedHash": "f6652a3bb94950baa33c684cc0966c838eb65cf22ebb5769a4f51ea205c254fe"
     },
     "mobile-native": {
       "source": "emilkowalski/skills",
       "sourceType": "github",
       "skillPath": "skills/mobile-native/SKILL.md",
       "computedHash": "f221cea36642168df6d3d6d7f236237cbf1ae669138ff7df07775674223d49ad"
+    },
+    "pick-ui-library": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "skillPath": "skills/pick-ui-library/SKILL.md",
+      "computedHash": "5d2a77bf0ecafbda85aa95fb49999b6d77945d9066ec83d970b62e5b388cd686"
     },
     "remove-animations": {
       "source": "emilkowalski/skills",
@@ -66,6 +72,12 @@
       "sourceType": "github",
       "skillPath": "skills/review-animations/SKILL.md",
       "computedHash": "b4e5f0f4fe3e2743c85bf7354108f48a0b9d502cb20ef5c4a9c195da91f93736"
+    },
+    "web-browsing-cli": {
+      "source": "only-cli/oc",
+      "sourceType": "github",
+      "skillPath": "skills/web-browsing-cli/SKILL.md",
+      "computedHash": "b9ba6332d3e97c2b1ae25ab8471974298223045f47980899778f0866f6600fd0"
     }
   }
 }
