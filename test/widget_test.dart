@@ -1,6 +1,7 @@
 import 'package:auto_flow/core/di/service_locator.dart';
 import 'package:auto_flow/core/presentation/pages/splash_screen.dart';
 import 'package:auto_flow/core/theme/theme_controller.dart';
+import 'package:auto_flow/features/auth/presentation/session/session_controller.dart';
 import 'package:auto_flow/features/invoice/presentation/bloc/invoice_bloc.dart';
 import 'package:auto_flow/features/onboarding/presentation/pages/intro_page.dart';
 import 'package:auto_flow/features/search/presentation/bloc/search_bloc.dart';
@@ -24,6 +25,9 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider<ThemeController>.value(value: themeController),
+          ChangeNotifierProvider<SessionController>(
+            create: (_) => SessionController(),
+          ),
           BlocProvider<InvoiceBloc>.value(value: sl<InvoiceBloc>()),
           BlocProvider<SearchBloc>.value(value: sl<SearchBloc>()),
         ],

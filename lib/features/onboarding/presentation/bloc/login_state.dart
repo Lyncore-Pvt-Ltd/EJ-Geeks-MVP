@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 
-enum LoginStatus { idle, submitting, sendingLink, success }
+import '../../../auth/domain/entities/auth_session.dart';
+
+enum LoginStatus { idle, submitting, sendingLink, success, failure }
 
 enum LoginMethod { password, magicLink }
 
@@ -13,6 +15,12 @@ class LoginState extends Equatable {
   final String? passwordError;
   final LoginStatus status;
   final LoginMethod method;
+
+  /// Server/network error shown under the form after a failed sign-in.
+  final String? errorMessage;
+
+  /// Set once password sign-in succeeds.
+  final AuthSession? session;
 
   /// Bumped on every failed validation so the page can shake the form even
   /// when the error text itself didn't change.
@@ -27,6 +35,8 @@ class LoginState extends Equatable {
     this.passwordError,
     this.status = LoginStatus.idle,
     this.method = LoginMethod.password,
+    this.errorMessage,
+    this.session,
     this.shakeCount = 0,
   });
 
@@ -42,6 +52,8 @@ class LoginState extends Equatable {
     String? Function()? passwordError,
     LoginStatus? status,
     LoginMethod? method,
+    String? Function()? errorMessage,
+    AuthSession? session,
     int? shakeCount,
   }) {
     return LoginState(
@@ -55,6 +67,8 @@ class LoginState extends Equatable {
           : this.passwordError,
       status: status ?? this.status,
       method: method ?? this.method,
+      errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
+      session: session ?? this.session,
       shakeCount: shakeCount ?? this.shakeCount,
     );
   }
@@ -69,6 +83,8 @@ class LoginState extends Equatable {
     passwordError,
     status,
     method,
+    errorMessage,
+    session,
     shakeCount,
   ];
 }

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../auth/domain/usecases/login_user.dart';
 import 'login_event.dart';
 import 'login_state.dart';
 
@@ -7,16 +8,23 @@ const kInvalidEmailMessage = 'Enter a valid email address.';
 const kShortPasswordMessage = 'Password is at least 8 characters.';
 const kMagicLinkEmailMessage = 'Enter your email to get a magic link.';
 
-/// UI-only login: validates the form and simulates the network round trip.
-/// There is no auth backend yet (see `lib/features/auth/`).
+/// Validates the form and signs in through [LoginUser]. The magic-link path
+/// is still UI-only (no backend endpoint yet).
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   static final _emailPattern = RegExp(r'^\S+@\S+\.\S+$');
   static const _minPasswordLength = 8;
 
-  final Duration _latency;
+  final LoginUser _loginUser;
 
-  LoginBloc({this._latency = const Duration(milliseconds: 1100)})
-    : super(const LoginState()) {
+  /// Only the magic-link placeholder (no backend yet) simulates latency.
+  final Duration _magicLinkLatency;
+
+  LoginBloc({
+    required LoginUser loginUser,
+    Duration magicLinkLatency = const Duration(milliseconds: 1100),
+  }) : _loginUser = loginUser,
+       _magicLinkLatency = magicLinkLatency,
+       super(const LoginState()) {
     on<LoginEmailChanged>(
       (event, emit) => emit(state.copyWith(email: event.email)),
     );
@@ -38,6 +46,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           status: LoginStatus.idle,
           emailError: () => null,
           passwordError: () => null,
+          errorMessage: () => null,
         ),
       ),
     );
@@ -69,11 +78,31 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         status: LoginStatus.submitting,
         emailError: () => null,
         passwordError: () => null,
+        errorMessage: () => null,
       ),
     );
-    await Future.delayed(_latency);
-    emit(
-      state.copyWith(status: LoginStatus.success, method: LoginMethod.password),
+    final result = await _loginUser(
+      LoginParams(
+        email: state.email.trim(),
+        password: state.password,
+        remember: state.remember,
+      ),
+    );
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: LoginStatus.failure,
+          errorMessage: () => failure.message,
+          shakeCount: state.shakeCount + 1,
+        ),
+      ),
+      (session) => emit(
+        state.copyWith(
+          status: LoginStatus.success,
+          method: LoginMethod.password,
+          session: session,
+        ),
+      ),
     );
   }
 
@@ -99,7 +128,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         passwordError: () => null,
       ),
     );
-    await Future.delayed(_latency);
+    await Future.delayed(_magicLinkLatency);
     emit(
       state.copyWith(
         status: LoginStatus.success,

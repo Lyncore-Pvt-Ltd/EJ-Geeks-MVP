@@ -1,4 +1,16 @@
 import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../network/dio_client.dart';
+import '../network/session_expiry.dart';
+import '../network/token_storage.dart';
+import '../../features/auth/data/datasources/auth_local_data_source.dart';
+import '../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/domain/usecases/get_current_session.dart';
+import '../../features/auth/domain/usecases/login_user.dart';
+import '../../features/auth/domain/usecases/logout_user.dart';
 
 import '../../features/dashboard/data/datasources/dashboard_local_data_source.dart';
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
@@ -206,5 +218,28 @@ void setupServiceLocator() {
     ),
   );
 
-  sl.registerFactory<LoginBloc>(() => LoginBloc());
+  // Networking + auth.
+  sl.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(),
+  );
+  sl.registerLazySingleton<TokenStorage>(() => TokenStorage(sl()));
+  sl.registerLazySingleton<SessionExpiry>(() => SessionExpiry());
+  sl.registerLazySingleton<Dio>(() => buildDio(tokens: sl(), expiry: sl()));
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<AuthLocalDataSource>(
+    () => AuthLocalDataSource(sl(), sl()),
+  );
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+      sessionExpiry: sl(),
+    ),
+  );
+  sl.registerLazySingleton<LoginUser>(() => LoginUser(sl()));
+  sl.registerLazySingleton<GetCurrentSession>(() => GetCurrentSession(sl()));
+  sl.registerLazySingleton<LogoutUser>(() => LogoutUser(sl()));
+  sl.registerFactory<LoginBloc>(() => LoginBloc(loginUser: sl()));
 }

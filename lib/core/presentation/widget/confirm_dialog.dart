@@ -5,14 +5,16 @@ import 'package:flutter/material.dart';
 
 import 'dialog_actions.dart';
 
-/// Generic yes/no confirmation prompt. Shown via
-/// `showDialog<bool>(context: context, builder: (_) => ConfirmDialog(...))` —
-/// resolves to `true` when confirmed, `false` when cancelled/dismissed.
+/// Generic yes/no confirmation prompt. Prefer [showConfirmDialog]; it resolves
+/// to `true` when confirmed, `false` when cancelled/dismissed. Set
+/// [destructive] for actions like Log out / Delete (red confirm button).
 class ConfirmDialog extends StatelessWidget {
   final String title;
   final String message;
   final String confirmLabel;
   final String cancelLabel;
+  final bool destructive;
+  final IconData? confirmIcon;
 
   const ConfirmDialog({
     super.key,
@@ -20,6 +22,8 @@ class ConfirmDialog extends StatelessWidget {
     required this.message,
     this.confirmLabel = 'Yes',
     this.cancelLabel = 'Cancel',
+    this.destructive = false,
+    this.confirmIcon,
   });
 
   @override
@@ -46,13 +50,44 @@ class ConfirmDialog extends StatelessWidget {
               label: cancelLabel,
               onPressed: () => Navigator.pop(context, false),
             ),
-            AfPrimaryButton(
-              label: confirmLabel,
-              onPressed: () => Navigator.pop(context, true),
-            ),
+            if (destructive)
+              DestructiveButton(
+                label: confirmLabel,
+                icon: confirmIcon,
+                onPressed: () => Navigator.pop(context, true),
+              )
+            else
+              AfPrimaryButton(
+                label: confirmLabel,
+                onPressed: () => Navigator.pop(context, true),
+              ),
           ],
         ),
       ],
     );
   }
+}
+
+/// Shows a [ConfirmDialog] and returns whether the user confirmed.
+Future<bool> showConfirmDialog(
+  BuildContext context, {
+  required String title,
+  required String message,
+  String confirmLabel = 'Yes',
+  String cancelLabel = 'Cancel',
+  bool destructive = false,
+  IconData? confirmIcon,
+}) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (_) => ConfirmDialog(
+      title: title,
+      message: message,
+      confirmLabel: confirmLabel,
+      cancelLabel: cancelLabel,
+      destructive: destructive,
+      confirmIcon: confirmIcon,
+    ),
+  );
+  return confirmed == true;
 }

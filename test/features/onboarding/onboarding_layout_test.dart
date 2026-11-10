@@ -1,6 +1,8 @@
 import 'package:auto_flow/core/di/service_locator.dart';
 import 'package:auto_flow/core/error/failures.dart';
 import 'package:auto_flow/core/theme/theme.dart';
+import 'package:auto_flow/features/auth/domain/usecases/login_user.dart';
+import '../../helpers/test_service_locator.dart';
 import 'package:auto_flow/features/onboarding/data/constants/onboarding_content.dart';
 import 'package:auto_flow/features/onboarding/domain/repositories/onboarding_repository.dart';
 import 'package:auto_flow/features/onboarding/domain/usecases/complete_onboarding.dart';
@@ -49,7 +51,12 @@ void main() {
         initialIndex: initialIndex,
       ),
     );
-    sl.registerFactory<LoginBloc>(() => LoginBloc(latency: Duration.zero));
+    sl.registerFactory<LoginBloc>(
+      () => LoginBloc(
+        loginUser: LoginUser(FakeAuthRepository()),
+        magicLinkLatency: Duration.zero,
+      ),
+    );
   });
 
   Future<void> pumpAt(

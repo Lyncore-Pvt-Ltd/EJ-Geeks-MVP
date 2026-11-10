@@ -44,8 +44,7 @@ class InvoiceBloc extends Bloc<InvoiceEvent, InvoiceState> {
     result.fold(
       (failure) =>
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (invoices) =>
-          emit(state.copyWith(isLoading: false, invoices: invoices)),
+      (invoices) => emit(state.copyWith(isLoading: false, invoices: invoices)),
     );
   }
 

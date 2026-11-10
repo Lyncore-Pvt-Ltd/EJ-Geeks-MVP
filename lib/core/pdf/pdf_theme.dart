@@ -8,11 +8,17 @@ import 'package:printing/printing.dart';
 /// legacy pre-`AutoFlowTokens` palette, kept so generated PDFs look the same;
 /// the app UI itself is themed via `AutoFlowTokens`.
 class AppPdfPallete {
-  static const PdfColor textPrimary = PdfColor.fromInt(0xFF2f2f2f); // tricornBlack
-  static const PdfColor textSecondary = PdfColor.fromInt(0xFF677782); // hypnotic
+  static const PdfColor textPrimary = PdfColor.fromInt(
+    0xFF2f2f2f,
+  ); // tricornBlack
+  static const PdfColor textSecondary = PdfColor.fromInt(
+    0xFF677782,
+  ); // hypnotic
   static const PdfColor border = PdfColor.fromInt(0xFFdddfdd); // nebulousWhite
   static const PdfColor background = PdfColor.fromInt(0xFFfbfbfb); // whiteout
-  static const PdfColor accent = PdfColor.fromInt(0xFFFF3D3D); // selectionGradient start
+  static const PdfColor accent = PdfColor.fromInt(
+    0xFFFF3D3D,
+  ); // selectionGradient start
   static const PdfColor white = PdfColors.white;
   static const PdfColor paidBlue = PdfColor.fromInt(0xFF14305C);
 }

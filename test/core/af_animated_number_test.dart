@@ -22,9 +22,7 @@ void main() {
   testWidgets('counts up to the final value', (tester) async {
     await tester.pumpWidget(_host(100));
     await tester.pump(const Duration(milliseconds: 100));
-    final mid = int.parse(
-      (tester.widget<Text>(find.byType(Text)).data) ?? '0',
-    );
+    final mid = int.parse((tester.widget<Text>(find.byType(Text)).data) ?? '0');
     expect(mid, inInclusiveRange(1, 99));
 
     await tester.pump(const Duration(milliseconds: 1100));
@@ -44,15 +42,17 @@ void main() {
     expect(find.text('200'), findsOneWidget);
   });
 
-  testWidgets('reduced motion shows the final value immediately',
-      (tester) async {
+  testWidgets('reduced motion shows the final value immediately', (
+    tester,
+  ) async {
     await tester.pumpWidget(_host(100, reduceMotion: true));
     await tester.pump();
     expect(find.text('100'), findsOneWidget);
   });
 
-  testWidgets('semantics label is the final value, not the in-flight one',
-      (tester) async {
+  testWidgets('semantics label is the final value, not the in-flight one', (
+    tester,
+  ) async {
     final handle = tester.ensureSemantics();
     await tester.pumpWidget(_host(100));
     await tester.pump(const Duration(milliseconds: 50));

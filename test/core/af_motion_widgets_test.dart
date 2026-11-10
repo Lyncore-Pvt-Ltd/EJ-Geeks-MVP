@@ -10,8 +10,7 @@ import '../helpers/layout_harness.dart';
 /// Motion primitives added by the flutter-motion-design pass. Uses
 /// `settleFor` (fixed pumps) instead of `pumpAndSettle`, per the skill.
 void main() {
-  Widget host(Widget child) =>
-      testApp(Scaffold(body: Center(child: child)));
+  Widget host(Widget child) => testApp(Scaffold(body: Center(child: child)));
 
   group('AfTextField error line', () {
     testWidgets('a changed message crossfades, then only the new one stays', (
@@ -141,9 +140,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        host(
-          const AfStaggerIn(index: 0, enabled: false, child: Text('Block')),
-        ),
+        host(const AfStaggerIn(index: 0, enabled: false, child: Text('Block'))),
       );
       expect(
         find.descendant(

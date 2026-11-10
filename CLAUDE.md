@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-"AutoFlow" (formerly "E&J Geek Invoice") — a Flutter workshop inspection/invoicing app (`name: auto_flow` in `pubspec.yaml`; Android `com.example.auto_flow`, iOS `com.example.autoFlow`). The SQLite file is still `ej_geek.db` on purpose so pre-rebrand installs keep their data. Splash screen, a first-launch onboarding flow (see "Onboarding feature" below), a dashboard home screen (live SQLite aggregates, see "Dashboard" below), and a full invoice feature (list, create/edit, PDF generation) with an embedded Inspection tab (vehicle details + a category checklist) all exist and are persisted locally via SQLite. Inspection was the original reference implementation (see "Inspection feature" below); Invoice now mirrors the same clean-architecture layering (see "Invoice feature" below) and should be treated as an equally valid reference for new features. There is no auth or remote backend yet — the onboarding login is UI-only.
+"AutoFlow" (formerly "E&J Geek Invoice") — a Flutter workshop inspection/invoicing app (`name: auto_flow` in `pubspec.yaml`; Android `com.example.auto_flow`, iOS `com.example.autoFlow`). The SQLite file is still `ej_geek.db` on purpose so pre-rebrand installs keep their data. Splash screen, a first-launch onboarding flow (see "Onboarding feature" below), a dashboard home screen (live SQLite aggregates, see "Dashboard" below), and a full invoice feature (list, create/edit, PDF generation) with an embedded Inspection tab (vehicle details + a category checklist) all exist and are persisted locally via SQLite. Inspection was the original reference implementation (see "Inspection feature" below); Invoice now mirrors the same clean-architecture layering (see "Invoice feature" below) and should be treated as an equally valid reference for new features. Auth is real (Dio + secure storage, see "Auth, networking and roles" below); the rest of the app is still local-only SQLite.
 
 ## Commands
 
@@ -13,6 +13,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `flutter test` — run all tests; `flutter test test/widget_test.dart` for a single file
 - `flutter run` — run on a connected device/emulator; `flutter devices` to list targets
 - `dart run flutter_native_splash:create` — regenerate native (pre-engine) launch screen files after changing the `flutter_native_splash:` config block in `pubspec.yaml`. Never hand-edit the generated platform files directly (see below).
+
+- Setup: copy `.env.example` to `.env` (gitignored, bundled as an asset; `flutter run`/`flutter test` fail without it). It holds `API_BASE_URL`; never put secrets in it.
 
 ## Architecture
 
@@ -85,6 +87,8 @@ Orchestration lives in the usecase `GenerateInvoicePdfs` (`lib/features/invoice/
 
 ### Dialog action button styling
 
+Prefer `showConfirmDialog(context, title:, message:, confirmLabel:, destructive:, confirmIcon:)` (`confirm_dialog.dart`) over building `ConfirmDialog` inline; `destructive: true` swaps the confirm button for a `DestructiveButton` (e.g. Log out).
+
 Custom `AlertDialog`s put a single `DialogActions` row (`lib/core/presentation/widget/dialog_actions.dart`, equal-width `Expanded` children with an `AfSpace.s12` gap) in `actions`, with `actionsPadding: kDialogActionsPadding`. Neutral actions (Cancel/Close) are `AfSecondaryButton`, confirming actions are `AfPrimaryButton`, and destructive actions (Delete) are `DestructiveButton` from the same file (`AutoFlowTokens.errorFg` fill, white label + optional trailing icon such as `Icons.delete_outline`). All are 48px (`AfSpace.controlHeight`) with `AfRadius.control` corners — no pills, no bare `TextButton`s, per `DESIGN.md`. Titles use `AutoFlowTokens.title` inside `Semantics(header: true)`, body text `AutoFlowTokens.body` in `mute2`. References: `ConfirmDialog` (`confirm_dialog.dart`), `ShowDeleteDialog` (`show_delete_dialog.dart`), and `AboutInfoDialog` (`lib/core/presentation/widgets/about/about_info_dialog.dart`, Close only).
 
 ### Onboarding feature (`lib/features/onboarding/`)
@@ -98,6 +102,15 @@ Design and motion work should follow the skills checked into the repo (`.agents/
 - **Motion and polish**: `animate` (build new motion), `review-animations` / `improve-animations` (critique or audit existing motion), `remove-animations` (cut unneeded motion), `animation-vocabulary` (name an effect), `apple-design` / `emil-design-eng` (gesture, spring and polish principles), `mobile-native` (native feel on phones). Translate their web/CSS guidance into the Flutter equivalents already used here: `AutoFlowTokens.easeOut`/`easeSpring`, `afDuration` for reduced motion, and the controller-in-page split.
 - **UI library picks** (`pick-ui-library`, `.agents/skills/pick-ui-library/`): the list is web/React (base-ui, Sonner, cmdk, motion, clsx…), so don't install its picks here. Use the Flutter equivalents already in the stack: `flutter_bloc`/`provider` (zustand), `fl_chart` (recharts), `AfSaveStatus` (Sonner), `AutoFlowTokens` + `Af*` widgets (clsx/cva/next-themes), `ListView.builder` (Virtuoso), `ReorderableListView` (dnd kit), `SearchAnchor` (cmdk), `pinput` only if a real OTP step is added, and `AfAnimatedNumber` (NumberFlow). Add no new package for these.
 - **Code structure**: `clean-architecture`, `flutter-bloc-development` and `confirm-destructive-action` match the conventions described above.
+
+### Auth, networking and roles (`lib/core/network/`, `lib/features/auth/`)
+
+- `buildDio` (`core/network/dio_client.dart`) creates the single `Dio` (registered as `sl<Dio>()`; base URL from `.env` via `ApiConstants`). New remote data sources take that `Dio`. `AuthInterceptor` attaches `Authorization: Bearer <access>` to every request and, on 401, refreshes once (single-flight, bare `Dio`, rotated refresh token saved) and replays the request; if refresh fails it clears tokens and fires `SessionExpiry`, which `main.dart` turns into "back to Login". Public calls (login/refresh) pass `extra: {kSkipAuth: true}`. `mapDioException` maps Dio errors to the typed exceptions.
+- `TokenStorage` keeps tokens in `flutter_secure_storage` (+ in-memory cache; "Remember me" off = memory only). `AuthLocalDataSource` also caches user + roles so relaunch restores permissions offline. Android needs `minSdk 23` and the INTERNET permission (both set).
+- Flow: `LoginBloc` → `LoginUser` → `AuthRepository`. Splash: onboarded + `GetCurrentSession` → Dashboard, else Login. Login response is `{"data": {user, roles[], access_token, refresh_token}}` (snake_case); parsing lives only in `auth_session_model.dart`. The refresh response shape is assumed to be `{"data": {access_token, refresh_token}}`: verify against the backend.
+- Logout: the drawer's Logout calls `confirmAndLogout` (`features/auth/presentation/logout_confirm.dart`): `showConfirmDialog(destructive: true)` → `LogoutUser` → clears tokens + cached session on the device → `SessionController.clear()` → back to Login. The backend has **no logout endpoint**, so nothing is revoked server-side; if one is added, call it best-effort in `AuthRemoteDataSource` before the local clear. Local clear always completes.
+- Roles: **Super Admin** (`branch_id` null, global; has `roles:*`, `branches:*`, no `pdf:generate`) and **Branch Manager** (branch-scoped; has `pdf:generate`, no `roles:*`/`branches:*`). **Gate UI on permission strings, never role names**: `SessionController.can(...)` / `PermissionGate` (`features/auth/presentation/`), constants in `features/auth/domain/permissions.dart` (add new ones there). `AuthSession.branchId` is null for global roles; branch-scoped data filtering is not implemented yet. Role-based gating of existing screens (invoice create/delete, PDF generate) is still to do.
+- Tests: `FakeAuthRepository` (+ `kTestBranchManager`/`kTestSuperAdmin`) in `test/helpers/test_service_locator.dart`; `setUpTestServiceLocator()` also loads a test `.env`.
 
 ### Dashboard (`lib/features/dashboard/`)
 

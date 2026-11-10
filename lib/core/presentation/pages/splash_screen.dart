@@ -9,7 +9,11 @@ import 'package:auto_flow/features/onboarding/domain/usecases/is_onboarding_comp
 import 'package:auto_flow/features/onboarding/presentation/pages/intro_page.dart';
 import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/auth/domain/usecases/get_current_session.dart';
+import 'package:auto_flow/features/auth/presentation/session/session_controller.dart';
+import 'package:auto_flow/features/onboarding/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String routeName = '/splash';
@@ -143,9 +147,22 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
     // A failed read falls back to showing the intro rather than blocking.
     final completed = result.getOrElse(() => false);
-    Navigator.of(
-      context,
-    ).pushReplacement(completed ? DashboardScreen.route() : IntroPage.route());
+    final navigator = Navigator.of(context);
+    if (!completed) {
+      navigator.pushReplacement(IntroPage.route());
+      return;
+    }
+    // Onboarded: a stored session goes straight to the dashboard, otherwise
+    // the user must sign in.
+    final sessionResult = await sl<GetCurrentSession>()(null);
+    if (!mounted) return;
+    final session = sessionResult.getOrElse(() => null);
+    if (session == null) {
+      navigator.pushReplacement(LoginPage.route());
+      return;
+    }
+    context.read<SessionController>().setSession(session);
+    navigator.pushReplacement(DashboardScreen.route());
   }
 
   @override

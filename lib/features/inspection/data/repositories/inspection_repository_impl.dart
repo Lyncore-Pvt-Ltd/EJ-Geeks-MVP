@@ -37,9 +37,7 @@ class InspectionRepositoryImpl implements InspectionRepository {
     String invoiceId,
   ) async {
     try {
-      final record = await _localDataSource.getInspectionByInvoiceId(
-        invoiceId,
-      );
+      final record = await _localDataSource.getInspectionByInvoiceId(invoiceId);
       return Right(record);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));

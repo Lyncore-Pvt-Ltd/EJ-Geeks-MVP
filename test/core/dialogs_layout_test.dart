@@ -55,6 +55,16 @@ final _dialogs = <String, (Widget, String)>{
     ),
     'Generate',
   ),
+  'ConfirmDialog (destructive)': (
+    const ConfirmDialog(
+      title: 'Log out?',
+      message: 'You will need to sign in again to use AutoFlow.',
+      confirmLabel: 'Log out',
+      destructive: true,
+      confirmIcon: Icons.logout,
+    ),
+    'Log out',
+  ),
   'ShowDeleteDialog': (
     const ShowDeleteDialog(
       title: 'Delete Invoice',
@@ -119,7 +129,8 @@ void main() {
               );
               expect(
                 rect.height,
-                greaterThanOrEqualTo(48),
+                // Tolerance for float rounding at 1.3x text (47.9999…).
+                greaterThanOrEqualTo(47.99),
                 reason: '$name action shorter than 48px',
               );
               await unmount(tester);

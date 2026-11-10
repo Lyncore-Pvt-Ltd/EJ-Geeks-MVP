@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/theme/autoflow_tokens.dart';
+import '../../../auth/presentation/session/session_controller.dart';
 import '../../data/constants/onboarding_content.dart';
 import '../bloc/login_bloc.dart';
 import '../bloc/login_event.dart';
@@ -94,7 +95,13 @@ class _LoginViewState extends State<_LoginView> {
     return BlocConsumer<LoginBloc, LoginState>(
       listenWhen: (prev, curr) =>
           prev.status != curr.status && curr.status == LoginStatus.success,
-      listener: (context, state) => _openSuccess(state),
+      listener: (context, state) {
+        final session = state.session;
+        if (state.method == LoginMethod.password && session != null) {
+          context.read<SessionController>().setSession(session);
+        }
+        _openSuccess(state);
+      },
       builder: (context, state) {
         final bloc = context.read<LoginBloc>();
         final layout = AfLayout.of(context);
@@ -269,6 +276,18 @@ class _LoginViewState extends State<_LoginView> {
                               bloc.add(const LoginPasswordVisibilityToggled()),
                         ),
                       ),
+                      if (state.errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Semantics(
+                          liveRegion: true,
+                          child: Text(
+                            state.errorMessage!,
+                            style: AutoFlowTokens.body.copyWith(
+                              color: AutoFlowTokens.errorFg,
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),

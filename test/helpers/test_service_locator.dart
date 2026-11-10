@@ -1,3 +1,6 @@
+import 'package:auto_flow/features/auth/domain/entities/auth_session.dart';
+import 'package:auto_flow/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:auto_flow/core/di/service_locator.dart';
 import 'package:auto_flow/core/error/failures.dart';
 import 'package:auto_flow/features/dashboard/domain/entities/daily_revenue.dart';
@@ -211,6 +214,52 @@ class FakeSearchHistoryRepository implements SearchHistoryRepository {
       const Right(null);
 }
 
+class FakeAuthRepository implements AuthRepository {
+  FakeAuthRepository({this.session});
+
+  final AuthSession? session;
+
+  @override
+  Future<Either<Failure, AuthSession>> login({
+    required String email,
+    required String password,
+    required bool remember,
+  }) async => Right(session ?? kTestBranchManager);
+
+  @override
+  Future<Either<Failure, AuthSession?>> getCurrentSession() async =>
+      Right(session);
+
+  @override
+  Future<Either<Failure, void>> logout() async => const Right(null);
+
+  @override
+  Stream<void> get sessionExpired => const Stream.empty();
+}
+
+const kTestBranchManager = AuthSession(
+  user: AuthUser(id: 'u2', email: 'bm@test.lk', fullName: 'Branch Manager'),
+  roles: [
+    UserRole(
+      roleId: 'r2',
+      roleName: 'Branch Manager',
+      branchId: 'b1',
+      permissions: {'invoice:create', 'invoice:read', 'pdf:generate'},
+    ),
+  ],
+);
+
+const kTestSuperAdmin = AuthSession(
+  user: AuthUser(id: 'u1', email: 'admin@test.lk', fullName: 'System Admin'),
+  roles: [
+    UserRole(
+      roleId: 'r1',
+      roleName: 'Super Admin',
+      permissions: {'invoice:create', 'invoice:read', 'roles:read'},
+    ),
+  ],
+);
+
 class FakeOnboardingRepository implements OnboardingRepository {
   FakeOnboardingRepository({this.completed = false});
 
@@ -234,6 +283,7 @@ Future<void> setUpTestServiceLocator({
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
   SharedPreferences.setMockInitialValues({});
+  dotenv.loadFromString(envString: 'API_BASE_URL=http://test.local/api');
   // DashboardProvider syncs the Android home-screen widget after each load.
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(
@@ -258,5 +308,6 @@ Future<void> setUpTestServiceLocator({
   sl.registerLazySingleton<OnboardingRepository>(
     () => FakeOnboardingRepository(completed: onboardingCompleted),
   );
+  sl.registerLazySingleton<AuthRepository>(FakeAuthRepository.new);
   sl.allowReassignment = false;
 }

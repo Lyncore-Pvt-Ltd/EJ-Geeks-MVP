@@ -483,17 +483,23 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                             child: Center(
                               child: Builder(
                                 builder: (context) {
-                                  final (saving, succeeded) =
-                                      _tabController.index == 0
-                                      ? context.select<InspectionBloc,
-                                            (bool, bool)>(
+                                  final (
+                                    saving,
+                                    succeeded,
+                                  ) = _tabController.index == 0
+                                      ? context.select<
+                                          InspectionBloc,
+                                          (bool, bool)
+                                        >(
                                           (b) => (
                                             b.state.isSaving,
                                             b.state.saveSuccess,
                                           ),
                                         )
-                                      : context.select<InvoiceDetailsBloc,
-                                            (bool, bool)>(
+                                      : context.select<
+                                          InvoiceDetailsBloc,
+                                          (bool, bool)
+                                        >(
                                           (b) => (
                                             b.state.isSaving,
                                             b.state.saveSuccess,

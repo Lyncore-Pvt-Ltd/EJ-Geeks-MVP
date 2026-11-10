@@ -96,14 +96,13 @@ class GenerateInvoicePdfs
       (_) => null,
     );
     if (bundle == null) {
-      return Left(detailsFailure ?? const CacheFailure(message: 'Invoice not found'));
+      return Left(
+        detailsFailure ?? const CacheFailure(message: 'Invoice not found'),
+      );
     }
 
     final inspectionResult = await _getInspection(params.invoiceId);
-    final inspection = inspectionResult.fold(
-      (_) => null,
-      (record) => record,
-    );
+    final inspection = inspectionResult.fold((_) => null, (record) => record);
 
     final currentSignature = _buildContentSignature(
       details: bundle.details,
@@ -133,7 +132,9 @@ class GenerateInvoicePdfs
         return Right(
           GeneratedInvoicePdfs(
             invoicePdfPath: existingInvoicePath,
-            inspectionPdfPath: inspection != null ? existingInspectionPath : null,
+            inspectionPdfPath: inspection != null
+                ? existingInspectionPath
+                : null,
           ),
         );
       }

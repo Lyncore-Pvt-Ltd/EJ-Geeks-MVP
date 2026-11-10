@@ -1,6 +1,9 @@
 import 'package:auto_flow/core/presentation/pages/settings_screen.dart';
 import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/auth/presentation/logout_confirm.dart';
+import 'package:auto_flow/features/auth/presentation/session/session_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
@@ -8,6 +11,7 @@ class CustomDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = AutoFlowTokens.of(context);
+    final userSession = context.watch<SessionController>().session;
     final itemStyle = AutoFlowTokens.title.copyWith(color: tokens.ink);
 
     Widget item(IconData icon, String label, VoidCallback onTap) => ListTile(
@@ -29,8 +33,26 @@ class CustomDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               border: Border(bottom: BorderSide(color: tokens.line)),
             ),
-            child: Center(
-              child: Image.asset('assets/icon/EJG.png', height: 64, width: 64),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/icon/EJG.png', height: 64, width: 64),
+                if (userSession != null) ...[
+                  const SizedBox(height: AfSpace.s8),
+                  Text(
+                    userSession.user.fullName,
+                    style: AutoFlowTokens.body.copyWith(color: tokens.ink),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    userSession.roleLabel,
+                    style: AutoFlowTokens.caption.copyWith(color: tokens.mute),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
             ),
           ),
           Expanded(
@@ -50,7 +72,10 @@ class CustomDrawer extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AfSpace.s8),
-            child: item(Icons.logout, 'Logout', () {}),
+            child: item(Icons.logout, 'Logout', () {
+              Navigator.pop(context); // close the drawer
+              confirmAndLogout(context);
+            }),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AfSpace.m16),

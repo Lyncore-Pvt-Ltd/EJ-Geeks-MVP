@@ -5,11 +5,22 @@ import 'package:home_widget/home_widget.dart';
 const String dashboardWidgetAndroidProviderName = 'DashboardWidgetProvider';
 
 Future<void> syncDashboardHomeWidget(DashboardStats stats) async {
-  await HomeWidget.saveWidgetData<String>('revenue', formatAud(stats.totalRevenue));
-  await HomeWidget.saveWidgetData<String>('pendingAmount', formatAud(stats.pendingAmount));
-  await HomeWidget.saveWidgetData<String>('paidAmount', formatAud(stats.paidAmount));
+  await HomeWidget.saveWidgetData<String>(
+    'revenue',
+    formatAud(stats.totalRevenue),
+  );
+  await HomeWidget.saveWidgetData<String>(
+    'pendingAmount',
+    formatAud(stats.pendingAmount),
+  );
+  await HomeWidget.saveWidgetData<String>(
+    'paidAmount',
+    formatAud(stats.paidAmount),
+  );
   await HomeWidget.saveWidgetData<int>('invoiceCount', stats.invoiceCount);
   await HomeWidget.saveWidgetData<int>('pendingCount', stats.pendingCount);
   await HomeWidget.saveWidgetData<int>('paidCount', stats.paidCount);
-  await HomeWidget.updateWidget(androidName: dashboardWidgetAndroidProviderName);
+  await HomeWidget.updateWidget(
+    androidName: dashboardWidgetAndroidProviderName,
+  );
 }

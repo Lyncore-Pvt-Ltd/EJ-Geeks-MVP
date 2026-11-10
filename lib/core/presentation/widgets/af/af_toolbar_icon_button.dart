@@ -47,7 +47,8 @@ class AfToolbarIconButton extends StatelessWidget {
         ? iconColor
         : iconColor.withValues(alpha: iconColor.a * 0.4);
     final content =
-        child ?? Icon(icon, key: ValueKey(icon), size: size, color: resolvedColor);
+        child ??
+        Icon(icon, key: ValueKey(icon), size: size, color: resolvedColor);
     return Tooltip(
       message: tooltip,
       excludeFromSemantics: true,

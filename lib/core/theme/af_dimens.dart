@@ -26,17 +26,20 @@ abstract final class AfRadius {
 
   static const BorderRadius keyAll = BorderRadius.all(Radius.circular(key));
   static const BorderRadius smallAll = BorderRadius.all(Radius.circular(small));
-  static const BorderRadius controlAll =
-      BorderRadius.all(Radius.circular(control));
-  static const BorderRadius viewfinderAll =
-      BorderRadius.all(Radius.circular(viewfinder));
+  static const BorderRadius controlAll = BorderRadius.all(
+    Radius.circular(control),
+  );
+  static const BorderRadius viewfinderAll = BorderRadius.all(
+    Radius.circular(viewfinder),
+  );
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
   static const BorderRadius panelAll = BorderRadius.all(Radius.circular(panel));
   static const BorderRadius chipAll = BorderRadius.all(Radius.circular(chip));
 
   /// Bottom-sheet top corners.
-  static const BorderRadius sheetTop =
-      BorderRadius.vertical(top: Radius.circular(panel));
+  static const BorderRadius sheetTop = BorderRadius.vertical(
+    top: Radius.circular(panel),
+  );
 }
 
 /// Spacing from DESIGN.md `spacing:` (8pt grid, 4 allowed for tight pairs).
