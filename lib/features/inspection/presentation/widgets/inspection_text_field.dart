@@ -1,9 +1,12 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_inline_icon_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// Shared inspection input field, styled with [AppPallete.selectionGradient]
-/// on focus. Two usage modes:
+/// Shared inspection input field, styled per the DESIGN.md text field spec
+/// (48px, radius 10, 1px line border, card fill, 13px muted label above,
+/// accent focus border). Two usage modes:
 /// - controlled, single-line (Vehicle Details): pass [controller].
 /// - uncontrolled, grows while typing (section Comments): pass
 ///   [initialValue] + [onChanged] and [growable]: true.
@@ -76,19 +79,41 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
 
   void _onControllerChanged() => setState(() {});
 
-  Widget? get _suffixIcon {
+  Widget _suffixButton({
+    required IconData icon,
+    required String tooltip,
+    required VoidCallback? onPressed,
+    required Color color,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      excludeFromSemantics: true,
+      child: AfInlineIconButton(
+        icon: icon,
+        semanticLabel: tooltip,
+        onPressed: onPressed,
+        color: color,
+      ),
+    );
+  }
+
+  Widget? _suffixIcon(AutoFlowTokens tokens) {
     if (widget.readOnly && widget.onEditTap != null) {
-      return IconButton(
-        icon: const Icon(Icons.edit_outlined),
+      return _suffixButton(
+        icon: Icons.edit_outlined,
+        tooltip: 'Edit ${widget.label}',
         onPressed: widget.onEditTap,
+        color: tokens.mute2,
       );
     }
     if (!widget.readOnly &&
         widget.onSaveTap != null &&
         (widget.controller?.text.trim().isNotEmpty ?? false)) {
-      return IconButton(
-        icon: const Icon(Icons.check_circle_outline),
+      return _suffixButton(
+        icon: Icons.check_circle_outline,
+        tooltip: 'Save ${widget.label}',
         onPressed: widget.onSaveTap,
+        color: tokens.ink,
       );
     }
     return null;
@@ -105,67 +130,100 @@ class _InspectionTextFieldState extends State<InspectionTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final highlightColor = AppPallete.selectionGradient[1];
+    final tokens = AutoFlowTokens.of(context);
     final collapsed = widget.growable ? widget.collapsedLines : 1;
     final expanded = widget.growable ? widget.expandedLines : 1;
+    final textStyle = AutoFlowTokens.body.copyWith(
+      color: widget.readOnly ? tokens.mute2 : tokens.ink,
+      height: 1.2,
+    );
 
-    return AnimatedSize(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeOut,
-      alignment: Alignment.topCenter,
-      child: Theme(
-        data: Theme.of(context).copyWith(
-          textSelectionTheme: TextSelectionThemeData(
-            cursorColor: highlightColor,
-            selectionColor: highlightColor.withValues(alpha: 0.4),
-            selectionHandleColor: highlightColor,
+    OutlineInputBorder border(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: AfRadius.controlAll,
+          borderSide: BorderSide(color: color, width: width),
+        );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: AfSpace.m16),
+          child: Text(
+            widget.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AutoFlowTokens.caption.copyWith(
+              fontWeight: FontWeight.w500,
+              color: tokens.mute,
+            ),
           ),
         ),
-        child: TextFormField(
-          controller: widget.controller,
-          initialValue: widget.controller == null ? widget.initialValue : null,
-          focusNode: _focusNode,
-          minLines: collapsed,
-          maxLines: _isFocused ? expanded : collapsed,
-          onChanged: widget.onChanged,
-          keyboardType: widget.keyboardType,
-          textCapitalization: widget.textCapitalization,
-          inputFormatters: widget.inputFormatters,
-          validator: widget.validator,
-          readOnly: widget.readOnly,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          cursorColor: highlightColor,
-          selectionControls: materialTextSelectionControls,
-          style: TextStyle(
-            color: isDark
-                ? AppPallete.cascadingWhite
-                : AppPallete.tricornBlack,
-          ),
-          decoration: InputDecoration(
-            labelText: widget.label,
-            prefixText: widget.prefixText,
-            suffixIcon: _suffixIcon,
-            isDense: true,
-            labelStyle: TextStyle(
-              color: _isFocused
-                  ? highlightColor
-                  : (isDark ? AppPallete.boatAnchor : AppPallete.hypnotic),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite,
+        const SizedBox(height: AfSpace.s8),
+        AnimatedSize(
+          duration: afDuration(context, 200),
+          curve: AutoFlowTokens.easeOut,
+          alignment: Alignment.topCenter,
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              textSelectionTheme: TextSelectionThemeData(
+                cursorColor: AutoFlowTokens.accent,
+                selectionColor: AutoFlowTokens.accent.withValues(alpha: 0.32),
+                selectionHandleColor: AutoFlowTokens.accent,
               ),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: highlightColor, width: 1.5),
+            child: TextFormField(
+              controller: widget.controller,
+              initialValue: widget.controller == null
+                  ? widget.initialValue
+                  : null,
+              focusNode: _focusNode,
+              minLines: collapsed,
+              maxLines: _isFocused ? expanded : collapsed,
+              onChanged: widget.onChanged,
+              keyboardType: widget.keyboardType,
+              textCapitalization: widget.textCapitalization,
+              inputFormatters: widget.inputFormatters,
+              validator: widget.validator,
+              readOnly: widget.readOnly,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              cursorColor: AutoFlowTokens.accent,
+              selectionControls: materialTextSelectionControls,
+              style: textStyle,
+              decoration: InputDecoration(
+                prefixText: widget.prefixText,
+                prefixStyle: textStyle.copyWith(color: tokens.mute2),
+                suffixIcon: _suffixIcon(tokens),
+                suffixIconConstraints: const BoxConstraints(
+                  minWidth: AfSpace.controlHeight,
+                  minHeight: AfSpace.controlHeight,
+                ),
+                isDense: true,
+                filled: true,
+                fillColor: widget.readOnly ? tokens.soft : tokens.card,
+                // 16px text at 1.2 line height + 14px top/bottom ≈ 48px.
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: AfSpace.m16,
+                  vertical: 14,
+                ),
+                errorStyle: AutoFlowTokens.caption.copyWith(
+                  color: AutoFlowTokens.errorFg,
+                ),
+                enabledBorder: border(tokens.line),
+                disabledBorder: border(tokens.line),
+                focusedBorder: border(
+                  widget.readOnly ? tokens.line : AutoFlowTokens.accent,
+                  widget.readOnly ? 1 : 1.5,
+                ),
+                errorBorder: border(AutoFlowTokens.errorFg),
+                focusedErrorBorder: border(AutoFlowTokens.errorFg, 1.5),
+                border: border(tokens.line),
+              ),
             ),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
-      ),
+      ],
     );
   }
 }

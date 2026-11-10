@@ -1,4 +1,16 @@
 import 'package:get_it/get_it.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../network/dio_client.dart';
+import '../network/session_expiry.dart';
+import '../network/token_storage.dart';
+import '../../features/auth/data/datasources/auth_local_data_source.dart';
+import '../../features/auth/data/datasources/auth_remote_data_source.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/domain/usecases/get_current_session.dart';
+import '../../features/auth/domain/usecases/login_user.dart';
+import '../../features/auth/domain/usecases/logout_user.dart';
 
 import '../../features/dashboard/data/datasources/dashboard_local_data_source.dart';
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
@@ -33,6 +45,14 @@ import '../../features/invoice/domain/usecases/update_pdf_content_signature.dart
 import '../../features/invoice/domain/usecases/upsert_invoice_draft.dart';
 import '../../features/invoice/presentation/bloc/invoice_bloc.dart';
 import '../../features/invoice/presentation/bloc/invoice_details_bloc.dart';
+import '../../features/onboarding/data/constants/onboarding_content.dart';
+import '../../features/onboarding/data/datasources/onboarding_local_data_source.dart';
+import '../../features/onboarding/data/repositories/onboarding_repository_impl.dart';
+import '../../features/onboarding/domain/repositories/onboarding_repository.dart';
+import '../../features/onboarding/domain/usecases/complete_onboarding.dart';
+import '../../features/onboarding/domain/usecases/is_onboarding_completed.dart';
+import '../../features/onboarding/presentation/bloc/intro_bloc.dart';
+import '../../features/onboarding/presentation/bloc/login_bloc.dart';
 import '../../features/search/data/datasources/search_history_local_data_source.dart';
 import '../../features/search/data/repositories/search_history_repository_impl.dart';
 import '../../features/search/domain/repositories/search_history_repository.dart';
@@ -89,9 +109,7 @@ void setupServiceLocator() {
     () => UpdateInvoicePaymentStatus(sl()),
   );
   sl.registerLazySingleton<DeleteInvoice>(() => DeleteInvoice(sl()));
-  sl.registerLazySingleton<SaveInvoiceDetails>(
-    () => SaveInvoiceDetails(sl()),
-  );
+  sl.registerLazySingleton<SaveInvoiceDetails>(() => SaveInvoiceDetails(sl()));
   sl.registerLazySingleton<GetInvoiceDetailsByInvoiceId>(
     () => GetInvoiceDetailsByInvoiceId(sl()),
   );
@@ -178,4 +196,50 @@ void setupServiceLocator() {
       clearRecentSearches: sl(),
     ),
   );
+
+  sl.registerLazySingleton<OnboardingLocalDataSource>(
+    () => OnboardingLocalDataSource(),
+  );
+
+  sl.registerLazySingleton<OnboardingRepository>(
+    () => OnboardingRepositoryImpl(localDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<IsOnboardingCompleted>(
+    () => IsOnboardingCompleted(sl()),
+  );
+  sl.registerLazySingleton<CompleteOnboarding>(() => CompleteOnboarding(sl()));
+
+  sl.registerFactoryParam<IntroBloc, int, void>(
+    (initialIndex, _) => IntroBloc(
+      completeOnboarding: sl(),
+      slideCount: kIntroSlides.length,
+      initialIndex: initialIndex,
+    ),
+  );
+
+  // Networking + auth.
+  sl.registerLazySingleton<FlutterSecureStorage>(
+    () => const FlutterSecureStorage(),
+  );
+  sl.registerLazySingleton<TokenStorage>(() => TokenStorage(sl()));
+  sl.registerLazySingleton<SessionExpiry>(() => SessionExpiry());
+  sl.registerLazySingleton<Dio>(() => buildDio(tokens: sl(), expiry: sl()));
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSource(sl()),
+  );
+  sl.registerLazySingleton<AuthLocalDataSource>(
+    () => AuthLocalDataSource(sl(), sl()),
+  );
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
+      remoteDataSource: sl(),
+      localDataSource: sl(),
+      sessionExpiry: sl(),
+    ),
+  );
+  sl.registerLazySingleton<LoginUser>(() => LoginUser(sl()));
+  sl.registerLazySingleton<GetCurrentSession>(() => GetCurrentSession(sl()));
+  sl.registerLazySingleton<LogoutUser>(() => LogoutUser(sl()));
+  sl.registerFactory<LoginBloc>(() => LoginBloc(loginUser: sl()));
 }

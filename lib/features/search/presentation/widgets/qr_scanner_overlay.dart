@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/autoflow_tokens.dart';
+
 /// Draws a dimmed scrim with a clear rounded-square cutout and corner
 /// brackets over a camera preview, marking where to aim a QR code.
 /// Presentation-only — no camera or scanning logic.
@@ -9,7 +11,7 @@ class QrScannerOverlay extends StatelessWidget {
   const QrScannerOverlay({
     super.key,
     this.cutOutSize,
-    this.borderColor = Colors.white,
+    this.borderColor = AutoFlowTokens.accent,
   });
 
   final double? cutOutSize;
@@ -38,7 +40,7 @@ class _QrScannerOverlayPainter extends CustomPainter {
   final double? cutOutSize;
   final Color borderColor;
 
-  static const double _cornerRadius = 16;
+  static const double _cornerRadius = AfRadius.card;
   static const double _cornerLength = 32;
   static const double _cornerStrokeWidth = 5;
 
@@ -60,7 +62,10 @@ class _QrScannerOverlayPainter extends CustomPainter {
       Path()..addRect(Rect.fromLTWH(0, 0, size.width, size.height)),
       Path()..addRRect(cutOutRRect),
     );
-    canvas.drawPath(scrimPath, Paint()..color = Colors.black54);
+    canvas.drawPath(
+      scrimPath,
+      Paint()..color = AutoFlowTokens.navyInk.withValues(alpha: 0.64),
+    );
 
     final cornerPaint = Paint()
       ..color = borderColor

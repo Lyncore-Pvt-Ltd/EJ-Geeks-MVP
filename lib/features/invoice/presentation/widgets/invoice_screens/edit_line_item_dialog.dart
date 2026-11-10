@@ -1,10 +1,11 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/inspection_gradient_button.dart';
-import 'package:ej_geek/features/invoice/domain/entities/invoice_line_item.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_event.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/line_item_form_fields.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_primary_button.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_toolbar_icon_button.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/invoice/domain/entities/invoice_line_item.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_bloc.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_event.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/line_item_form_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,8 +19,10 @@ class EditLineItemDialog extends StatefulWidget {
     final bloc = context.read<InvoiceDetailsBloc>();
     await showDialog<void>(
       context: context,
-      builder: (_) =>
-          BlocProvider.value(value: bloc, child: EditLineItemDialog(item: item)),
+      builder: (_) => BlocProvider.value(
+        value: bloc,
+        child: EditLineItemDialog(item: item),
+      ),
     );
   }
 
@@ -71,86 +74,99 @@ class _EditLineItemDialogState extends State<EditLineItemDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final backgroundColor = isDark
-        ? AppPallete.dynamicBlack
-        : AppPallete.whiteout;
+    final tokens = AutoFlowTokens.of(context);
 
     return Dialog(
-      backgroundColor: backgroundColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
+      backgroundColor: tokens.card,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: AfRadius.cardAll,
+        side: BorderSide(color: tokens.line),
+      ),
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: AfSpace.gutter,
+        vertical: AfSpace.l24,
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(
+          AfSpace.l24,
+          AfSpace.s12,
+          AfSpace.s12,
+          AfSpace.l24,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Edit Item',
-                  style: TextStyle(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
+                Expanded(
+                  child: Text(
+                    'Edit Item',
+                    style: AutoFlowTokens.title.copyWith(color: tokens.ink),
                   ),
                 ),
-                InkWell(
-                  onTap: () => Navigator.pop(context),
-                  child: Icon(Icons.close_outlined, color: textColor),
+                AfToolbarIconButton(
+                  tooltip: 'Close',
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icons.close_outlined,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            LineItemFormFields(
-              nameController: _nameController,
-              qtyController: _qtyController,
-              priceController: _priceController,
-            ),
-            if (_errorText != null) ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppPallete.errorColor.withValues(alpha: 0.4),
+            Padding(
+              padding: const EdgeInsets.only(right: AfSpace.s12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: AfSpace.s8),
+                  LineItemFormFields(
+                    nameController: _nameController,
+                    qtyController: _qtyController,
+                    priceController: _priceController,
                   ),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: AppPallete.errorColor,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorText!,
-                        style: const TextStyle(
-                          color: AppPallete.errorColor,
-                          fontSize: 13,
+                  if (_errorText != null) ...[
+                    const SizedBox(height: AfSpace.s12),
+                    Semantics(
+                      liveRegion: true,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AfSpace.s12,
+                          vertical: AfSpace.s8,
+                        ),
+                        decoration: const BoxDecoration(
+                          color: AutoFlowTokens.errorBg,
+                          borderRadius: AfRadius.smallAll,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: AutoFlowTokens.errorFg,
+                              size: 16,
+                            ),
+                            const SizedBox(width: AfSpace.s8),
+                            Expanded(
+                              child: Text(
+                                _errorText!,
+                                style: AutoFlowTokens.caption.copyWith(
+                                  color: AutoFlowTokens.errorFg,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ],
-                ),
+                  const SizedBox(height: AfSpace.l24),
+                  AfPrimaryButton(
+                    label: 'Save changes',
+                    onPressed: () => _save(context),
+                  ),
+                ],
               ),
-            ],
-            const SizedBox(height: 20),
-            InspectionGradientButton(
-              label: 'Save changes',
-              onTap: () => _save(context),
             ),
           ],
         ),

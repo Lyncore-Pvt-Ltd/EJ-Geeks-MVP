@@ -1,13 +1,14 @@
-import 'package:ej_geek/core/presentation/widget/gradient_outline_button.dart';
-import 'package:ej_geek/features/inspection/domain/entities/inspection_section.dart';
-import 'package:ej_geek/features/inspection/domain/entities/vehicle_details.dart';
-import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
-import 'package:ej_geek/features/inspection/presentation/bloc/inspection_event.dart';
-import 'package:ej_geek/features/inspection/presentation/bloc/inspection_state.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/inspection_gradient_button.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/inspection_image_picker.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/inspection_section_card.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/vehicle_details_form.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_secondary_button.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/inspection/domain/entities/inspection_section.dart';
+import 'package:auto_flow/features/inspection/domain/entities/vehicle_details.dart';
+import 'package:auto_flow/features/inspection/presentation/bloc/inspection_bloc.dart';
+import 'package:auto_flow/features/inspection/presentation/bloc/inspection_event.dart';
+import 'package:auto_flow/features/inspection/presentation/bloc/inspection_state.dart';
+import 'package:auto_flow/features/inspection/presentation/widgets/inspection_gradient_button.dart';
+import 'package:auto_flow/features/inspection/presentation/widgets/inspection_image_picker.dart';
+import 'package:auto_flow/features/inspection/presentation/widgets/inspection_section_card.dart';
+import 'package:auto_flow/features/inspection/presentation/widgets/vehicle_details_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -84,10 +85,8 @@ class InspectionTabState extends State<InspectionTab>
   void save() {
     final vehicleDetails = _currentVehicleDetails;
     _lastSavedVehicleDetails = vehicleDetails;
+    // Progress/success shows in the sheet's floating AfSaveStatus pill.
     context.read<InspectionBloc>().add(InspectionSaved(vehicleDetails));
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Inspection saved')));
   }
 
   void _populateFrom(VehicleDetails vehicleDetails) {
@@ -116,18 +115,15 @@ class InspectionTabState extends State<InspectionTab>
     return MultiBlocListener(
       listeners: [
         BlocListener<InspectionBloc, InspectionState>(
+          // Success shows in the sheet's AfSaveStatus pill; only errors
+          // still need a SnackBar.
           listenWhen: (previous, current) =>
-              previous.errorMessage != current.errorMessage ||
-              previous.saveSuccess != current.saveSuccess,
+              previous.errorMessage != current.errorMessage,
           listener: (context, state) {
             if (state.errorMessage != null) {
               ScaffoldMessenger.of(
                 context,
               ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
-            } else if (state.saveSuccess) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text('Inspection saved')));
             }
           },
         ),
@@ -146,7 +142,12 @@ class InspectionTabState extends State<InspectionTab>
           return CustomScrollView(
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                padding: const EdgeInsets.fromLTRB(
+                  AfSpace.gutter,
+                  AfSpace.gutter,
+                  AfSpace.gutter,
+                  0,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: Column(
                     children: [
@@ -165,22 +166,21 @@ class InspectionTabState extends State<InspectionTab>
                           engineNoController: _engineNoController,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AfSpace.s12),
                       const InspectionImagePicker(),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: AfSpace.m16),
                     ],
                   ),
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: AfSpace.gutter),
                 sliver: SliverList.builder(
                   itemCount: sectionCount,
                   itemBuilder: (context, index) {
                     // Only rebuilds this one card when its own section
                     // changes (e.g. a rating tick or comment keystroke) —
                     // not the other four sections.
-                    // add new
                     return BlocSelector<
                       InspectionBloc,
                       InspectionState,
@@ -195,7 +195,12 @@ class InspectionTabState extends State<InspectionTab>
                 ),
               ),
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: const EdgeInsets.fromLTRB(
+                  AfSpace.gutter,
+                  0,
+                  AfSpace.gutter,
+                  AfSpace.gutter,
+                ),
                 sliver: SliverToBoxAdapter(
                   child: BlocBuilder<InspectionBloc, InspectionState>(
                     buildWhen: (previous, current) =>
@@ -204,16 +209,16 @@ class InspectionTabState extends State<InspectionTab>
                     builder: (context, state) {
                       final isBusy = state.isSaving || state.isLoading;
                       return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           InspectionGradientButton(
                             label: 'Generate PDF',
-                            isLoading: false,
-                            onTap: isBusy ? () {} : widget.onGenerateRequested,
+                            onTap: isBusy ? null : widget.onGenerateRequested,
                           ),
-                          const SizedBox(height: 12),
-                          GradientOutlineButton(
+                          const SizedBox(height: AfSpace.s12),
+                          AfSecondaryButton(
                             label: 'Draft',
-                            onTap: isBusy ? () {} : save,
+                            onPressed: isBusy ? null : save,
                           ),
                         ],
                       );

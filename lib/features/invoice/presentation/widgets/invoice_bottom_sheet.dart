@@ -1,17 +1,21 @@
 import 'package:animated_segmented_tab_control/animated_segmented_tab_control.dart';
-import 'package:ej_geek/core/di/service_locator.dart';
-import 'package:ej_geek/core/presentation/widget/confirm_dialog.dart';
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/inspection/presentation/bloc/inspection_bloc.dart';
-import 'package:ej_geek/features/inspection/presentation/bloc/inspection_state.dart';
-import 'package:ej_geek/features/invoice/domain/entities/payment_status.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_bloc.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_event.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_details_state.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_close_confirm.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/inspection_tab.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/invoice_tab.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_success_dialog.dart';
+import 'package:auto_flow/core/di/service_locator.dart';
+import 'package:auto_flow/core/presentation/widget/confirm_dialog.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_spinner.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_save_status.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_toolbar_icon_button.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/inspection/presentation/bloc/inspection_bloc.dart';
+import 'package:auto_flow/features/inspection/presentation/bloc/inspection_state.dart';
+import 'package:auto_flow/features/invoice/domain/entities/payment_status.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_bloc.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_event.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_details_state.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_close_confirm.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/inspection_tab.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/invoice_tab.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_success_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
@@ -58,7 +62,8 @@ class InvoiceBottomSheet extends StatefulWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.5),
+      barrierColor: AutoFlowTokens.scrim,
+      sheetAnimationStyle: afSheetAnimation(context),
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.9,
         child: InvoiceBottomSheet(
@@ -212,9 +217,9 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
     if (isSaving) return;
     if (saveSuccess && !_popScheduled) {
       _popScheduled = true;
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) Navigator.of(context).pop();
-      });
+      // Close as soon as the save lands; the header's check icon is enough
+      // feedback without holding the sheet open on a timer.
+      Navigator.of(context).pop();
     } else if (hasError) {
       setState(() => _isClosing = false);
     }
@@ -222,7 +227,7 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = AutoFlowTokens.of(context);
 
     return MultiBlocProvider(
       providers: [
@@ -335,8 +340,8 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
 
               // isSending just flipped true -> false.
               if (state.needsRegenerationConfirmation) {
-                // Nothing was generated — the dialog above is stuck
-                // mid-progress; dismiss it and ask before rebuilding.
+                // Nothing was generated — the dialog above is still on its
+                // spinner; dismiss it and ask before rebuilding.
                 Navigator.of(context).pop();
                 _confirmRegeneration(context);
                 return;
@@ -344,8 +349,8 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
 
               // On failure, dismiss the dialog opened above; the tab's own
               // errorMessage listener shows the SnackBar. On success, the
-              // dialog is already open and transitions itself once its
-              // progress animation catches up to the now-ready state.
+              // dialog is already open and swaps to its success content
+              // as soon as it sees the now-ready state.
               if (!state.sendSuccess) {
                 Navigator.of(context).pop();
               }
@@ -357,40 +362,40 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
           resizeToAvoidBottomInset: true,
           body: Container(
             decoration: BoxDecoration(
-              color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
+              color: tokens.card,
+              borderRadius: AfRadius.sheetTop,
+              border: Border(top: BorderSide(color: tokens.line)),
             ),
             child: SafeArea(
               top: false,
               child: Column(
                 children: [
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AfSpace.s12),
                   Container(
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? AppPallete.forgedSteel
-                          : AppPallete.nebulousWhite,
-                      borderRadius: BorderRadius.circular(12),
+                      color: tokens.line,
+                      borderRadius: AfRadius.chipAll,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AfSpace.s12),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    padding: const EdgeInsets.only(
+                      left: AfSpace.gutter,
+                      right: AfSpace.s8,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'Invoice',
-                          style: TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? AppPallete.cascadingWhite
-                                : AppPallete.tricornBlack,
+                        Flexible(
+                          child: Text(
+                            'Invoice',
+                            style: AutoFlowTokens.headline.copyWith(
+                              color: tokens.ink,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Builder(
@@ -403,7 +408,6 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                                   (bloc) => bloc.state.isLoading,
                                 );
                             return _HeaderActions(
-                              isDark: isDark,
                               isClosing: _isClosing,
                               isInitialLoading: isInitialLoading,
                               activeTabIndex: _tabController.index,
@@ -416,41 +420,30 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AfSpace.s12),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AfSpace.gutter,
+                    ),
                     child: SegmentedTabControl(
                       controller: _tabController,
-                      height: 40,
+                      height: AfSpace.minTap,
                       squeezeIntensity: 2,
-                      tabTextColor: isDark
-                          ? AppPallete.cascadingWhite
-                          : AppPallete.tricornBlack,
-                      selectedTabTextColor: AppPallete.whiteColor,
-                      tabPadding: const EdgeInsets.symmetric(horizontal: 5),
-                      textStyle: const TextStyle(
-                        fontSize: 13,
+                      tabTextColor: tokens.ink,
+                      selectedTabTextColor: tokens.card,
+                      tabPadding: const EdgeInsets.symmetric(
+                        horizontal: AfSpace.xs4,
+                      ),
+                      textStyle: AutoFlowTokens.caption.copyWith(
                         fontWeight: FontWeight.w500,
                       ),
                       barDecoration: BoxDecoration(
-                        color: isDark
-                            ? AppPallete.warmOnyx
-                            : AppPallete.nebulousWhite,
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(12),
-                        ),
+                        color: tokens.soft,
+                        borderRadius: AfRadius.controlAll,
                       ),
-                      indicatorDecoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFFFF3D3D),
-                            Color(0xFFFF6060),
-                            Color(0xFFFF8A80),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                      indicatorDecoration: BoxDecoration(
+                        color: tokens.ink,
+                        borderRadius: AfRadius.controlAll,
                       ),
                       tabs: const [
                         SegmentTab(label: 'Inspection'),
@@ -458,20 +451,71 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AfSpace.s12),
                   Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
+                    child: Stack(
                       children: [
-                        InspectionTab(
-                          key: _inspectionKey,
-                          invoiceId: widget.invoiceId,
-                          onGenerateRequested: _onGeneratePressed,
+                        Positioned.fill(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: [
+                              InspectionTab(
+                                key: _inspectionKey,
+                                invoiceId: widget.invoiceId,
+                                onGenerateRequested: _onGeneratePressed,
+                              ),
+                              InvoiceTab(
+                                key: _invoiceKey,
+                                invoiceId: widget.invoiceId,
+                                onGenerateRequested: _onGeneratePressed,
+                              ),
+                            ],
+                          ),
                         ),
-                        InvoiceTab(
-                          key: _invoiceKey,
-                          invoiceId: widget.invoiceId,
-                          onGenerateRequested: _onGeneratePressed,
+                        // "Saving… → Saved" for the active tab, floating so
+                        // it's visible whichever control started the save
+                        // (header Save, Draft, Generate).
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: AfSpace.m16,
+                          child: IgnorePointer(
+                            child: Center(
+                              child: Builder(
+                                builder: (context) {
+                                  final (
+                                    saving,
+                                    succeeded,
+                                  ) = _tabController.index == 0
+                                      ? context.select<
+                                          InspectionBloc,
+                                          (bool, bool)
+                                        >(
+                                          (b) => (
+                                            b.state.isSaving,
+                                            b.state.saveSuccess,
+                                          ),
+                                        )
+                                      : context.select<
+                                          InvoiceDetailsBloc,
+                                          (bool, bool)
+                                        >(
+                                          (b) => (
+                                            b.state.isSaving,
+                                            b.state.saveSuccess,
+                                          ),
+                                        );
+                                  return AfSaveStatus(
+                                    // A fresh pill per tab, so switching
+                                    // tabs doesn't carry the other's state.
+                                    key: ValueKey(_tabController.index),
+                                    saving: saving,
+                                    saveSucceeded: succeeded,
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -488,7 +532,6 @@ class _InvoiceBottomSheetState extends State<InvoiceBottomSheet>
 
 class _HeaderActions extends StatelessWidget {
   const _HeaderActions({
-    required this.isDark,
     required this.isClosing,
     required this.isInitialLoading,
     required this.activeTabIndex,
@@ -497,7 +540,6 @@ class _HeaderActions extends StatelessWidget {
     required this.onClosePressed,
   });
 
-  final bool isDark;
   final bool isClosing;
   final bool isInitialLoading;
   final int activeTabIndex;
@@ -518,6 +560,7 @@ class _HeaderActions extends StatelessWidget {
         return activeTabIndex == 0
             ? BlocBuilder<InspectionBloc, InspectionState>(
                 builder: (context, state) => _buildButtons(
+                  context,
                   isSaving: state.isSaving,
                   saveSuccess: state.saveSuccess,
                   markPaidButton: markPaidButton,
@@ -525,6 +568,7 @@ class _HeaderActions extends StatelessWidget {
               )
             : BlocBuilder<InvoiceDetailsBloc, InvoiceDetailsState>(
                 builder: (context, state) => _buildButtons(
+                  context,
                   isSaving: state.isSaving,
                   saveSuccess: state.saveSuccess,
                   markPaidButton: markPaidButton,
@@ -555,65 +599,72 @@ class _HeaderActions extends StatelessWidget {
   }
 
   Widget _buildMarkPaidButton(BuildContext context, PaymentStatus status) {
-    final iconColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
+    final iconColor = AutoFlowTokens.of(context).ink;
     final isPaid = status == PaymentStatus.paid;
 
-    return IconButton(
+    return AfToolbarIconButton(
       tooltip: isPaid ? 'Undo Payment' : 'Mark Paid',
-      icon: Icon(isPaid ? Icons.undo : Icons.attach_money, color: iconColor),
+      color: iconColor,
+      icon: isPaid ? Icons.undo : Icons.attach_money,
       onPressed: isInitialLoading
           ? null
           : () => _confirmMarkPaid(context, status),
     );
   }
 
-  Widget _buildButtons({
+  Widget _buildButtons(
+    BuildContext context, {
     required bool isSaving,
     required bool saveSuccess,
     required Widget markPaidButton,
   }) {
-    final iconColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
+    final tokens = AutoFlowTokens.of(context);
+    final iconColor = tokens.ink;
+    final spinner = AfSpinner(
+      key: const ValueKey('spinner'),
+      size: 20,
+      color: iconColor,
+      track: tokens.line,
+    );
 
-    final generateButton = IconButton(
+    final generateButton = AfToolbarIconButton(
       tooltip: 'Generate PDF',
-      icon: Icon(Icons.picture_as_pdf_outlined, color: iconColor),
+      color: iconColor,
+      icon: Icons.picture_as_pdf_outlined,
       onPressed: isInitialLoading ? null : onGeneratePressed,
     );
 
-    final saveButton = IconButton(
-      icon: isSaving && !isClosing
-          ? SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: iconColor,
-              ),
-            )
-          : Icon(Icons.save, color: iconColor),
+    final saveButton = AfToolbarIconButton.custom(
+      tooltip: isSaving && !isClosing ? 'Saving' : 'Save',
+      color: iconColor,
       onPressed: (isSaving || isInitialLoading) ? null : onSavePressed,
+      child: isSaving && !isClosing
+          ? spinner
+          : const Icon(Icons.save, key: ValueKey('save')),
     );
 
     final Widget closeIcon;
+    final String closeTooltip;
     if (isClosing && isSaving) {
-      closeIcon = SizedBox(
-        width: 20,
-        height: 20,
-        child: CircularProgressIndicator(strokeWidth: 2, color: iconColor),
-      );
+      closeIcon = spinner;
+      closeTooltip = 'Saving before closing';
     } else if (isClosing && saveSuccess) {
-      closeIcon = const Icon(Icons.check, color: AppPallete.gradient3);
+      closeIcon = const Icon(
+        Icons.check,
+        key: ValueKey('saved'),
+        color: AutoFlowTokens.successFg,
+      );
+      closeTooltip = 'Saved';
     } else {
-      closeIcon = Icon(Icons.close, color: iconColor);
+      closeIcon = const Icon(Icons.close, key: ValueKey('close'));
+      closeTooltip = 'Close';
     }
 
-    final closeButton = IconButton(
-      icon: closeIcon,
+    final closeButton = AfToolbarIconButton.custom(
+      tooltip: closeTooltip,
+      color: iconColor,
       onPressed: (isClosing || isInitialLoading) ? null : onClosePressed,
+      child: closeIcon,
     );
 
     return Row(

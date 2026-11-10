@@ -5,6 +5,7 @@ class AppDatabase {
   AppDatabase._();
   static final AppDatabase instance = AppDatabase._();
 
+  // Pre-rebrand filename, kept so existing installs keep their data.
   static const _dbName = 'ej_geek.db';
   static const _dbVersion = 9;
 

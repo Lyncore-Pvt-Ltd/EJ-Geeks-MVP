@@ -1,7 +1,8 @@
-import 'package:ej_geek/core/presentation/widget/show_delete_dialog.dart';
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/invoice/domain/entities/invoice_line_item.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_toolbar_icon_button.dart';
+import 'package:auto_flow/core/presentation/widget/show_delete_dialog.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/invoice/domain/entities/invoice_line_item.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:flutter/material.dart';
 
 class InvoiceLineItemCard extends StatelessWidget {
@@ -26,118 +27,90 @@ class InvoiceLineItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final labelColor = isDark ? AppPallete.boatAnchor : AppPallete.hypnotic;
-    final borderColor = isDark
-        ? AppPallete.warmOnyx
-        : AppPallete.nebulousWhite;
+    final tokens = AutoFlowTokens.of(context);
+    final labelStyle = AutoFlowTokens.caption.copyWith(color: tokens.mute);
+    final valueStyle = AutoFlowTokens.mono(color: tokens.ink);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.symmetric(horizontal: AfSpace.xs4),
+      padding: const EdgeInsets.fromLTRB(
+        AfSpace.m16,
+        AfSpace.xs4,
+        AfSpace.xs4,
+        AfSpace.m16,
+      ),
       decoration: BoxDecoration(
-        color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
+        color: tokens.card,
+        borderRadius: AfRadius.cardAll,
+        border: Border.all(color: tokens.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Description',
-                style: TextStyle(fontSize: 12, color: labelColor),
+              Expanded(child: Text('Description', style: labelStyle)),
+              AfToolbarIconButton(
+                onPressed: onEdit,
+                tooltip: 'Edit item',
+                size: 20,
+                icon: Icons.edit_outlined,
               ),
-              Row(
-                children: [
-                  InkWell(
-                    onTap: onEdit,
-                    child: Icon(
-                      Icons.edit_outlined,
-                      size: 18,
-                      color: AppPallete.selectionGradient[1],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  InkWell(
-                    onTap: () => _confirmDelete(context),
-                    child: Icon(
-                      Icons.delete_outline,
-                      size: 18,
-                      color: AppPallete.errorColor,
-                    ),
-                  ),
-                ],
+              AfToolbarIconButton(
+                onPressed: () => _confirmDelete(context),
+                tooltip: 'Delete item',
+                size: 20,
+                color: AutoFlowTokens.errorFg,
+                icon: Icons.delete_outline,
               ),
             ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            item.name,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.only(right: AfSpace.s12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  style: AutoFlowTokens.title.copyWith(color: tokens.ink),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: AfSpace.s12),
+                Row(
                   children: [
-                    Text(
-                      'Quantity',
-                      style: TextStyle(fontSize: 12, color: labelColor),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Quantity', style: labelStyle),
+                          const SizedBox(height: AfSpace.xs4),
+                          Text(_trimmed(item.quantity), style: valueStyle),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _trimmed(item.quantity),
-                      style: TextStyle(fontSize: 14, color: textColor),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Unit per-price', style: labelStyle),
+                          const SizedBox(height: AfSpace.xs4),
+                          Text(formatAud(item.unitPrice), style: valueStyle),
+                        ],
+                      ),
                     ),
                   ],
                 ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Unit per-price',
-                      style: TextStyle(fontSize: 12, color: labelColor),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      formatAud(item.unitPrice),
-                      style: TextStyle(fontSize: 14, color: textColor),
-                    ),
-                  ],
+                const SizedBox(height: AfSpace.s12),
+                Divider(color: tokens.line, height: 1, thickness: 1),
+                const SizedBox(height: AfSpace.s12),
+                Text('Total price', style: labelStyle),
+                const SizedBox(height: AfSpace.xs4),
+                Text(
+                  formatAud(item.totalPrice),
+                  style: AutoFlowTokens.mono(fontSize: 17, color: tokens.ink),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Divider(color: borderColor, height: 1),
-          const SizedBox(height: 10),
-          Text(
-            'Total price',
-            style: TextStyle(fontSize: 12, color: labelColor),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            formatAud(item.totalPrice),
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: textColor,
+              ],
             ),
           ),
         ],

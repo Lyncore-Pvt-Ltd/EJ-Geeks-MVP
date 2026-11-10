@@ -1,4 +1,4 @@
-import 'package:ej_geek/core/presentation/widget/confirm_dialog.dart';
+import 'package:auto_flow/core/presentation/widget/confirm_dialog.dart';
 import 'package:flutter/material.dart';
 
 /// Shows a [ConfirmDialog] asking the user to confirm closing the invoice

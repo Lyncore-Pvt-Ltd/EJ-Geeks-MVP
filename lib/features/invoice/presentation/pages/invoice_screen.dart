@@ -1,20 +1,31 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/dashboard/presentation/providers/dashboard_provider.dart';
-import 'package:ej_geek/features/invoice/domain/entities/payment_status.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_bloc.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_event.dart';
-import 'package:ej_geek/features/invoice/presentation/bloc/invoice_state.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_card.dart';
-import 'package:ej_geek/features/search/presentation/widgets/filter_bottom_sheet.dart';
-import 'package:ej_geek/features/search/presentation/widgets/search_bar.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_spinner.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:auto_flow/features/invoice/domain/entities/payment_status.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_bloc.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_event.dart';
+import 'package:auto_flow/features/invoice/presentation/bloc/invoice_state.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_card.dart';
+import 'package:auto_flow/features/search/presentation/widgets/filter_bottom_sheet.dart';
+import 'package:auto_flow/features/search/presentation/widgets/search_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
-class InvoiceScreen extends StatelessWidget {
+class InvoiceScreen extends StatefulWidget {
   static MaterialPageRoute<dynamic> route() =>
       MaterialPageRoute(builder: (_) => const InvoiceScreen());
   const InvoiceScreen({super.key});
+
+  @override
+  State<InvoiceScreen> createState() => _InvoiceScreenState();
+}
+
+class _InvoiceScreenState extends State<InvoiceScreen> {
+  /// Only rows built on the list's first frame get the staggered entrance;
+  /// rows mounted later (scrolling, filtering, refresh) appear directly.
+  static const _staggeredRows = 6;
+  bool _listEntered = false;
 
   void _showPaymentFilterSheet(BuildContext context) {
     final invoiceBloc = context.read<InvoiceBloc>();
@@ -42,10 +53,16 @@ class InvoiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = AutoFlowTokens.of(context);
+    final emptyStyle = AutoFlowTokens.body.copyWith(color: tokens.mute2);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AfSpace.gutter,
+        AfSpace.s12,
+        AfSpace.gutter,
+        0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -59,7 +76,7 @@ class InvoiceScreen extends StatelessWidget {
             ),
             onFilterTap: () => _showPaymentFilterSheet(context),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AfSpace.m16),
           Expanded(
             child: BlocConsumer<InvoiceBloc, InvoiceState>(
               listenWhen: (previous, current) =>
@@ -68,31 +85,50 @@ class InvoiceScreen extends StatelessWidget {
                   context.read<DashboardProvider>().refresh(),
               builder: (context, state) {
                 if (state.isLoading && state.invoices.isEmpty) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(
+                    child: AfSpinner(
+                      size: 24,
+                      color: AutoFlowTokens.accent,
+                      track: tokens.line,
+                    ),
+                  );
                 }
                 final filteredInvoices = state.filteredInvoices;
                 if (state.invoices.isEmpty) {
-                  return const Center(child: Text('No invoices yet'));
+                  return Center(
+                    child: Text('No invoices yet', style: emptyStyle),
+                  );
                 }
                 if (filteredInvoices.isEmpty) {
-                  return const Center(child: Text('No matching invoices'));
+                  return Center(
+                    child: Text('No matching invoices', style: emptyStyle),
+                  );
                 }
-                return LiquidPullToRefresh(
+                return RefreshIndicator(
                   onRefresh: () async => context.read<InvoiceBloc>().add(
                     const InvoiceListRequested(),
                   ),
-                  color: isDark
-                      ? AppPallete.backgroundColor
-                      : AppPallete.backgroundColorLight,
-                  animSpeedFactor: 2,
-                  backgroundColor: AppPallete.selectionGradient[0],
+                  color: AutoFlowTokens.onAccent,
+                  backgroundColor: AutoFlowTokens.accent,
                   child: ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 20),
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.only(
+                      bottom: 100 + MediaQuery.of(context).padding.bottom,
+                    ),
                     itemCount: filteredInvoices.length,
                     itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: InvoiceCard(summary: filteredInvoices[index]),
+                      if (!_listEntered) {
+                        WidgetsBinding.instance.addPostFrameCallback(
+                          (_) => _listEntered = true,
+                        );
+                      }
+                      return AfStaggerIn(
+                        index: index,
+                        enabled: !_listEntered && index < _staggeredRows,
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: AfSpace.s12),
+                          child: InvoiceCard(summary: filteredInvoices[index]),
+                        ),
                       );
                     },
                   ),

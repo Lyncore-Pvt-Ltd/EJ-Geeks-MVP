@@ -1,7 +1,9 @@
+import 'package:auto_flow/core/presentation/widgets/af/af_secondary_button.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../../theme/app_pallete.dart';
+import '../../widget/dialog_actions.dart';
 
 class AboutInfoDialog extends StatelessWidget {
   const AboutInfoDialog({super.key, required this.packageInfo});
@@ -13,51 +15,56 @@ class AboutInfoDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final darkPillColor = isDark
-        ? AppPallete.dynamicBlack
-        : AppPallete.tricornBlack;
+    final tokens = AutoFlowTokens.of(context);
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      title: const Text('About'),
+      title: Semantics(
+        header: true,
+        child: Text(
+          'About',
+          style: AutoFlowTokens.title.copyWith(color: tokens.ink),
+        ),
+      ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildRow(context, 'Company', _company),
-          const SizedBox(height: 12),
-          _buildRow(context, 'Developer', _developer),
-          const SizedBox(height: 12),
+          _buildRow(tokens, 'Company', Text(_company, style: _value(tokens))),
+          const SizedBox(height: AfSpace.s12),
           _buildRow(
-            context,
+            tokens,
+            'Developer',
+            Text(_developer, style: _value(tokens)),
+          ),
+          const SizedBox(height: AfSpace.s12),
+          _buildRow(
+            tokens,
             'Version',
-            '${packageInfo.version} (${packageInfo.buildNumber})',
+            Text(
+              '${packageInfo.version} (${packageInfo.buildNumber})',
+              style: AutoFlowTokens.mono(color: tokens.ink),
+            ),
           ),
         ],
       ),
+      actionsPadding: kDialogActionsPadding,
       actions: [
-        Container(
-          height: 40,
-          decoration: BoxDecoration(
-            color: darkPillColor,
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [Text('Close', style: TextStyle(color: Colors.white))],
+        DialogActions(
+          children: [
+            AfSecondaryButton(
+              label: 'Close',
+              onPressed: () => Navigator.of(context).pop(),
             ),
-          ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildRow(BuildContext context, String label, String value) {
-    final theme = Theme.of(context);
+  TextStyle _value(AutoFlowTokens tokens) =>
+      AutoFlowTokens.body.copyWith(color: tokens.ink);
+
+  Widget _buildRow(AutoFlowTokens tokens, String label, Widget value) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -65,12 +72,10 @@ class AboutInfoDialog extends StatelessWidget {
           width: 90,
           child: Text(
             label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: AutoFlowTokens.body.copyWith(color: tokens.mute),
           ),
         ),
-        Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
+        Expanded(child: value),
       ],
     );
   }

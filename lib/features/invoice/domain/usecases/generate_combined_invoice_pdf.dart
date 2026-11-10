@@ -38,14 +38,9 @@ class GenerateCombinedInvoicePdf
     GenerateCombinedInvoicePdfParams params,
   ) async {
     final detailsResult = await _getInvoiceDetails(params.invoiceId);
-    return detailsResult.fold((failure) async => Left(failure), (
-      bundle,
-    ) async {
+    return detailsResult.fold((failure) async => Left(failure), (bundle) async {
       final inspectionResult = await _getInspection(params.invoiceId);
-      final inspection = inspectionResult.fold(
-        (_) => null,
-        (record) => record,
-      );
+      final inspection = inspectionResult.fold((_) => null, (record) => record);
 
       try {
         final bytes = await buildCombinedInvoicePdf(

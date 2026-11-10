@@ -1,4 +1,5 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class CustomSettingsRow extends StatelessWidget {
@@ -19,56 +20,45 @@ class CustomSettingsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [AppPallete.dynamicBlack, AppPallete.tricornBlack]
-              : [Colors.grey[200]!, Colors.grey[100]!, Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
+    final tokens = AutoFlowTokens.of(context);
+    return AfPressable(
+      onTap: onTap,
+      pressedScale: 0.98,
+      focusRadius: AfRadius.cardAll,
+      child: Container(
+        decoration: BoxDecoration(
+          color: tokens.card,
+          borderRadius: AfRadius.cardAll,
+          border: Border.all(color: tokens.line),
         ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AfSpace.m16,
+            vertical: AfSpace.s12,
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, size: 24),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: tokens.soft,
+                  borderRadius: AfRadius.smallAll,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                child: Icon(icon, size: 20, color: tokens.ink),
+              ),
+              const SizedBox(width: AfSpace.m16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: AutoFlowTokens.title.copyWith(color: tokens.ink),
                 ),
-                trailing,
-              ],
-            ),
+              ),
+              IconTheme.merge(
+                data: IconThemeData(color: tokens.mute),
+                child: trailing,
+              ),
+            ],
           ),
         ),
       ),

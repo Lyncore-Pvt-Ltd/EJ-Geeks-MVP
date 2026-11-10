@@ -63,38 +63,32 @@ class InvoiceLocalDataSource {
         ORDER BY invoices.updated_at DESC
       ''');
 
-      return rows
-          .map((row) {
-            final netTotal = (row['net_total'] as num?)?.toDouble();
-            final gstPercent = (row['gst_percent'] as num?)?.toDouble() ?? 0;
-            final discountPercent =
-                (row['discount_percent'] as num?)?.toDouble() ?? 0;
-            final totalAmount = netTotal == null
-                ? null
-                : netTotal +
-                      (netTotal * gstPercent / 100) -
-                      (netTotal * discountPercent / 100);
+      return rows.map((row) {
+        final netTotal = (row['net_total'] as num?)?.toDouble();
+        final gstPercent = (row['gst_percent'] as num?)?.toDouble() ?? 0;
+        final discountPercent =
+            (row['discount_percent'] as num?)?.toDouble() ?? 0;
+        final totalAmount = netTotal == null
+            ? null
+            : netTotal +
+                  (netTotal * gstPercent / 100) -
+                  (netTotal * discountPercent / 100);
 
-            return InvoiceSummary(
-              id: row['id'] as String,
-              serviceStatus: ServiceStatus.fromDb(
-                row['service_status'] as String,
-              ),
-              paymentStatus: PaymentStatus.fromDb(
-                row['payment_status'] as String,
-              ),
-              ownerName: row['owner_name'] as String? ?? '',
-              make: row['make'] as String? ?? '',
-              model: row['model'] as String? ?? '',
-              rego: row['rego'] as String? ?? '',
-              year: row['year'] as String? ?? '',
-              phoneNumber: row['phone_number'] as String? ?? '',
-              createdAt: DateTime.parse(row['created_at'] as String),
-              updatedAt: DateTime.parse(row['updated_at'] as String),
-              totalAmount: totalAmount,
-            );
-          })
-          .toList();
+        return InvoiceSummary(
+          id: row['id'] as String,
+          serviceStatus: ServiceStatus.fromDb(row['service_status'] as String),
+          paymentStatus: PaymentStatus.fromDb(row['payment_status'] as String),
+          ownerName: row['owner_name'] as String? ?? '',
+          make: row['make'] as String? ?? '',
+          model: row['model'] as String? ?? '',
+          rego: row['rego'] as String? ?? '',
+          year: row['year'] as String? ?? '',
+          phoneNumber: row['phone_number'] as String? ?? '',
+          createdAt: DateTime.parse(row['created_at'] as String),
+          updatedAt: DateTime.parse(row['updated_at'] as String),
+          totalAmount: totalAmount,
+        );
+      }).toList();
     } catch (e) {
       throw CacheException(message: 'Failed to load invoices: $e');
     }

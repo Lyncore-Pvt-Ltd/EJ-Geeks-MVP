@@ -1,5 +1,6 @@
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/core/theme/theme_controller.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/core/theme/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
@@ -19,14 +20,14 @@ class SettingScreen extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(title: ""),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(vertical: AfSpace.l24),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            _buildProfileHeader(context),
-            const SizedBox(height: 30),
-            _buildSettingsSection(context),
-            const SizedBox(height: 30),
-            _buildAppSettingsSection(context),
+            AfStaggerIn(index: 0, child: _buildProfileHeader(context)),
+            const SizedBox(height: AfSpace.sectionGap),
+            AfStaggerIn(index: 1, child: _buildSettingsSection(context)),
+            const SizedBox(height: AfSpace.sectionGap),
+            AfStaggerIn(index: 2, child: _buildAppSettingsSection(context)),
           ],
         ),
       ),
@@ -34,87 +35,65 @@ class SettingScreen extends StatelessWidget {
   }
 
   Widget _buildProfileHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+    final tokens = AutoFlowTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AfSpace.gutter),
       child: Column(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+              boxShadow: AutoFlowTokens.cardShadow,
             ),
-            child: const CircleAvatar(
-              radius: 50,
-              backgroundColor: Color(0xFFFF6060),
-              child: Icon(Icons.person, size: 50, color: AppPallete.hypnotic),
+            child: CircleAvatar(
+              radius: 48,
+              backgroundColor: tokens.soft,
+              child: Icon(Icons.person, size: 48, color: tokens.mute),
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            "-",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF07172B),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text("-", style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+          const SizedBox(height: AfSpace.m16),
+          Text("-", style: AutoFlowTokens.title.copyWith(color: tokens.ink)),
+          const SizedBox(height: AfSpace.xs4),
+          Text("-", style: AutoFlowTokens.caption.copyWith(color: tokens.mute)),
         ],
+      ),
+    );
+  }
+
+  Widget _sectionLabel(BuildContext context, String label) {
+    final tokens = AutoFlowTokens.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AfSpace.s8),
+      child: Semantics(
+        header: true,
+        child: Text(
+          label,
+          style: AutoFlowTokens.caption.copyWith(color: tokens.mute),
+        ),
       ),
     );
   }
 
   Widget _buildSettingsSection(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AfSpace.gutter),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Profile Settings',
-            textAlign: TextAlign.left,
-            style: TextStyle(fontSize: 15),
+          _sectionLabel(context, 'Profile Settings'),
+          CustomSettingsRow(
+            icon: Icons.person_outline,
+            title: 'Send Request to Edit Profile',
+            trailing: const Icon(Icons.chevron_right, size: 24),
+            onTap: () {},
           ),
-          const SizedBox(height: 5.0),
-          // Settings Card
-          Container(
-            decoration: BoxDecoration(
-              color: AppPallete.nebulousWhite.withValues(alpha: 0.05),
-
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                CustomSettingsRow(
-                  icon: Icons.person_outline,
-                  title: 'Send Request to Edit Profile',
-                  trailing: const Icon(Icons.chevron_right, size: 24),
-                  onTap: () {},
-                ),
-                const SizedBox(height: 10),
-                CustomSettingsRow(
-                  icon: Icons.lock_outline,
-                  title: 'Reset Password',
-                  trailing: const Icon(Icons.chevron_right, size: 24),
-                  isLast: true,
-                  onTap: () {},
-                ),
-              ],
-            ),
+          const SizedBox(height: AfSpace.s8),
+          CustomSettingsRow(
+            icon: Icons.lock_outline,
+            title: 'Reset Password',
+            trailing: const Icon(Icons.chevron_right, size: 24),
+            isLast: true,
+            onTap: () {},
           ),
         ],
       ),
@@ -124,48 +103,24 @@ class SettingScreen extends StatelessWidget {
   Widget _buildAppSettingsSection(BuildContext context) {
     final themeController = context.watch<ThemeController>();
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: AfSpace.gutter),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'App Settings',
-            textAlign: TextAlign.left,
-            style: TextStyle(fontSize: 15),
+          _sectionLabel(context, 'App Settings'),
+          CustomThemeSwitch(
+            icon: Icons.dark_mode_outlined,
+            title: 'Dark Mode',
+            value: themeController.isDarkMode,
+            onChanged: themeController.toggleDarkMode,
           ),
-          const SizedBox(height: 5.0),
-          // Settings Card
-          Container(
-            decoration: BoxDecoration(
-              color: AppPallete.nebulousWhite.withValues(alpha: 0.05),
-
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                CustomThemeSwitch(
-                  icon: Icons.dark_mode_outlined,
-                  title: 'Dark Mode',
-                  value: themeController.isDarkMode,
-                  onChanged: themeController.toggleDarkMode,
-                ),
-                const SizedBox(height: 10),
-                CustomSettingsRow(
-                  icon: Icons.info_outline,
-                  title: 'About',
-                  trailing: const Icon(Icons.chevron_right, size: 24),
-                  isLast: true,
-                  onTap: () => _showAboutDialog(context),
-                ),
-              ],
-            ),
+          const SizedBox(height: AfSpace.s8),
+          CustomSettingsRow(
+            icon: Icons.info_outline,
+            title: 'About',
+            trailing: const Icon(Icons.chevron_right, size: 24),
+            isLast: true,
+            onTap: () => _showAboutDialog(context),
           ),
         ],
       ),

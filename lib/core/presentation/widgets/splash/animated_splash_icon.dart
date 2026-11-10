@@ -1,3 +1,4 @@
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedSplashIcon extends StatelessWidget {
@@ -25,7 +26,7 @@ class AnimatedSplashIcon extends StatelessWidget {
           ),
           child: ClipOval(
             child: Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AfSpace.s12),
               child: Image.asset('assets/icon/EJG.png', fit: BoxFit.contain),
             ),
           ),

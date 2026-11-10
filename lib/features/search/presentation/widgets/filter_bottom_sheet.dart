@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_pallete.dart';
+import '../../../../core/presentation/widgets/af/af_motion.dart';
+import '../../../../core/theme/autoflow_tokens.dart';
 
 /// A single selectable option in a [FilterBottomSheet].
 class FilterOption<T> {
@@ -15,9 +16,9 @@ class FilterOption<T> {
   final T value;
 }
 
-/// A reusable, generic single-select filter sheet: rounded gradient
-/// container, grabber handle, grouped [ListTile]s with dividers — the same
-/// visual pattern used by [InvoiceCard]'s action sheet. Has no knowledge of
+/// A reusable, generic single-select filter sheet: a floating card with a
+/// grabber handle and grouped [ListTile]s with dividers (the active option
+/// sits on the `hot` fill with an accent icon). Has no knowledge of
 /// what [T] represents; callers supply the options, the current selection,
 /// and what to do when one is picked.
 class FilterBottomSheet<T> extends StatelessWidget {
@@ -44,6 +45,8 @@ class FilterBottomSheet<T> extends StatelessWidget {
     return showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      barrierColor: AutoFlowTokens.scrim,
+      sheetAnimationStyle: afSheetAnimation(context),
       builder: (_) => FilterBottomSheet<T>(
         title: title,
         options: options,
@@ -55,77 +58,92 @@ class FilterBottomSheet<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark
-        ? AppPallete.cascadingWhite
-        : AppPallete.tricornBlack;
-    final groupColor = isDark ? AppPallete.warmOnyx : Colors.grey[200];
-    final dividerColor = isDark ? Colors.white12 : Colors.black12;
-    final handleColor = isDark ? Colors.white24 : Colors.black26;
+    final tokens = AutoFlowTokens.of(context);
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(10, 0, 10, 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? AppPallete.invoiceCardGradientDark
-              : AppPallete.invoiceCardGradientLight,
-          begin: Alignment.topLeft,
-          end: Alignment.topRight,
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(
+          AfSpace.gutter,
+          0,
+          AfSpace.gutter,
+          AfSpace.l24,
         ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-              color: handleColor,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 15,
-                color: textColor,
-                fontWeight: FontWeight.w700,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: tokens.card,
+          borderRadius: AfRadius.cardAll,
+          border: Border.all(color: tokens.line),
+          boxShadow: AutoFlowTokens.heroShadow,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                margin: const EdgeInsets.only(
+                  top: AfSpace.s12,
+                  bottom: AfSpace.s8,
+                ),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: tokens.line,
+                  borderRadius: AfRadius.chipAll,
+                ),
               ),
             ),
-          ),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: groupColor,
-              borderRadius: BorderRadius.circular(12),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AfSpace.l24,
+                AfSpace.xs4,
+                AfSpace.l24,
+                AfSpace.s12,
+              ),
+              child: Semantics(
+                header: true,
+                child: Text(
+                  title,
+                  style: AutoFlowTokens.title.copyWith(color: tokens.ink),
+                ),
+              ),
             ),
-            child: Column(
-              children: [
-                for (var i = 0; i < options.length; i++) ...[
-                  if (i > 0)
-                    Divider(
-                      color: dividerColor,
-                      height: 1,
-                      indent: 20,
-                      endIndent: 20,
-                    ),
-                  _FilterTile<T>(
-                    option: options[i],
-                    isActive: options[i].value == activeValue,
-                    textColor: textColor,
-                    onSelected: onSelected,
-                  ),
-                ],
-              ],
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AfSpace.s12,
+                0,
+                AfSpace.s12,
+                AfSpace.s12,
+              ),
+              // A Material (not a decorated Container) so the active tile's
+              // `tileColor` and ink splashes paint above the group fill.
+              child: Material(
+                color: tokens.soft,
+                borderRadius: AfRadius.controlAll,
+                clipBehavior: Clip.antiAlias,
+                child: Column(
+                  children: [
+                    for (var i = 0; i < options.length; i++) ...[
+                      if (i > 0)
+                        Divider(
+                          color: tokens.line,
+                          height: 1,
+                          indent: AfSpace.m16,
+                          endIndent: AfSpace.m16,
+                        ),
+                      _FilterTile<T>(
+                        option: options[i],
+                        isActive: options[i].value == activeValue,
+                        onSelected: onSelected,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -135,37 +153,41 @@ class _FilterTile<T> extends StatelessWidget {
   const _FilterTile({
     required this.option,
     required this.isActive,
-    required this.textColor,
     required this.onSelected,
   });
 
   final FilterOption<T> option;
   final bool isActive;
-  final Color textColor;
   final ValueChanged<T> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: () {
-        Navigator.pop(context);
-        onSelected(option.value);
-      },
-      leading: Icon(
-        option.icon,
-        color: isActive ? AppPallete.emeraldTeal : textColor,
-      ),
-      title: Text(
-        option.label,
-        style: TextStyle(
-          color: isActive ? AppPallete.emeraldTeal : textColor,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
+    final tokens = AutoFlowTokens.of(context);
+    return Semantics(
+      selected: isActive,
+      child: ListTile(
+        minTileHeight: AfSpace.controlHeight,
+        tileColor: isActive ? tokens.hot : null,
+        contentPadding: const EdgeInsets.symmetric(horizontal: AfSpace.m16),
+        onTap: () {
+          Navigator.pop(context);
+          onSelected(option.value);
+        },
+        leading: Icon(
+          option.icon,
+          color: isActive ? AutoFlowTokens.accent : tokens.mute2,
         ),
+        title: Text(
+          option.label,
+          style: AutoFlowTokens.body.copyWith(
+            color: tokens.ink,
+            fontWeight: isActive ? FontWeight.w500 : FontWeight.w400,
+          ),
+        ),
+        trailing: isActive
+            ? Icon(Icons.check_rounded, color: tokens.ink)
+            : null,
       ),
-      trailing: isActive
-          ? const Icon(Icons.check, color: AppPallete.emeraldTeal)
-          : null,
     );
   }
 }

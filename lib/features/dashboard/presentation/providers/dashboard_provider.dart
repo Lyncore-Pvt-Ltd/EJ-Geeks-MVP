@@ -1,13 +1,13 @@
-import 'package:ej_geek/core/di/service_locator.dart';
-import 'package:ej_geek/core/home_widget/dashboard_home_widget_sync.dart';
-import 'package:ej_geek/features/dashboard/domain/entities/daily_revenue.dart';
-import 'package:ej_geek/features/dashboard/domain/entities/dashboard_stats.dart';
-import 'package:ej_geek/features/dashboard/domain/entities/monthly_revenue.dart';
-import 'package:ej_geek/features/dashboard/domain/usecases/get_daily_revenue.dart';
-import 'package:ej_geek/features/dashboard/domain/usecases/get_dashboard_stats.dart';
-import 'package:ej_geek/features/dashboard/domain/usecases/get_monthly_revenue.dart';
-import 'package:ej_geek/features/dashboard/domain/usecases/get_pending_payment_dates.dart';
-import 'package:ej_geek/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
+import 'package:auto_flow/core/di/service_locator.dart';
+import 'package:auto_flow/core/home_widget/dashboard_home_widget_sync.dart';
+import 'package:auto_flow/features/dashboard/domain/entities/daily_revenue.dart';
+import 'package:auto_flow/features/dashboard/domain/entities/dashboard_stats.dart';
+import 'package:auto_flow/features/dashboard/domain/entities/monthly_revenue.dart';
+import 'package:auto_flow/features/dashboard/domain/usecases/get_daily_revenue.dart';
+import 'package:auto_flow/features/dashboard/domain/usecases/get_dashboard_stats.dart';
+import 'package:auto_flow/features/dashboard/domain/usecases/get_monthly_revenue.dart';
+import 'package:auto_flow/features/dashboard/domain/usecases/get_pending_payment_dates.dart';
+import 'package:auto_flow/features/invoice/presentation/widgets/invoice_screens/currency_format.dart';
 import 'package:flutter/foundation.dart';
 
 class DashboardProvider extends ChangeNotifier {

@@ -1,10 +1,19 @@
-import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_icon.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_subtitle.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/animated_splash_title.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/splash_dots_indicator.dart';
-import 'package:ej_geek/core/presentation/widgets/splash/splash_progress_bar.dart';
-import 'package:ej_geek/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:auto_flow/core/di/service_locator.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/animated_splash_icon.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/animated_splash_subtitle.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/animated_splash_title.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/splash_dots_indicator.dart';
+import 'package:auto_flow/core/presentation/widgets/splash/splash_progress_bar.dart';
+import 'package:auto_flow/features/dashboard/presentation/pages/dashboard_screen.dart';
+import 'package:auto_flow/features/onboarding/domain/usecases/is_onboarding_completed.dart';
+import 'package:auto_flow/features/onboarding/presentation/pages/intro_page.dart';
+import 'package:auto_flow/core/presentation/widgets/af/af_motion.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/auth/domain/usecases/get_current_session.dart';
+import 'package:auto_flow/features/auth/presentation/session/session_controller.dart';
+import 'package:auto_flow/features/onboarding/presentation/pages/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String routeName = '/splash';
@@ -35,100 +44,125 @@ class _SplashScreenState extends State<SplashScreen>
   late final Animation<double> _progressAnimation;
 
   bool _hasNavigated = false;
+  bool _started = false;
+
+  /// Time from first frame to navigation. The entrance below finishes inside
+  /// it; with reduced motion everything appears at once and we still hold.
+  static const _totalMs = 1200;
 
   @override
   void initState() {
     super.initState();
 
-    _iconController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _iconScaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _iconController, curve: Curves.elasticOut),
-    );
-    _iconFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+    _iconController = AnimationController(vsync: this);
+    _iconScaleAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(
         parent: _iconController,
-        curve: const Interval(0.0, 0.5, curve: Curves.easeIn),
+        curve: AutoFlowTokens.easeSpring,
       ),
     );
-
-    _titleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
+    _iconFadeAnimation = CurvedAnimation(
+      parent: _iconController,
+      curve: const Interval(0.0, 0.6, curve: AutoFlowTokens.easeOut),
     );
-    _titleFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _titleController, curve: Curves.easeIn));
+
+    _titleController = AnimationController(vsync: this);
+    _titleFadeAnimation = CurvedAnimation(
+      parent: _titleController,
+      curve: AutoFlowTokens.easeOut,
+    );
     _titleSlideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
-          CurvedAnimation(parent: _titleController, curve: Curves.easeOutCubic),
-        );
-
-    _subtitleController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
-    _subtitleFadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _subtitleController, curve: Curves.easeIn),
-    );
-    _subtitleSlideAnimation =
-        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
           CurvedAnimation(
-            parent: _subtitleController,
-            curve: Curves.easeOutCubic,
+            parent: _titleController,
+            curve: AutoFlowTokens.easeOut,
           ),
         );
 
-    _dotsController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
+    _subtitleController = AnimationController(vsync: this);
+    _subtitleFadeAnimation = CurvedAnimation(
+      parent: _subtitleController,
+      curve: AutoFlowTokens.easeOut,
     );
-    _dotsFadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _dotsController, curve: Curves.easeIn));
+    _subtitleSlideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _subtitleController,
+            curve: AutoFlowTokens.easeOut,
+          ),
+        );
 
-    _progressController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    );
-    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _progressController, curve: Curves.easeInOut),
+    _dotsController = AnimationController(vsync: this);
+    _dotsFadeAnimation = CurvedAnimation(
+      parent: _dotsController,
+      curve: AutoFlowTokens.easeOut,
     );
 
+    _progressController = AnimationController(vsync: this);
+    _progressAnimation = CurvedAnimation(
+      parent: _progressController,
+      curve: AutoFlowTokens.easeOut,
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // afDuration needs MediaQuery, which isn't readable in initState.
+    if (_started) return;
+    _started = true;
+    _iconController.duration = afDuration(context, 420);
+    _titleController.duration = afDuration(context, 320);
+    _subtitleController.duration = afDuration(context, 320);
+    _dotsController.duration = afDuration(context, 240);
+    _progressController.duration = afDuration(context, _totalMs - 200);
     _startAnimations();
   }
 
   Future<void> _startAnimations() async {
-    await Future.delayed(const Duration(milliseconds: 200));
-    if (!mounted) return;
-    _iconController.forward();
+    // Navigation runs on its own clock so the hold is the same with or
+    // without reduced motion.
+    Future.delayed(const Duration(milliseconds: _totalMs), _navigateToHome);
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    _iconController.forward();
+    _progressController.forward();
+
+    await Future.delayed(afDuration(context, 120));
     if (!mounted) return;
     _titleController.forward();
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(afDuration(context, 80));
     if (!mounted) return;
     _subtitleController.forward();
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    await Future.delayed(afDuration(context, 80));
     if (!mounted) return;
     _dotsController.forward();
-    _progressController.forward();
-
-    await Future.delayed(const Duration(milliseconds: 2000));
-    _navigateToHome();
   }
 
-  void _navigateToHome() {
-    if (!_hasNavigated && mounted) {
-      _hasNavigated = true;
-      Navigator.of(context).pushReplacement(DashboardScreen.route());
+  Future<void> _navigateToHome() async {
+    if (_hasNavigated || !mounted) return;
+    _hasNavigated = true;
+    final result = await sl<IsOnboardingCompleted>()(null);
+    if (!mounted) return;
+    // A failed read falls back to showing the intro rather than blocking.
+    final completed = result.getOrElse(() => false);
+    final navigator = Navigator.of(context);
+    if (!completed) {
+      navigator.pushReplacement(IntroPage.route());
+      return;
     }
+    // Onboarded: a stored session goes straight to the dashboard, otherwise
+    // the user must sign in.
+    final sessionResult = await sl<GetCurrentSession>()(null);
+    if (!mounted) return;
+    final session = sessionResult.getOrElse(() => null);
+    if (session == null) {
+      navigator.pushReplacement(LoginPage.route());
+      return;
+    }
+    context.read<SessionController>().setSession(session);
+    navigator.pushReplacement(DashboardScreen.route());
   }
 
   @override
@@ -153,27 +187,27 @@ class _SplashScreenState extends State<SplashScreen>
               scaleAnimation: _iconScaleAnimation,
               fadeAnimation: _iconFadeAnimation,
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: AfSpace.l24),
             AnimatedSplashTitle(
               fadeAnimation: _titleFadeAnimation,
               slideAnimation: _titleSlideAnimation,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AfSpace.s8),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
+              padding: const EdgeInsets.symmetric(horizontal: AfSpace.xl32),
               child: AnimatedSplashSubtitle(
                 fadeAnimation: _subtitleFadeAnimation,
                 slideAnimation: _subtitleSlideAnimation,
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: AfSpace.xl32),
             SplashDotsIndicator(fadeAnimation: _dotsFadeAnimation),
             const Spacer(flex: 3),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60),
+              padding: const EdgeInsets.symmetric(horizontal: AfSpace.xxl48),
               child: SplashProgressBar(progressAnimation: _progressAnimation),
             ),
-            const SizedBox(height: 50),
+            const SizedBox(height: AfSpace.xxl48),
           ],
         ),
       ),

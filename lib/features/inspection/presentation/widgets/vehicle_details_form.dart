@@ -1,6 +1,6 @@
-import 'package:ej_geek/core/presentation/widget/au_phone_input_formatter.dart';
-import 'package:ej_geek/core/theme/app_pallete.dart';
-import 'package:ej_geek/features/inspection/presentation/widgets/inspection_text_field.dart';
+import 'package:auto_flow/core/presentation/widget/au_phone_input_formatter.dart';
+import 'package:auto_flow/core/theme/autoflow_tokens.dart';
+import 'package:auto_flow/features/inspection/presentation/widgets/inspection_text_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -32,33 +32,29 @@ class VehicleDetailsForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = AutoFlowTokens.of(context);
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AfSpace.m16),
       decoration: BoxDecoration(
-        color: isDark ? AppPallete.dynamicBlack : AppPallete.whiteout,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? AppPallete.warmOnyx : AppPallete.nebulousWhite,
-        ),
+        color: tokens.card,
+        borderRadius: AfRadius.cardAll,
+        border: Border.all(color: tokens.line),
+        boxShadow: AutoFlowTokens.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Vehicle Details',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: isDark
-                  ? AppPallete.cascadingWhite
-                  : AppPallete.tricornBlack,
+          Semantics(
+            header: true,
+            child: Text(
+              'Vehicle Details',
+              style: AutoFlowTokens.title.copyWith(color: tokens.ink),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AfSpace.m16),
           _field('Name', ownerNameController, validator: _requiredValidator),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field(
             'Address',
             addressController,
@@ -66,7 +62,7 @@ class VehicleDetailsForm extends StatelessWidget {
             collapsedLines: 2,
             validator: _requiredValidator,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field(
             'Phone',
             phoneController,
@@ -74,33 +70,33 @@ class VehicleDetailsForm extends StatelessWidget {
             prefixText: '+61 ',
             inputFormatters: [AuPhoneNumberInputFormatter()],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field('Make', makeController),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field('Model', modelController),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field('Rego', regoController),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field(
             'Year',
             yearController,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field(
             'Odometer',
             odometerController,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field(
             'VIN',
             vinController,
             textCapitalization: TextCapitalization.characters,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: AfSpace.s12),
           _field(
             'Engine No.',
             engineNoController,
