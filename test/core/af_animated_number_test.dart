@@ -27,20 +27,20 @@ void main() {
     );
     expect(mid, inInclusiveRange(1, 99));
 
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 1100));
     expect(find.text('100'), findsOneWidget);
   });
 
   testWidgets('tweens from the previous value on update', (tester) async {
     await tester.pumpWidget(_host(100));
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 1100));
 
     await tester.pumpWidget(_host(200));
     await tester.pump(const Duration(milliseconds: 100));
     final mid = int.parse(tester.widget<Text>(find.byType(Text)).data!);
     expect(mid, inInclusiveRange(101, 199));
 
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pump(const Duration(milliseconds: 1100));
     expect(find.text('200'), findsOneWidget);
   });
 

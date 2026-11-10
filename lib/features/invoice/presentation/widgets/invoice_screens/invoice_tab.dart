@@ -682,7 +682,7 @@ class _TotalsSummary extends StatelessWidget {
         AfAnimatedNumber(
           value: value,
           formatter: formatAud,
-          durationMs: 300,
+          durationMs: 500,
           style: AutoFlowTokens.mono(
             fontSize: emphasis ? 17 : 13,
             color: tokens.ink,

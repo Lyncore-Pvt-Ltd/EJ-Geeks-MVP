@@ -22,7 +22,7 @@ class AfAnimatedNumber extends StatelessWidget {
     required this.value,
     required this.formatter,
     required this.style,
-    this.durationMs = 500,
+    this.durationMs = 1000,
     this.semanticsPrefix,
   });
 
